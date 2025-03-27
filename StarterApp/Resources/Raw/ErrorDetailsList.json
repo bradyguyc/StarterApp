@@ -1,0 +1,180 @@
+[
+  {
+    "ErrorCode": "ERR-000",
+    "ErrorTitle": "Oops something unexpected happened",
+    "WhatThisMeans": "An unanticipated error occured.",
+    "WhatYouCanDo": "The error message details may provide a clue as to what is wrong.  Often these types of errors are related to network connectivity. Follow the link to the online help page to submit information about this error.",
+    "HelpLink": "http://helpsite.com/error1"
+  },
+  {
+    "ErrorCode": "ERR-001",
+    "ErrorTitle": "Error Title 2",
+    "WhatThisMeans": "This is a description of what Error2 means.",
+    "WhatYouCanDo": "This is a suggestion of what you can do about Error2.",
+    "HelpLink": "http://helpsite.com/error2"
+  },
+  {
+    "ErrorCode": "MNB-018",
+    "ErrorTitle": "Series Already Exist",
+    "WhatThisMeans": "Another series in your library looks very similar to the one you are about to add.",
+    "WhatYouCanDo": "Make sure you want to add a 2nd series that may be a duplicate.",
+    "HelpLink": "http://helpsite.com/error2"
+  },
+  {
+    "ErrorCode": "MNB-100",
+    "ErrorTitle": "Connection Problem",
+    "WhatThisMeans": "The app is trying to connect to service on the internet and the service cannot be contacted.",
+    "WhatYouCanDo": "Try checking your network connections and make sure that you can connect to the internet through wifi or cellular data. Rebooting will often clear up network problems.  Those more advanced users can flush the dns cache which has been known to resolve the problem.",
+    "HelpLink": "http://helpsite.com/error3"
+  },
+
+  {
+    "ErrorCode": "MNB-101",
+    "ErrorTitle": "Connection Unauthorized",
+    "WhatThisMeans": "The connection to the cloud is unauthorized.  This is more than likely a configuration problem in the cloud and the developer/provider will need to resolve the issue.",
+
+    "WhatYouCanDo": "This error message has been logged and automated alerts should alert the provider for resolution.",
+
+    "HelpLink": "http://helpsite.com/error3"
+  },
+  {
+    "ErrorCode": "MNB-200",
+    "ErrorTitle": "Login Problem",
+    "WhatThisMeans": "The app is trying log you into your account and encountered a problem.",
+    "WhatYouCanDo": "Check more details for potential hints to what the problem might be.  Try checking your network connections and make sure that you can connect to the internet through wifi or cellular data. There are some WiFi networks that don't allow connections that this app needs.  We are trying to determine the exact reason and resolve.  If you are connected Wifi and still cannot connect try using your data plan.",
+    "HelpLink": "http://helpsite.com/error3"
+  },
+  {
+    "ErrorCode": "OL-001",
+    "ErrorTitle": "Open Library Login Failed",
+    "WhatThisMeans": "Unable to login into the open library account with the credentials provided.",
+
+    "WhatYouCanDo": "Go to settings under the open library section and check your credentials.",
+
+
+    "HelpLink": "http://helpsite.com/error3"
+  },
+  {
+    "ErrorCode": "OL-003",
+    "ErrorTitle": "Open Library",
+    "WhatThisMeans": "A problem with connecting and getting information from openlibrary.org has occured.",
+
+    "WhatYouCanDo": "Check more details for an indication of the problem.  Sometimes this information can provide insight on what you may be able to do to resolve the problem.",
+
+
+    "HelpLink": "http://helpsite.com/error3"
+  },
+  {
+    "ErrorCode": "OL-004",
+    "ErrorTitle": "Open Library Profile Name Not Found",
+    "WhatThisMeans": "The profile name used to connect to open library was not found,",
+
+    "WhatYouCanDo": "Go to settings under the open library section and update the profile name to your open library profile name that matches the credentials supplied.",
+
+
+    "HelpLink": "http://helpsite.com/error3"
+  },
+  {
+    "ErrorCode": "OL-005",
+    "ErrorTitle": "Credentials are valid",
+    "WhatThisMeans": "The openlibrary.org credentials you provided are valid and integration with openlibrary.org is available.",
+    "WhatYouCanDo": "",
+    "HelpLink": "http://helpsite.com/error3",
+      "Type": "Info"
+  },
+  {
+    "ErrorCode": "OL-002",
+    "ErrorTitle": "Open Library No Books Found ",
+    "WhatThisMeans": "There were no books returned from openlibrary for the profile name defined in seetings",
+    "Type": "Info",
+    "WhatYouCanDo": "Go to settings under the open library section and update the profile name to your open library profile name that matches the credentials supplied.",
+
+    "HelpLink": "http://helpsite.com/error3"
+  },
+  {
+    "ErrorCode": "OL-006",
+    "ErrorTitle": "Open Library Update Books Unknown Error",
+    "WhatThisMeans": "When updating books in your series with openlibrary.org information an unknown error occured.",
+
+    "WhatYouCanDo": "Check the error message for details that may hint at what the problem is.",
+
+    "HelpLink": "http://helpsite.com/error3"
+  },
+  {
+    "ErrorCode": "OL-007",
+    "ErrorTitle": "Must be logged into openlibrary.",
+    "WhatThisMeans": "Your series were not synced with openlibrary.org with your list on openlibrary.",
+
+    "WhatYouCanDo": "Check your openlibrary.org credentials and test the connection in setttings.",
+
+    "HelpLink": "http://helpsite.com/error3"
+  },
+  {
+    "ErrorCode": "OL-008",
+    "ErrorTitle": "No books found in dbpedia for selected series.",
+    "WhatThisMeans": "This is an odd behavior of dbpedia sometimes it knows about a series but doesn't have any books associated with it.",
+
+    "WhatYouCanDo": "create the series manually.",
+
+    "HelpLink": "http://helpsite.com/error3"
+  },
+  {
+    "ErrorCode": "OL-009",
+    "ErrorTitle": "Book not found when filling in missing information.",
+    "WhatThisMeans": "Alrighty, you tried to fill in information on a book because it's not linked to openlibrary.org and doesn't have the openlibrary keys on the record for the book.  And you can't find that book in openlibrary via this apps search feature in the prior screen.",
+
+    "WhatYouCanDo": "Suggest that you got to openlibrary.org and see if you can find the book there first before creating the book.  It could be that the book definition in this app has some information that makes it more difficult to find. If so you can edit the book information or you may be able to use a different keyword in the search on the prior screen in order to find the book and fill in with updated information from openlibrary.org.,\nIf you, still can't find the book and you want to create the book using the information you have in this app click the create book button and this will import the book information into openlibrary.org for everyone.  Note: that it may take awhile before the book shows up and is available so you may need to come back later to fill in the information from openlibrary.org",
+    
+    "HelpLink": "http://helpsite.com/error3"
+  },
+  {
+    "ErrorCode": "MNB-400",
+    "Type": "Info",
+    "ErrorTitle": "Success",
+    "WhatThisMeans": "",
+    "Type": "Info",
+    "WhatYouCanDo": "",
+
+    "HelpLink": "http://helpsite.com/error3"
+  },
+
+  {
+    "ErrorCode": "MNB-050",
+    "ErrorTitle": "Unknown error searching for a series.",
+    "WhatThisMeans": "The search for a series did not return a list of series.",
+
+    "WhatYouCanDo": "Check your openlibrary.org credentials and test the connection in setttings.",
+
+    "HelpLink": "http://helpsite.com/error3"
+  },
+  {
+    "ErrorCode": "MNB-051",
+    "ErrorTitle": "No series found with that search criteria.",
+    "WhatThisMeans": "No series were found with the provider and search criteria.",
+
+    "WhatYouCanDo": "Try a different search provider and/or search criteria.",
+
+    "HelpLink": "http://helpsite.com/error3"
+  },
+
+  {
+    "ErrorCode": "MNB-300",
+    "ErrorTitle": "Open Library ID Not Assigned",
+    "WhatThisMeans": "This book does not have an assigned openlibrary.org id/key.  This means that when syncing with openlibrary this book will not be able to sync with openlibrary.",
+    "Type": "Info",
+    "WhatYouCanDo": "Select match to open library on the book three dot menu and look up the book on openlibrary and associate this book with an openlibrary book.",
+
+    "HelpLink": "http://helpsite.com/error3"
+  },
+
+  {
+    "ErrorCode": "MNB-301",
+    "ErrorTitle": "ISBN information is missing from the book information.",
+    "WhatThisMeans": "This book does not either an ISBN 13 or ISBN 10 number associated with it.  Therefore we can link to amazon or google for the book.",
+    "Type": "Info",
+    "WhatYouCanDo": "Update the book information with the ISBN information.",
+
+    "HelpLink": "http://helpsite.com/error3"
+  }
+]
+

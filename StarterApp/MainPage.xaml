@@ -1,0 +1,62 @@
+﻿<ContentPage
+    x:Class="StarterApp.MainPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:controls="clr-namespace:StarterApp.CustomControls"
+    xmlns:dx="clr-namespace:DevExpress.Maui.Core;assembly=DevExpress.Maui.Core"
+    xmlns:dxco="clr-namespace:DevExpress.Maui.Controls;assembly=DevExpress.Maui.Controls"
+    xmlns:models="clr-namespace:StarterApp.Models">
+
+    <Grid RowDefinitions="*">
+        <!--  Main content  -->
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Padding="30,0" Spacing="25">
+                <Image
+                    Aspect="AspectFit"
+                    HeightRequest="185"
+                    Source="dotnet_bot.png" />
+                <Label Text="Hello, World!" />
+                <Button
+                    x:Name="CounterBtn"
+                    Command="{Binding TestShowErrorCommand}"
+                    Text="Test Error PopUp" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!--  Popup overlay  -->
+        <dxco:DXPopup
+            x:Name="ErrorPopup"
+            Grid.Row="0"
+            AllowScrim="True"
+            AllowShadow="True"
+            BackgroundColor="White"
+            CornerRadius="20"
+            HeightRequest="500"
+            IsOpen="{Binding PopupDetails.IsOpen, Mode=TwoWay}"
+            ShadowColor="Gray"
+            ShadowHorizontalOffset="15"
+            ShadowRadius="10"
+            ShadowVerticalOffset="15"
+            WidthRequest="300">
+
+            <!--  Add this debug label  -->
+            <StackLayout HeightRequest="500" WidthRequest="300">            
+                <Label
+                    BackgroundColor="Red"
+                    HorizontalOptions="Center"
+                    Text="{Binding PopupDetails.IsOpen, StringFormat='IsOpen: {0}'}"
+                    TextColor="White"
+                    VerticalOptions="Center" />
+
+                <Grid
+                    BackgroundColor="Blue"
+                    HeightRequest="500"
+                    RowDefinitions="65,*,60"
+                    WidthRequest="300">
+                    <!--  Rest of your existing content  -->
+                </Grid>
+            </StackLayout>
+
+        </dxco:DXPopup>
+    </Grid>
+</ContentPage>
