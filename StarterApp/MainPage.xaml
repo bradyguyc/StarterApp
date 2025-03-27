@@ -3,13 +3,65 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:controls="clr-namespace:StarterApp.CustomControls"
-    xmlns:dx="clr-namespace:DevExpress.Maui.Core;assembly=DevExpress.Maui.Core"
-    xmlns:dxco="clr-namespace:DevExpress.Maui.Controls;assembly=DevExpress.Maui.Controls"
-    xmlns:models="clr-namespace:StarterApp.Models">
+    xmlns:models="clr-namespace:StarterApp.Models"
+    xmlns:popup="clr-namespace:Syncfusion.Maui.Popup;assembly=Syncfusion.Maui.Popup"
+    xmlns:viewmodels="clr-namespace:StarterApp.ViewModels"
+    x:DataType="viewmodels:MainPageViewModel">
 
     <Grid RowDefinitions="*">
+        <!--
+        <controls:ErrorPopupView
+            Grid.Row="0"
+            Grid.Column="0"
+            ControlTemplate="{StaticResource ErrorPopupStandard}"
+            ErrorCode="{Binding .PopupDetails.ErrorCode}"
+            ErrorMessage="{Binding .PopupDetails.ErrorMessage}"
+            ErrorReason="{Binding .PopupDetails.ErrorReason}"
+            HeightRequest="500"
+            ShowErrorPopup="{Binding PopupDetails.IsOpen, Mode=TwoWay}"
+            WidthRequest="300" />-->
+        <popup:SfPopup
+            x:Name="popupLayout"
+            HeaderHeight="500"
+            HeaderTitle="{Binding PopupDetails.ErrorCode}"
+            IsOpen="{Binding PopupDetails.IsOpen, Mode=TwoWay}"
+            WidthRequest="300">
+            <popup:SfPopup.PopupStyle>
+                <popup:PopupStyle
+                    HeaderBackground="LightBlue"
+                    HeaderFontAttribute="Bold"
+                    HeaderFontFamily="OpenSansRegular"
+                    HeaderFontSize="25"
+                    HeaderTextAlignment="Center"
+                    HeaderTextColor="White"
+                    MessageBackground="#4F6750A4"
+                    MessageFontAttribute="Bold"
+                    MessageFontFamily="OpenSansRegular"
+                    MessageFontSize="18"
+                    MessageTextAlignment="Center"
+                    MessageTextColor="Gray" />
+            </popup:SfPopup.PopupStyle>
+            <popup:SfPopup.ContentTemplate>
+                <DataTemplate>
+                    <StackLayout>
+                        <Label
+                            BackgroundColor="SkyBlue"
+                            HorizontalTextAlignment="Center"
+                            Text="This is the Customized view for SfPopup"
+                            TextColor="Black"
+                            VerticalTextAlignment="Center" />
+
+                        <Button
+                            Command="{Binding ClosePopUpCommand}"
+                            Text="Close"
+                            TextColor="Black" />
+                    </StackLayout>
+
+                </DataTemplate>
+            </popup:SfPopup.ContentTemplate>
+        </popup:SfPopup>
         <!--  Main content  -->
-        <ScrollView Grid.Row="0">
+        <ScrollView Grid.Row="0" BackgroundColor="LightBlue">
             <VerticalStackLayout Padding="30,0" Spacing="25">
                 <Image
                     Aspect="AspectFit"
@@ -23,40 +75,5 @@
             </VerticalStackLayout>
         </ScrollView>
 
-        <!--  Popup overlay  -->
-        <dxco:DXPopup
-            x:Name="ErrorPopup"
-            Grid.Row="0"
-            AllowScrim="True"
-            AllowShadow="True"
-            BackgroundColor="White"
-            CornerRadius="20"
-            HeightRequest="500"
-            IsOpen="{Binding PopupDetails.IsOpen, Mode=TwoWay}"
-            ShadowColor="Gray"
-            ShadowHorizontalOffset="15"
-            ShadowRadius="10"
-            ShadowVerticalOffset="15"
-            WidthRequest="300">
-
-            <!--  Add this debug label  -->
-            <StackLayout HeightRequest="500" WidthRequest="300">            
-                <Label
-                    BackgroundColor="Red"
-                    HorizontalOptions="Center"
-                    Text="{Binding PopupDetails.IsOpen, StringFormat='IsOpen: {0}'}"
-                    TextColor="White"
-                    VerticalOptions="Center" />
-
-                <Grid
-                    BackgroundColor="Blue"
-                    HeightRequest="500"
-                    RowDefinitions="65,*,60"
-                    WidthRequest="300">
-                    <!--  Rest of your existing content  -->
-                </Grid>
-            </StackLayout>
-
-        </dxco:DXPopup>
     </Grid>
 </ContentPage>

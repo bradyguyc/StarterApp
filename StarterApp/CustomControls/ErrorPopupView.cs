@@ -2,10 +2,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-using DevExpress.Maui.Controls;
-using DevExpress.Maui.Core;
-using DevExpress.Maui.Core.Internal;
-using DevExpress.Utils.Filtering.Internal;
 
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
@@ -139,8 +135,8 @@ namespace StarterApp.CustomControls
                         case "Info":
                             control.ShowErrorCode = false;
                             control.ShowInfo = true;
-                            control.TitleContainerColor = ThemeManager.Theme.Scheme.PrimaryContainer;
-                            control.TitleOnContainerColor = ThemeManager.Theme.Scheme.OnPrimaryContainer;
+                            control.TitleContainerColor = Color.Parse("White");
+                            control.TitleOnContainerColor = Color.Parse("Black");
 
                             break;
 
@@ -148,15 +144,15 @@ namespace StarterApp.CustomControls
                             control.ShowErrorCode = true;
                             control.ShowInfo = false;
 
-                            control.TitleContainerColor = ThemeManager.Theme.Scheme.ErrorContainer;
-                            control.TitleOnContainerColor = ThemeManager.Theme.Scheme.OnErrorContainer;
+                            control.TitleContainerColor = Color.Parse("White");
+                            control.TitleOnContainerColor = Color.Parse("Black");
                             break;
 
                         default:
                             control.ShowErrorCode = true;
                             control.ShowInfo = false;
-                            control.TitleContainerColor = ThemeManager.Theme.Scheme.ErrorContainer;
-                            control.TitleOnContainerColor = ThemeManager.Theme.Scheme.OnErrorContainer;
+                            control.TitleContainerColor = Color.Parse("White");
+                            control.TitleOnContainerColor = Color.Parse("Black");
                             break;
                     }
                     control.ShowWhat = string.IsNullOrWhiteSpace(control.WhatThisMeans) ? false : true;

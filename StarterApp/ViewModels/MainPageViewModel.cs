@@ -15,6 +15,7 @@ namespace StarterApp.ViewModels
         public MainPageViewModel()
         {
             PopupDetails = new ShowPopUpDetails();
+            PopupDetails.IsOpen = false;
         }
         [RelayCommand]
         void TestShowError()
