@@ -22,22 +22,24 @@
             WidthRequest="300" />-->
         <popup:SfPopup
             x:Name="popupLayout"
-            HeaderHeight="500"
+            
             HeaderTitle="{Binding PopupDetails.ErrorCode}"
-            IsOpen="{Binding PopupDetails.IsOpen, Mode=TwoWay}"
-            WidthRequest="300">
+            IsOpen="{Binding PopupDetails.IsOpen, Mode=TwoWay}">
             <popup:SfPopup.PopupStyle>
                 <popup:PopupStyle
                     HeaderBackground="LightBlue"
                     HeaderFontAttribute="Bold"
                     HeaderFontFamily="OpenSansRegular"
                     HeaderFontSize="25"
+					HeaderHeight="50"
+					HeaderWidth="300"
                     HeaderTextAlignment="Center"
                     HeaderTextColor="White"
                     MessageBackground="#4F6750A4"
                     MessageFontAttribute="Bold"
                     MessageFontFamily="OpenSansRegular"
                     MessageFontSize="18"
+					MessageHeight="300"
                     MessageTextAlignment="Center"
                     MessageTextColor="Gray" />
             </popup:SfPopup.PopupStyle>
@@ -72,6 +74,24 @@
                     x:Name="CounterBtn"
                     Command="{Binding TestShowErrorCommand}"
                     Text="Test Error PopUp" />
+
+                <Button
+                    x:Name="SignIn"
+                    Command="{Binding SignInCommand}"
+                    HorizontalOptions="Fill"
+                    IsEnabled="{Binding IsSignedIn, Converter={StaticResource InvertedBoolConverter}}"
+                    SemanticProperties.Hint="sign in"
+                    Text="Sign In" />
+
+                <Button
+                    x:Name="signOut"
+                    Command="{Binding SignOutCommand}"
+                    HorizontalOptions="Fill"
+                    IsEnabled="{Binding IsSignedIn}"
+                    SemanticProperties.Hint="Sign Out"
+                    Text="Sign Out" />
+                <ListView HorizontalScrollBarVisibility="Always" ItemsSource="{Binding IdTokenClaims}" />
+
             </VerticalStackLayout>
         </ScrollView>
 

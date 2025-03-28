@@ -59,6 +59,16 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Remove="appsettings.json" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Include="appsettings.json">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </EmbeddedResource>
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Maui" Version="11.2.0" />
 		<PackageReference Include="CommunityToolkit.Maui.Markup" Version="5.1.0" />
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
@@ -66,7 +76,21 @@
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.3" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="OnScreenSizeMarkup.Maui" Version="3.0.18" />
-		<PackageReference Include="Syncfusion.Maui.Popup" Version="29.1.33" />
+		
+				<PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.0-preview.2.25163.2" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.0-preview.2.25163.2" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0-preview.2.25163.2" />
+		<PackageReference Include="Microsoft.Identity.Client" Version="4.70.0" />
+		
+		<PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.70.0" />
+		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.0-preview.2.25165.1" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0-preview.2.25163.2" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.0-preview.2.25163.2" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.0-preview.2.25163.2" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0-preview.2.25163.2" />
+		<PackageReference Include="Microsoft.Identity.Client" Version="4.70.0" />
+
 	</ItemGroup>
 
 	<ItemGroup>
