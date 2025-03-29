@@ -17,16 +17,25 @@ namespace StarterApp.ViewModels
         [ObservableProperty] ShowPopUpDetails popupDetails;
         [ObservableProperty] private bool isSignedIn = false;
         [ObservableProperty] private List<string> idTokenClaims = new();
+        [ObservableProperty] private bool showErrorMessage = true; 
+        [ObservableProperty] private string whatYouCanDo = "what you can do for brady guy";
+        [ObservableProperty] private bool showWhat = true;
+        [ObservableProperty] private string errorCode;
+        [ObservableProperty] private string errorMessage = " this is an error message related to me and brady ";
+        [ObservableProperty] private string errorReason = " this is an error reason for the brady error ";
+        [ObservableProperty] private bool isOpen;
+        [ObservableProperty] private string whatThisMeans= "what this means for brady guy chambers";
+        [ObservableProperty] private string errorTitle = "this is a title for error Mr. Brady Guy Chambers";
+        [ObservableProperty] private Color titleContainerColor = Color.Parse("White");
+        [ObservableProperty] private Color titleOnContainerColor = Color.Parse("Black");
 
-        [ObservableProperty] private bool showErrorPopUp = false;
-        [ObservableProperty] private bool errorSuccess = false;
-        [ObservableProperty] private ShowPopUpDetails errorDetails = new ShowPopUpDetails();
+
         public MainPageViewModel()
         {
             PopupDetails = new ShowPopUpDetails();
 
             IsSignedIn = false;
-            ErrorDetails.IsOpen = false;
+            PopupDetails.IsOpen = false;
             IAccount cachedUserAccount = PublicClientSingleton.Instance.MSALClientHelper.FetchSignedInUserFromCache().Result;
             if (cachedUserAccount != null)
             {
@@ -37,12 +46,16 @@ namespace StarterApp.ViewModels
         [RelayCommand]
         void TestShowError()
         {
-            PopupDetails.ErrorCode = "ERR-001";
-            PopupDetails.ErrorMessage = "Test Error message";
-            PopupDetails.ErrorReason = "Test Error Reason";
-            PopupDetails.IsOpen = true;
-        }
 
+            ErrorMessage = "Test Error message";
+            ErrorReason = "Test Error Reason";
+
+            IsOpen = true;
+            ErrorCode = "ERR-001";
+            OnPropertyChanged(nameof(ErrorCode));
+
+
+        }
         [RelayCommand]
         void ClosePopUp()
         {
@@ -79,7 +92,7 @@ namespace StarterApp.ViewModels
                         PopupDetails.ErrorMessage = ex.Message;
                         //Console.WriteLine(ex.Message);
                     }
-                    if ((token == null) && (ErrorDetails.IsOpen == false))
+                    if ((token == null) && (PopupDetails.IsOpen == false))
                     {
                         PopupDetails.IsOpen = true;
                         PopupDetails.ErrorCode = "ERR-001";

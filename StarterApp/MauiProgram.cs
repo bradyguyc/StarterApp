@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui;
 
+using DevExpress.Maui;
 
 using Microsoft.Extensions.Logging;
 
@@ -19,6 +20,7 @@ namespace StarterApp
             Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(synFusionKey);
             builder
                 .UseMauiApp<App>()
+                .UseDevExpress()
                 .UseMauiCommunityToolkit()
                 
                 .ConfigureSyncfusionCore()

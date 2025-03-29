@@ -21,6 +21,10 @@ namespace StarterApp.CustomControls
 {
     public partial class ErrorPopupView : ContentView, INotifyPropertyChanged
     {
+        public ErrorPopupView ()
+        {
+         
+        }
         #region Fields
 
         public static readonly BindableProperty ErrorCodeProperty = BindableProperty.Create(nameof(ErrorCode), typeof(string), typeof(ErrorPopupView), propertyChanged: OnErrorCodeChanged);

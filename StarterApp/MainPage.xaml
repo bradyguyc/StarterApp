@@ -3,65 +3,165 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:controls="clr-namespace:StarterApp.CustomControls"
+    xmlns:dx="clr-namespace:DevExpress.Maui.Core;assembly=DevExpress.Maui.Core"
     xmlns:models="clr-namespace:StarterApp.Models"
     xmlns:popup="clr-namespace:Syncfusion.Maui.Popup;assembly=Syncfusion.Maui.Popup"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:viewmodels="clr-namespace:StarterApp.ViewModels"
     x:DataType="viewmodels:MainPageViewModel">
 
     <Grid RowDefinitions="*">
-        <!--
+        
         <controls:ErrorPopupView
             Grid.Row="0"
             Grid.Column="0"
             ControlTemplate="{StaticResource ErrorPopupStandard}"
-            ErrorCode="{Binding .PopupDetails.ErrorCode}"
-            ErrorMessage="{Binding .PopupDetails.ErrorMessage}"
-            ErrorReason="{Binding .PopupDetails.ErrorReason}"
+            ErrorCode="{Binding ErrorCode}"
+            ErrorMessage="{Binding ErrorMessage}"
+            ErrorReason="{Binding  ErrorReason}"
             HeightRequest="500"
-            ShowErrorPopup="{Binding PopupDetails.IsOpen, Mode=TwoWay}"
-            WidthRequest="300" />-->
+            ShowErrorPopup="{Binding IsOpen, Mode=TwoWay}"
+            WidthRequest="300" />
+     
+        <!--
         <popup:SfPopup
             x:Name="popupLayout"
-            
-            HeaderTitle="{Binding PopupDetails.ErrorCode}"
-            IsOpen="{Binding PopupDetails.IsOpen, Mode=TwoWay}">
+            AppearanceMode="OneButton"
+            HeaderHeight="60"
+            HeightRequest="500"
+            ShowFooter="true"
+            FooterHeight="80"
+            IsOpen="{Binding IsOpen,
+                                     Mode=TwoWay}"
+            WidthRequest="300">
             <popup:SfPopup.PopupStyle>
                 <popup:PopupStyle
                     HeaderBackground="LightBlue"
                     HeaderFontAttribute="Bold"
                     HeaderFontFamily="OpenSansRegular"
                     HeaderFontSize="25"
-					HeaderHeight="50"
-					HeaderWidth="300"
                     HeaderTextAlignment="Center"
                     HeaderTextColor="White"
                     MessageBackground="#4F6750A4"
                     MessageFontAttribute="Bold"
                     MessageFontFamily="OpenSansRegular"
                     MessageFontSize="18"
-					MessageHeight="300"
                     MessageTextAlignment="Center"
                     MessageTextColor="Gray" />
             </popup:SfPopup.PopupStyle>
+            <popup:SfPopup.HeaderTemplate>
+                <DataTemplate>
+                    <Border
+                        Grid.Row="0"
+                        Margin="6,15,5,5"
+                        BackgroundColor="{Binding TitleContainerColor}"
+                        Stroke="{dx:ThemeColor Outline}"
+                        StrokeShape="RoundRectangle 30"
+                        StrokeThickness="1">
+                        <Label
+                            Margin="0,4,0,4"
+                            BackgroundColor="{Binding TitleContainerColor}"
+                            HorizontalOptions="Center"
+                            Text="{Binding ErrorTitle}"
+                            TextColor="{Binding TitleOnContainerColor}"
+                            VerticalOptions="Center" />
+                    </Border>
+                </DataTemplate>
+            </popup:SfPopup.HeaderTemplate>
             <popup:SfPopup.ContentTemplate>
                 <DataTemplate>
-                    <StackLayout>
-                        <Label
-                            BackgroundColor="SkyBlue"
-                            HorizontalTextAlignment="Center"
-                            Text="This is the Customized view for SfPopup"
-                            TextColor="Black"
-                            VerticalTextAlignment="Center" />
+                    <Grid
+                        BackgroundColor="{dx:ThemeColor SurfaceContainerHigh}"
+                        HeightRequest="400"
+                        RowDefinitions="65,*,60"
+                        WidthRequest="300">
 
-                        <Button
-                            Command="{Binding ClosePopUpCommand}"
-                            Text="Close"
-                            TextColor="Black" />
-                    </StackLayout>
+
+
+                        <ScrollView Grid.Row="1" Margin="0,0,0,10">
+                            <VerticalStackLayout Margin="6,0,4,10">
+
+                                <Label
+                                    Margin="1,0,0,5"
+                                    BackgroundColor="{dx:ThemeColor SurfaceContainerHigh}"
+                                    HorizontalOptions="Start"
+                                    LineBreakMode="WordWrap"
+                                    Text="{Binding ErrorReason}"
+                                    TextColor="{Binding TitleOnContainerColor}" />
+
+
+
+                                <Label
+                                                Margin="0,0,0,1"
+                                                BackgroundColor="{dx:ThemeColor SurfaceContainerHigh}"
+                                                HorizontalOptions="Start"
+                                                IsVisible="{Binding ShowWhat}"
+                                                Text="What this means:"
+                                                TextColor="Black" />
+                                <Label
+                                                Margin="0,0,0,5"
+                                                BackgroundColor="{dx:ThemeColor SurfaceContainerHigh}"
+                                                FontSize="Micro"
+                                                HorizontalOptions="Start"
+                                                IsVisible="{Binding ShowWhat}"
+                                                LineBreakMode="WordWrap"
+                                                Text="{Binding WhatThisMeans}"
+                                                TextColor="Black" />
+                                <Label
+                                                Margin="0,0,0,1"
+                                                BackgroundColor="{dx:ThemeColor SurfaceContainerHigh}"
+                                                HorizontalOptions="Start"
+                                                IsVisible="{Binding ShowWhat}"
+                                                Text="What you can do:"
+                                                TextColor="Black" />
+                                <Label
+                                                Margin="0,0,0,5"
+                                                BackgroundColor="{dx:ThemeColor SurfaceContainerHigh}"
+                                                FontSize="Micro"
+                                                HorizontalOptions="Start"
+                                                IsVisible="{Binding ShowWhat}"
+                                                LineBreakMode="WordWrap"
+                                                Text="{Binding WhatYouCanDo}"
+                                                TextColor="Black" />
+
+
+
+
+                                <Label
+                                            Margin="1,0,0,1"
+                                            BackgroundColor="{dx:ThemeColor SurfaceContainerHigh}"
+                                            HorizontalOptions="Start"
+                                            IsVisible="{Binding ShowErrorCode}"
+                                            LineBreakMode="WordWrap"
+                                            Text="{Binding ErrorCode,
+                                                                   StringFormat='Error Code: {0}'}"
+                                            TextColor="Black" />
+                                <Label
+                                            Margin="0,0,0,1"
+                                            BackgroundColor="{dx:ThemeColor SurfaceContainerHigh}"
+                                            HorizontalOptions="Start"
+                                            IsVisible="{Binding ShowErrorMessage}"
+                                            Text="Error Message:"
+                                            TextColor="Black" />
+                                <Label
+                                            BackgroundColor="{dx:ThemeColor SurfaceContainerHigh}"
+                                            FontSize="Micro"
+                                            HorizontalOptions="Start"
+                                            IsVisible="{Binding ShowErrorMessage}"
+                                            LineBreakMode="WordWrap"
+                                            Text="{Binding ErrorMessage}"
+                                            TextColor="Black" />
+                            </VerticalStackLayout>
+
+
+                        </ScrollView>
+                    </Grid>
+
 
                 </DataTemplate>
             </popup:SfPopup.ContentTemplate>
         </popup:SfPopup>
+-->
         <!--  Main content  -->
         <ScrollView Grid.Row="0" BackgroundColor="LightBlue">
             <VerticalStackLayout Padding="30,0" Spacing="25">
