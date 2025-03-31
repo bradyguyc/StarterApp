@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Text;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
 
 using StarterApp.Models;
@@ -17,14 +19,13 @@ namespace StarterApp.ViewModels
         [ObservableProperty] ShowPopUpDetails popupDetails;
         [ObservableProperty] private bool isSignedIn = false;
         [ObservableProperty] private List<string> idTokenClaims = new();
-        //[ObservableProperty] private string errorCode;
-        //[ObservableProperty] private string errorMessage = " this is an error message related to me and brady ";
-        //[ObservableProperty] private string errorReason = " this is an error reason for the brady error ";
-        //[ObservableProperty] private bool isOpen;
+
+        private readonly ILogger<MainPageViewModel> _logger;
 
 
-        public MainPageViewModel()
+        public MainPageViewModel(ILogger<MainPageViewModel> logger)
         {
+            _logger = logger;
             PopupDetails = new ShowPopUpDetails();
 
             IsSignedIn = false;
@@ -41,20 +42,45 @@ namespace StarterApp.ViewModels
 
             PopupDetails.ErrorMessage = "Exception: User Cancelled process: stacktrace: ........";
             PopupDetails.ErrorReason = "From app launch get user login information.";
-
             PopupDetails.IsOpen = true;
             PopupDetails.ErrorCode = "ERR-001";
         }
-        [RelayCommand] void ClosePopUp()
+        private string GetClaimValue(Claim claim)
         {
-            PopupDetails.IsOpen = false;
+            switch (claim.Type)
+            {
+                case ClaimTypes.Name:
+                case ClaimTypes.Email:
+                case ClaimTypes.Role:
+                    return claim.Value;
+
+                case ClaimTypes.DateOfBirth:
+                    if (DateTime.TryParse(claim.Value, out var dateOfBirth))
+                    {
+                        return dateOfBirth.ToShortDateString();
+                    }
+                    break;
+
+                case ClaimTypes.Sid:
+                case ClaimTypes.NameIdentifier:
+                    return claim.Value;
+
+                // Add more cases as needed for other claim types
+
+                default:
+                    return claim.Value;
+            }
+
+            return claim.Value;
         }
 
         private async Task UpdateClaims()
         {
+
             _ = await PublicClientSingleton.Instance.AcquireTokenSilentAsync();
 
-            var claims = PublicClientSingleton.Instance.MSALClientHelper.AuthResult.ClaimsPrincipal.Claims.Select(c => c.Value);
+            var claims = PublicClientSingleton.Instance
+                    .MSALClientHelper.AuthResult.ClaimsPrincipal.Claims.Select(c => $"{c.Type}: {GetClaimValue(c)}");
 
             IdTokenClaims = claims.ToList();
         }
@@ -104,6 +130,7 @@ namespace StarterApp.ViewModels
             {
                 await PublicClientSingleton.Instance.MSALClientHelper.SignOutUserAsync();
                 IsSignedIn = false;
+                IdTokenClaims = new List<string>();
             });
         }
     }
