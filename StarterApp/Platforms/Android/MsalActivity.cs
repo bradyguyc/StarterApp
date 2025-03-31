@@ -1,14 +1,19 @@
-﻿using Android.App;
+using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.OS;
-
-using Microsoft.Identity.Client;
+using Android.Runtime;
+using Android.Views;
+using Android.Widget;
 
 using StarterApp.MSALClient;
 
-namespace StarterApp
+using Microsoft.Identity.Client;
+
+namespace BaseAppWithAuthorization
 {
+
+
     [Activity(Theme = "@style/Maui.SplashTheme", MainLauncher = true, LaunchMode = LaunchMode.SingleTop, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize | ConfigChanges.Density)]
     public class MainActivity : MauiAppCompatActivity
     {
@@ -29,4 +34,6 @@ namespace StarterApp
             AuthenticationContinuationHelper.SetAuthenticationContinuationEventArgs(requestCode, resultCode, data);
         }
     }
+
+
 }

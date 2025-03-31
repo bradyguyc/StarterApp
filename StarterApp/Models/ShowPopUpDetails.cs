@@ -14,8 +14,8 @@ namespace StarterApp.Models
     {
         [ObservableProperty] private bool isOpen;
        // [ObservableProperty] private string errorTitle;
-        [ObservableProperty] private string errorMessage;
-        [ObservableProperty] private string errorCode;
-        [ObservableProperty] private string errorReason;
+        [ObservableProperty] private string? errorMessage;
+        [ObservableProperty] private string? errorCode;
+        [ObservableProperty] private string? errorReason;
     }
 }
