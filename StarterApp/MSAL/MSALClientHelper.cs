@@ -208,6 +208,9 @@ namespace StarterApp.MSALClient
             {
                 return await this.PublicClientApplication.AcquireTokenInteractive(scopes)
                     .WithParentActivityOrWindow(PlatformConfig.Instance.ParentWindow)
+#if ANDROID
+                    .WithUseEmbeddedWebView(UseEmbedded=true)
+#endif
                     .ExecuteAsync()
                     .ConfigureAwait(false);
             }
