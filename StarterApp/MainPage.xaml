@@ -16,11 +16,11 @@
             Grid.Row="0"
             Grid.Column="0"
             ControlTemplate="{StaticResource ErrorPopupStandard}"
-            ErrorCode="{Binding ErrorCode}"
-            ErrorMessage="{Binding ErrorMessage}"
-            ErrorReason="{Binding  ErrorReason}"
+            ErrorCode="{Binding PopupDetails.ErrorCode}"
+            ErrorMessage="{Binding PopupDetails.ErrorMessage}"
+            ErrorReason="{Binding  PopupDetails.ErrorReason}"
             HeightRequest="500"
-            ShowErrorPopup="{Binding IsOpen, Mode=TwoWay}"
+            ShowErrorPopup="{Binding PopupDetails.IsOpen, Mode=TwoWay}"
             WidthRequest="300" />
      
         <!--

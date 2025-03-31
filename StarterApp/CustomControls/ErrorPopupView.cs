@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
+using DevExpress.Maui.Core;
 
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
@@ -148,15 +149,16 @@ namespace StarterApp.CustomControls
                             control.ShowErrorCode = true;
                             control.ShowInfo = false;
 
-                            control.TitleContainerColor = Color.Parse("White");
-                            control.TitleOnContainerColor = Color.Parse("Black");
+                            //control.TitleContainerColor = { dx: ThemeColor Error};
+                            
+                            //control.TitleOnContainerColor = Color.Parse("Black");
                             break;
 
                         default:
                             control.ShowErrorCode = true;
                             control.ShowInfo = false;
-                            control.TitleContainerColor = Color.Parse("White");
-                            control.TitleOnContainerColor = Color.Parse("Black");
+                            //control.TitleContainerColor = Color.Parse("White");
+                            //control.TitleOnContainerColor = Color.Parse("Black");
                             break;
                     }
                     control.ShowWhat = string.IsNullOrWhiteSpace(control.WhatThisMeans) ? false : true;
@@ -207,7 +209,7 @@ namespace StarterApp.CustomControls
             var control = (ErrorPopupView)bindable;
             control.ErrorType = (string)newValue;
             control.OnPropertyChanged(nameof(ErrorType));
-            /*
+            
             switch (control.ErrorType)
             {
                 case "Info":
@@ -237,7 +239,7 @@ namespace StarterApp.CustomControls
             control.OnPropertyChanged(nameof(TitleOnContainerColor));
             control.OnPropertyChanged(nameof(ShowErrorCode));
             control.OnPropertyChanged(nameof(ShowInfo));
-            */
+            
         }
 
         private static void OnHelpLinkChanged(BindableObject bindable, object oldValue, object newValue)
@@ -283,21 +285,8 @@ namespace StarterApp.CustomControls
             control.OnPropertyChanged(nameof(TitleOnContainerColor));
         }
 
-        [RelayCommand] void ClosePopUp() => ShowErrorPopup = false;
 
-        private void Popup_Closed(object sender, EventArgs e)
-        {
-            //ErrorHandler.AddLog("do something here");
-        }
-
-        [RelayCommand]
-        void ToggleErrorMore()
-        {
-            ExpanderIcon = (ExpanderIcon == IconCodesMIR.Expand_more) ? IconCodesMIR.Expand_less : IconCodesMIR.Expand_more;
-            ErrorMoreExpanded = !ErrorMoreExpanded;
-            OnPropertyChanged(nameof(ErrorMoreExpanded));
-            OnPropertyChanged(nameof(ExpanderIcon));
-        }
+        
 
         #endregion Methods
     }

@@ -1,154 +1,141 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:controls="clr-namespace:StarterApp.CustomControls"
     xmlns:dx="clr-namespace:DevExpress.Maui.Core;assembly=DevExpress.Maui.Core"
     xmlns:markups="clr-namespace:OnScreenSizeMarkup.Maui;assembly=OnScreenSizeMarkup.Maui"
     xmlns:models="clr-namespace:StarterApp.Models"
     xmlns:popup="clr-namespace:Syncfusion.Maui.Popup;assembly=Syncfusion.Maui.Popup"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit">
-
-    <ControlTemplate x:Key="ErrorPopupStandard">
+    <ResourceDictionary>
+        <toolkit:BoolToObjectConverter
+            x:Key="BoolToColorConverter"
+            FalseObject="{dx:ThemeColor ErrorContainer}"
+            TrueObject="{dx:ThemeColor TertiaryContainer}" />
+        <toolkit:BoolToObjectConverter
+            x:Key="titleLabelColor"
+            FalseObject="{dx:ThemeColor OnErrorContainer}"
+            TrueObject="{dx:ThemeColor OnTertiaryContainer}" />
+    </ResourceDictionary>
+    <ControlTemplate x:Key="ErrorPopupStandard" x:DataType="controls:ErrorPopupView">
         <popup:SfPopup
             x:Name="popupLayout"
+            AcceptButtonText="OK"
             AppearanceMode="OneButton"
-            HeaderHeight="60"
+            BindingContext="{Binding Source={RelativeSource TemplatedParent}}"
+            FooterHeight="40"
+            HeaderHeight="80"
             HeightRequest="500"
+            IsOpen="{Binding ShowErrorPopup, Mode=TwoWay}"
             ShowFooter="true"
-            FooterHeight="80"
-            IsOpen="{TemplateBinding ShowErrorPopup,
-                                     Mode=TwoWay}"
             WidthRequest="300">
             <popup:SfPopup.PopupStyle>
                 <popup:PopupStyle
-                    HeaderBackground="LightBlue"
+                    BlurIntensity="Light"
+                    BlurRadius="15"
+                    CornerRadius="20"
+                    FooterBackground="{Binding ShowInfo, Converter={StaticResource BoolToColorConverter}}"
+                    HasShadow="True"
+                    HeaderBackground="{Binding ShowInfo, Converter={StaticResource BoolToColorConverter}}"
                     HeaderFontAttribute="Bold"
                     HeaderFontFamily="OpenSansRegular"
                     HeaderFontSize="25"
                     HeaderTextAlignment="Center"
-                    HeaderTextColor="White"
-                    MessageBackground="#4F6750A4"
+                    MessageBackground="{Binding ShowInfo, Converter={StaticResource BoolToColorConverter}}"
                     MessageFontAttribute="Bold"
                     MessageFontFamily="OpenSansRegular"
                     MessageFontSize="18"
                     MessageTextAlignment="Center"
-                    MessageTextColor="Gray" />
+                    StrokeThickness="10" />
             </popup:SfPopup.PopupStyle>
             <popup:SfPopup.HeaderTemplate>
                 <DataTemplate>
                     <Border
                         Grid.Row="0"
-                        Margin="6,15,5,5"
-                        BackgroundColor="{Binding TitleContainerColor}"
+                        Margin="5,5,5,5"
+                        BackgroundColor="{Binding ShowInfo, Converter={StaticResource BoolToColorConverter}}"
                         Stroke="{dx:ThemeColor Outline}"
-                        StrokeShape="RoundRectangle 30"
+                        StrokeShape="RoundRectangle 10"
                         StrokeThickness="1">
                         <Label
-                            Margin="0,4,0,4"
-                            BackgroundColor="{Binding TitleContainerColor}"
+                            Margin="0,2,0,0"
+                            BackgroundColor="{Binding ShowInfo, Converter={StaticResource BoolToColorConverter}}"
                             HorizontalOptions="Center"
                             Text="{Binding ErrorTitle}"
-                            TextColor="{Binding TitleOnContainerColor}"
+                            TextColor="{Binding ShowInfo, Converter={StaticResource titleLabelColor}}"
                             VerticalOptions="Center" />
                     </Border>
                 </DataTemplate>
             </popup:SfPopup.HeaderTemplate>
             <popup:SfPopup.ContentTemplate>
                 <DataTemplate>
-                    <Grid
-                        BackgroundColor="{dx:ThemeColor SurfaceContainerHigh}"
-                        HeightRequest="400"
-                        RowDefinitions="65,*,60"
-                        WidthRequest="300">
 
+                    <ScrollView Margin="0,0,0,0">
+                        <VerticalStackLayout Margin="10,0,4,10">
+                            <Label
+                                Grid.Row="0"
+                                Margin="1,0,0,1"
+                                FontSize="Small"
+                                IsVisible="{Binding ShowErrorCode}"
+                                LineBreakMode="WordWrap"
+                                Text="{Binding ErrorCode, StringFormat='Error Code: {0}'}"
+                                TextColor="{dx:ThemeColor OnTertiaryContainer}" />
 
+                            <Label
+                                Margin="1,5,0,3"
+                                FontSize="Medium"
+                                HorizontalOptions="Start"
+                                IsVisible="{Binding ShowErrorMessage}"
+                                Text="Error Message:"
+                                TextColor="{dx:ThemeColor OnTertiaryContainer}" />
+                            <Label
+                                HorizontalOptions="Start"
+                                IsVisible="{Binding ShowErrorMessage}"
+                                LineBreakMode="WordWrap"
+                                Text="{Binding ErrorMessage}"
+                                TextColor="{dx:ThemeColor OnTertiaryContainer}" />
 
-                        <ScrollView Grid.Row="1" Margin="0,0,0,10">
-                            <VerticalStackLayout Margin="6,0,4,10">
+                            <Label
+                                Margin="1,5,0,3"
+                                HorizontalOptions="Start"
+                                LineBreakMode="WordWrap"
+                                Text="{Binding ErrorReason}"
+                                TextColor="{dx:ThemeColor OnTertiaryContainer}" />
+                            <Label
+                                Margin="1,5,0,3"
+                                FontSize="Medium"
+                                HorizontalOptions="Start"
+                                IsVisible="{Binding ShowWhat}"
+                                Text="What this means:"
+                                TextColor="{dx:ThemeColor OnTertiaryContainer}" />
+                            <Label
+                                Margin="0,0,0,5"
+                                FontSize="Small"
+                                HorizontalOptions="Start"
+                                IsVisible="{Binding ShowWhat}"
+                                LineBreakMode="WordWrap"
+                                Text="{Binding WhatThisMeans}"
+                                TextColor="{dx:ThemeColor OnTertiaryContainer}" />
+                            <Label
+                                Margin="1,5,0,3"
+                                FontSize="Medium"
+                                HorizontalOptions="Start"
+                                IsVisible="{Binding ShowWhat}"
+                                Text="What you can do:"
+                                TextColor="{dx:ThemeColor OnTertiaryContainer}" />
+                            <Label
+                                Margin="0,0,0,5"
+                                FontSize="Small"
+                                HorizontalOptions="Start"
+                                IsVisible="{Binding ShowWhat}"
+                                LineBreakMode="WordWrap"
+                                Text="{Binding WhatYouCanDo}"
+                                TextColor="{dx:ThemeColor OnTertiaryContainer}" />
 
-                                <Label
-                                    Margin="1,0,0,5"
-                                    BackgroundColor="{dx:ThemeColor SurfaceContainerHigh}"
-                                    HorizontalOptions="Start"
-                                    LineBreakMode="WordWrap"
-                                    Text="{Binding ErrorReason}"
-                                    TextColor="{Binding TitleOnContainerColor}" />
-
-                     
-
-                                            <Label
-                                                Margin="0,0,0,1"
-                                                BackgroundColor="{dx:ThemeColor SurfaceContainerHigh}"
-                                                HorizontalOptions="Start"
-                                                IsVisible="{Binding ShowWhat}"
-                                                Text="What this means:"
-                                                TextColor="Black" />
-                                            <Label
-                                                Margin="0,0,0,5"
-                                                BackgroundColor="{dx:ThemeColor SurfaceContainerHigh}"
-                                                FontSize="Micro"
-                                                HorizontalOptions="Start"
-                                                IsVisible="{Binding ShowWhat}"
-                                                LineBreakMode="WordWrap"
-                                                Text="{Binding WhatThisMeans}"
-                                                TextColor="Black" />
-                                            <Label
-                                                Margin="0,0,0,1"
-                                                BackgroundColor="{dx:ThemeColor SurfaceContainerHigh}"
-                                                HorizontalOptions="Start"
-                                                IsVisible="{Binding ShowWhat}"
-                                                Text="What you can do:"
-                                                TextColor="Black" />
-                                            <Label
-                                                Margin="0,0,0,5"
-                                                BackgroundColor="{dx:ThemeColor SurfaceContainerHigh}"
-                                                FontSize="Micro"
-                                                HorizontalOptions="Start"
-                                                IsVisible="{Binding ShowWhat}"
-                                                LineBreakMode="WordWrap"
-                                                Text="{Binding WhatYouCanDo}"
-                                                TextColor="Black" />
-
-                                      
-
-                                  
-                                        <Label
-                                            Margin="1,0,0,1"
-                                            BackgroundColor="{dx:ThemeColor SurfaceContainerHigh}"
-                                            HorizontalOptions="Start"
-                                            IsVisible="{Binding ShowErrorCode}"
-                                            LineBreakMode="WordWrap"
-                                            Text="{Binding ErrorCode,
-                                                                   StringFormat='Error Code: {0}'}"
-                                            TextColor="Black" />
-                                        <Label
-                                            Margin="0,0,0,1"
-                                            BackgroundColor="{dx:ThemeColor SurfaceContainerHigh}"
-                                            HorizontalOptions="Start"
-                                            IsVisible="{Binding ShowErrorMessage}"
-                                            Text="Error Message:"
-                                            TextColor="Black" />
-                                        <Label
-                                            BackgroundColor="{dx:ThemeColor SurfaceContainerHigh}"
-                                            FontSize="Micro"
-                                            HorizontalOptions="Start"
-                                            IsVisible="{Binding ShowErrorMessage}"
-                                            LineBreakMode="WordWrap"
-                                            Text="{Binding ErrorMessage}"
-                                            TextColor="Black" />
-                                    </VerticalStackLayout>
-
-                      
-                        </ScrollView>
-                    </Grid>
-
-
+                        </VerticalStackLayout>
+                    </ScrollView>
                 </DataTemplate>
             </popup:SfPopup.ContentTemplate>
         </popup:SfPopup>
-
-
-
     </ControlTemplate>
-
-
 </ResourceDictionary>

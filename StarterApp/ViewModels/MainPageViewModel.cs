@@ -17,17 +17,10 @@ namespace StarterApp.ViewModels
         [ObservableProperty] ShowPopUpDetails popupDetails;
         [ObservableProperty] private bool isSignedIn = false;
         [ObservableProperty] private List<string> idTokenClaims = new();
-        [ObservableProperty] private bool showErrorMessage = true; 
-        [ObservableProperty] private string whatYouCanDo = "what you can do for brady guy";
-        [ObservableProperty] private bool showWhat = true;
-        [ObservableProperty] private string errorCode;
-        [ObservableProperty] private string errorMessage = " this is an error message related to me and brady ";
-        [ObservableProperty] private string errorReason = " this is an error reason for the brady error ";
-        [ObservableProperty] private bool isOpen;
-        [ObservableProperty] private string whatThisMeans= "what this means for brady guy chambers";
-        [ObservableProperty] private string errorTitle = "this is a title for error Mr. Brady Guy Chambers";
-        [ObservableProperty] private Color titleContainerColor = Color.Parse("White");
-        [ObservableProperty] private Color titleOnContainerColor = Color.Parse("Black");
+        //[ObservableProperty] private string errorCode;
+        //[ObservableProperty] private string errorMessage = " this is an error message related to me and brady ";
+        //[ObservableProperty] private string errorReason = " this is an error reason for the brady error ";
+        //[ObservableProperty] private bool isOpen;
 
 
         public MainPageViewModel()
@@ -43,21 +36,16 @@ namespace StarterApp.ViewModels
                 UpdateClaims();
             }
         }
-        [RelayCommand]
-        void TestShowError()
+        [RelayCommand] void TestShowError()
         {
 
-            ErrorMessage = "Test Error message";
-            ErrorReason = "Test Error Reason";
+            PopupDetails.ErrorMessage = "Exception: User Cancelled process: stacktrace: ........";
+            PopupDetails.ErrorReason = "From app launch get user login information.";
 
-            IsOpen = true;
-            ErrorCode = "ERR-001";
-            OnPropertyChanged(nameof(ErrorCode));
-
-
+            PopupDetails.IsOpen = true;
+            PopupDetails.ErrorCode = "ERR-001";
         }
-        [RelayCommand]
-        void ClosePopUp()
+        [RelayCommand] void ClosePopUp()
         {
             PopupDetails.IsOpen = false;
         }
@@ -70,8 +58,7 @@ namespace StarterApp.ViewModels
 
             IdTokenClaims = claims.ToList();
         }
-        [RelayCommand]
-        public Task SignIn()
+        [RelayCommand] public Task SignIn()
         {
             IAccount? cachedUserAccount = null; ;
             cachedUserAccount = PublicClientSingleton.Instance.MSALClientHelper.FetchSignedInUserFromCache().Result;
@@ -111,8 +98,7 @@ namespace StarterApp.ViewModels
             });
         }
 
-        [RelayCommand]
-        public Task SignOut()
+        [RelayCommand] public Task SignOut()
         {
             return MainThread.InvokeOnMainThreadAsync(async () =>
             {

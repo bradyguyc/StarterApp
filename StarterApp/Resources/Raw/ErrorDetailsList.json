@@ -8,9 +8,9 @@
   },
   {
     "ErrorCode": "ERR-001",
-    "ErrorTitle": "Error Title 2",
-    "WhatThisMeans": "This is a description of what Error2 means.",
-    "WhatYouCanDo": "This is a suggestion of what you can do about Error2.",
+    "ErrorTitle": "Login Cancelled",
+    "WhatThisMeans": "The user Xed out of the login screen before the login process was complete.  Or the login process aborted and canceled itself before the login process completed.",
+    "WhatYouCanDo": "Attemp to login again making sure not to X out of or cancel before the process is completed. If the process is cancelling without user intervention take some screenshots of the process and open a ticket.",
     "HelpLink": "http://helpsite.com/error2"
   },
   {
