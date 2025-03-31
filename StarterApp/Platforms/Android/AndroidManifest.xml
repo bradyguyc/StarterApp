@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 	<application android:allowBackup="true" android:icon="@mipmap/appicon" android:roundIcon="@mipmap/appicon_round" android:supportsRtl="true">
 		<activity android:name="microsoft.identity.client.BrowserTabActivity" android:configChanges="orientation|screenSize" android:exported="true">
@@ -6,7 +6,7 @@
 				<action android:name="android.intent.action.VIEW" />
 				<category android:name="android.intent.category.DEFAULT" />
 				<category android:name="android.intent.category.BROWSABLE" />
-				<data android:scheme="msal5998ef82-5d29-43eb-8c29-3c3dfd3dfbfb" android:host="auth" />
+				<data android:scheme="msal74655cfb-49b3-4160-a81f-e76aea891507" android:host="auth" />
 			</intent-filter>
 		</activity>
 		<activity android:name="MauiAppBasic.Platforms.Android.Resources.MsalActivity" android:configChanges="orientation|screenSize" android:exported="true">
@@ -14,7 +14,7 @@
 				<action android:name="android.intent.action.VIEW" />
 				<category android:name="android.intent.category.DEFAULT" />
 				<category android:name="android.intent.category.BROWSABLE" />
-				<data android:scheme="msal5998ef82-5d29-43eb-8c29-3c3dfd3dfbfb" android:host="auth" />
+				<data android:scheme="msal74655cfb-49b3-4160-a81f-e76aea891507" android:host="auth" />
 			</intent-filter>
 		</activity>
 	</application>
