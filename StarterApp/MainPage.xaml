@@ -28,12 +28,22 @@
             WidthRequest="300" />
 
 
-        <ScrollView Grid.Row="0" BackgroundColor="{dx:ThemeColor SurfaceContainer}" Margin="0,0,0,20">
+        <ScrollView
+            Grid.Row="0"
+            Margin="0,0,0,20"
+            BackgroundColor="{dx:ThemeColor SurfaceContainer}">
             <VerticalStackLayout Padding="30,0" Spacing="25">
-                <Image
-                    Aspect="AspectFit"
-                    HeightRequest="185"
-                    Source="dotnet_bot.png" />
+                <Border
+                    Margin="5,5,5,5"
+                    BackgroundColor="#3b92c4"
+                    Stroke="{dx:ThemeColor Outline}"
+                    StrokeShape="RoundRectangle 10"
+                    StrokeThickness="1">
+                    <Image
+                        Aspect="AspectFit"
+                        HeightRequest="185"
+                        Source="appstarter.png" />
+                </Border>
                 <Label Text="Hello, World!" />
                 <Button
                     x:Name="CounterBtn"
@@ -56,7 +66,11 @@
                     SemanticProperties.Hint="Sign Out"
                     Text="Sign Out" />
                 <Border>
-                <ListView HorizontalScrollBarVisibility="Always" ItemsSource="{Binding IdTokenClaims}" HeightRequest="400" Margin="0,0,0,10" />
+                    <ListView
+                        Margin="0,0,0,10"
+                        HeightRequest="400"
+                        HorizontalScrollBarVisibility="Always"
+                        ItemsSource="{Binding IdTokenClaims}" />
                 </Border>
 
             </VerticalStackLayout>
