@@ -14,10 +14,11 @@
     "HelpLink": "http://helpsite.com/error2"
   },
   {
-    "ErrorCode": "MNB-018",
-    "ErrorTitle": "Series Already Exist",
-    "WhatThisMeans": "Another series in your library looks very similar to the one you are about to add.",
-    "WhatYouCanDo": "Make sure you want to add a 2nd series that may be a duplicate.",
+    "ErrorCode": "ERR-002",
+    "ErrorTitle": "Cheese Can Be Hot",
+    "Type": "Info",
+    "WhatThisMeans": "Microwaving cheese can result in hot cheese that burns your mouth.",
+    "WhatYouCanDo": "Wait a few minutes before eatting hot cheese, test the temperature with your fingure, dip from a spoon, don't put your finger in the community bowl.'",
     "HelpLink": "http://helpsite.com/error2"
   },
   {

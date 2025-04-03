@@ -45,6 +45,15 @@ namespace StarterApp.ViewModels
             PopupDetails.IsOpen = true;
             PopupDetails.ErrorCode = "ERR-001";
         }
+        [RelayCommand]
+        void TestShowInfo()
+        {
+
+            PopupDetails.ErrorMessage = "Exception: User Cancelled process: stacktrace: ........";
+            PopupDetails.ErrorReason = "From app launch get user login information.";
+            PopupDetails.IsOpen = true;
+            PopupDetails.ErrorCode = "ERR-002";
+        }
         private string GetClaimValue(Claim claim)
         {
             switch (claim.Type)
