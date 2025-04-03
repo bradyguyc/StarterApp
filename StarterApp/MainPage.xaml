@@ -49,6 +49,10 @@
                     x:Name="CounterBtn"
                     Command="{Binding TestShowErrorCommand}"
                     Text="Test Error PopUp" />
+                <Button
+                    x:Name="testInfo"
+                    Command="{Binding TestShowInfoCommand}"
+                    Text="Test Info PopUp" />
 
                 <Button
                     x:Name="SignIn"

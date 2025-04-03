@@ -53,16 +53,20 @@
                     <Border
                         Grid.Row="0"
                         Margin="5,5,5,5"
-                        BackgroundColor="{Binding ShowInfo, Converter={StaticResource BoolToColorConverter}}"
+                        BackgroundColor="{Binding TitleContainerColor}"
                         Stroke="{dx:ThemeColor Outline}"
+                        HeightRequest="80"
                         StrokeShape="RoundRectangle 10"
                         StrokeThickness="1">
                         <Label
+                            
                             Margin="0,2,0,0"
-                            BackgroundColor="{Binding ShowInfo, Converter={StaticResource BoolToColorConverter}}"
+                            BackgroundColor="Transparent"
+                            FontSize="Medium"
                             HorizontalOptions="Center"
+                            
                             Text="{Binding ErrorTitle}"
-                            TextColor="{Binding ShowInfo, Converter={StaticResource titleLabelColor}}"
+                            TextColor="{Binding TitleOnContainerColor}"
                             VerticalOptions="Center" />
                     </Border>
                 </DataTemplate>

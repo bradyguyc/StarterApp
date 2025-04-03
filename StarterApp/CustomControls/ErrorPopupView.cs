@@ -140,29 +140,29 @@ namespace StarterApp.CustomControls
                         case "Info":
                             control.ShowErrorCode = false;
                             control.ShowInfo = true;
-                            control.TitleContainerColor = Color.Parse("White");
-                            control.TitleOnContainerColor = Color.Parse("Black");
+                            control.TitleContainerColor = ThemeManager.Theme.Scheme.TertiaryContainer;
+                            control.TitleOnContainerColor = ThemeManager.Theme.Scheme.OnTertiaryContainer;
 
                             break;
 
                         case "Error":
                             control.ShowErrorCode = true;
                             control.ShowInfo = false;
-
-                            //control.TitleContainerColor = { dx: ThemeColor Error};
-                            
-                            //control.TitleOnContainerColor = Color.Parse("Black");
+                            control.TitleContainerColor = ThemeManager.Theme.Scheme.Error;                           
+                            control.TitleOnContainerColor = ThemeManager.Theme.Scheme.OnError;
                             break;
 
                         default:
                             control.ShowErrorCode = true;
                             control.ShowInfo = false;
-                            //control.TitleContainerColor = Color.Parse("White");
-                            //control.TitleOnContainerColor = Color.Parse("Black");
+                            control.TitleContainerColor = ThemeManager.Theme.Scheme.Error;
+                            control.TitleOnContainerColor = ThemeManager.Theme.Scheme.OnError;
+
                             break;
                     }
                     control.ShowWhat = string.IsNullOrWhiteSpace(control.WhatThisMeans) ? false : true;
                     control.ShowErrorMessage = string.IsNullOrWhiteSpace(control.ErrorMessage) ? false : true;
+                    
                     control.OnPropertyChanged(nameof(ShowWhat));
                     control.OnPropertyChanged(nameof(ShowErrorMessage));
                     control.OnPropertyChanged(nameof(ErrorTitle));
@@ -174,6 +174,7 @@ namespace StarterApp.CustomControls
                     control.OnPropertyChanged(nameof(ErrorMessage));
                     control.OnPropertyChanged(nameof(TitleContainerColor));
                     control.OnPropertyChanged(nameof(TitleOnContainerColor));
+                    
                 }
             }
             catch (Exception ex)
