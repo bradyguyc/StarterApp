@@ -41,23 +41,25 @@
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(TargetFramework)'=='net10.0-ios'">
-	  <ProvisioningType>manual</ProvisioningType>
-	  <CodesignProvision>StarterAppProfile</CodesignProvision>
+		<ProvisioningType>manual</ProvisioningType>
+		<CodesignProvision>StarterAppProfile</CodesignProvision>
 	</PropertyGroup>
 
-	
+	<Target Name="Update MSAL Client ID" BeforeTargets="BeforeBuild">
+		<Exec Command="powershell.exe  -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $(ProjectDir)updatemsal.ps1" />
+	</Target>
 
 	<ItemGroup>
 		<!-- App Icon -->
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" />
-		
+
 		<!-- Splash Screen -->
 		<MauiSplashScreen Include="Resources\Images\startappicon.svg">
-		  <Color>#3b92c4</Color>
-		  <BaseSize>128,128</BaseSize>
+			<Color>#3b92c4</Color>
+			<BaseSize>128,128</BaseSize>
 		</MauiSplashScreen>
-		
-	
+
+
 		<!-- Images -->
 		<MauiImage Include="Resources\Images\*" />
 		<MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />
@@ -69,17 +71,17 @@
 		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
 	</ItemGroup>
 
-	
+
 
 	<ItemGroup>
-	  <MauiImage Remove="Resources\Images\startappicon.svg" />
+		<MauiImage Remove="Resources\Images\startappicon.svg" />
 	</ItemGroup>
 
 
 	<ItemGroup>
-	  <EmbeddedResource Include="appsettings.json">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </EmbeddedResource>
+		<EmbeddedResource Include="appsettings.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</EmbeddedResource>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -88,20 +90,20 @@
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
 
 		<PackageReference Include="DevExpress.Maui.Core" Version="24.2.6" />
-		
+
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-		
+
 		<PackageReference Include="OnScreenSizeMarkup.Maui" Version="3.0.18" />
-		
+
 		<PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.0-preview.2.25163.2" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.0-preview.2.25163.2" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0-preview.2.25163.2" />
-		
+
 		<PackageReference Include="Microsoft.Identity.Client" Version="4.70.1-preview" />
 		<PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.70.1-preview" />
 
 
-		
+
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0-preview.2.25163.2" />
 
 		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.0-preview.2.25165.1" />
@@ -111,19 +113,19 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Views\" />
+		<Folder Include="Views\" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiXaml Update="Resources\Styles\ControlTemplates.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
+		<MauiXaml Update="Resources\Styles\ControlTemplates.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Update="Resources\Styles\ControlTemplates.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </None>
+		<None Update="Resources\Styles\ControlTemplates.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</None>
 	</ItemGroup>
 
 </Project>
