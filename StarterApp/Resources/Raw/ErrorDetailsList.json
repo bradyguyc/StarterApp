@@ -22,10 +22,19 @@
     "HelpLink": "http://helpsite.com/error2"
   },
   {
-    "ErrorCode": "MNB-100",
-    "ErrorTitle": "Connection Problem",
-    "WhatThisMeans": "The app is trying to connect to service on the internet and the service cannot be contacted.",
-    "WhatYouCanDo": "Try checking your network connections and make sure that you can connect to the internet through wifi or cellular data. Rebooting will often clear up network problems.  Those more advanced users can flush the dns cache which has been known to resolve the problem.",
+    "ErrorCode": "ERR-003",
+    "ErrorTitle": "Azure function call faild",
+    "Type": "Error",
+    "WhatThisMeans": "Microwaving cheese can result in hot cheese that burns your mouth.",
+    "WhatYouCanDo": "Wait a few minutes before eatting hot cheese, test the temperature with your fingure, dip from a spoon, don't put your finger in the community bowl.'",
+    "HelpLink": "http://helpsite.com/error2"
+  },
+  {
+    "ErrorCode": "INFO-001",
+    "Type": "Info",
+    "ErrorTitle": "Function Call Success",
+    "WhatThisMeans": "The app is able to connect to azure and call an Azure Function.",
+    "WhatYouCanDo": "",
     "HelpLink": "http://helpsite.com/error3"
   },
 
@@ -81,7 +90,7 @@
     "WhatThisMeans": "The openlibrary.org credentials you provided are valid and integration with openlibrary.org is available.",
     "WhatYouCanDo": "",
     "HelpLink": "http://helpsite.com/error3",
-      "Type": "Info"
+    "Type": "Info"
   },
   {
     "ErrorCode": "OL-002",
@@ -125,7 +134,7 @@
     "WhatThisMeans": "Alrighty, you tried to fill in information on a book because it's not linked to openlibrary.org and doesn't have the openlibrary keys on the record for the book.  And you can't find that book in openlibrary via this apps search feature in the prior screen.",
 
     "WhatYouCanDo": "Suggest that you got to openlibrary.org and see if you can find the book there first before creating the book.  It could be that the book definition in this app has some information that makes it more difficult to find. If so you can edit the book information or you may be able to use a different keyword in the search on the prior screen in order to find the book and fill in with updated information from openlibrary.org.,\nIf you, still can't find the book and you want to create the book using the information you have in this app click the create book button and this will import the book information into openlibrary.org for everyone.  Note: that it may take awhile before the book shows up and is available so you may need to come back later to fill in the information from openlibrary.org",
-    
+
     "HelpLink": "http://helpsite.com/error3"
   },
   {
@@ -178,4 +187,3 @@
     "HelpLink": "http://helpsite.com/error3"
   }
 ]
-
