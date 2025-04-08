@@ -13,6 +13,7 @@
   - [d) Updating the application Code](#d-updating-the-application-code)
     - [Nuget Package Updates](#nuget-package-updates)
     - [Automating ClientID](#automating-clientid)
+- [02 - Azure Function Authorization](#02-azure-function-authorization)
 <!--/TOC-->
 
 # 01 - Starter App - Authentication 
@@ -351,3 +352,27 @@ This happens with every build so beaware if something unusal starts to happen to
 </Target>
 ```
 
+
+# 02 - Azure Function Authorization
+The next step is to add authorization to the Azure Functions that you create. This is a bit more involved and requires setting up the Azure Function to accept tokens from your Entra ID B2C tenant.
+
+**AI Phind.com** provided the following documentation on how to setup Azure Funcation Authorization
+This involves:
+1. Registering the Azure Function in the same Entra ID B2C tenant.
+
+
+
+![Sequencediagram Identity](doc/sequencediagramIdentity.png)
+
+The diagram above illustrates two key flows:
+
+1. Authentication Flow (top):
+The .NET MAUI app uses MSAL to acquire an access token from Azure AD
+This token is stored securely on the client side
+The token contains the user's identity and permissions
+1. API Call Flow (bottom):
+When making requests to Azure Functions, the token is included in the X-ZUMO-AUTH header
+EasyAuth validates this token before allowing access to protected resources
+This ensures secure communication between the MAUI app and Azure Functions
+
+![Tenantconfig](doc/tenantconfig.png)

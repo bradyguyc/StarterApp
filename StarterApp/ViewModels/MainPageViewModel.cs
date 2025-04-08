@@ -11,6 +11,7 @@ using Microsoft.Identity.Client;
 
 using StarterApp.Models;
 using StarterApp.MSALClient;
+using StarterApp.Services;
 
 namespace StarterApp.ViewModels
 {
@@ -37,7 +38,8 @@ namespace StarterApp.ViewModels
                 UpdateClaims();
             }
         }
-        [RelayCommand] void TestShowError()
+        [RelayCommand]
+        void TestShowError()
         {
 
             PopupDetails.ErrorMessage = "Exception: User Cancelled process: stacktrace: ........";
@@ -93,7 +95,8 @@ namespace StarterApp.ViewModels
 
             IdTokenClaims = claims.ToList();
         }
-        [RelayCommand] public Task SignIn()
+        [RelayCommand]
+        public Task SignIn()
         {
             IAccount? cachedUserAccount = null; ;
             cachedUserAccount = PublicClientSingleton.Instance.MSALClientHelper.FetchSignedInUserFromCache().Result;
@@ -133,13 +136,56 @@ namespace StarterApp.ViewModels
             });
         }
 
-        [RelayCommand] public Task SignOut()
+        [RelayCommand]
+        public Task SignOut()
         {
             return MainThread.InvokeOnMainThreadAsync(async () =>
             {
                 await PublicClientSingleton.Instance.MSALClientHelper.SignOutUserAsync();
                 IsSignedIn = false;
                 IdTokenClaims = new List<string>();
+            });
+        }
+        [RelayCommand]
+        public Task CallAzureFunction()
+        {
+            return MainThread.InvokeOnMainThreadAsync(async () =>
+            {
+                if (!IsSignedIn)
+                {
+                    PopupDetails.IsOpen = true;
+                    PopupDetails.ErrorCode = "ERR-003";
+                    PopupDetails.ErrorMessage = "You must be signed in to call the Azure Function.";
+                    return;
+                }
+                try
+                {
+                    // Call your Azure Function here
+                    await Task.Run(async () =>
+                    {
+                        bool success = await GetSecrets.Instance.InitGetSecrets();
+                        if (success)
+                        {
+                            PopupDetails.IsOpen = true;
+                            PopupDetails.ErrorCode = "INFO-001";
+                            PopupDetails.ErrorMessage = "Azure Function called successfully and secrets initialized.";
+                        } else
+                        {
+                            PopupDetails.IsOpen = true;
+                            PopupDetails.ErrorCode = "ERR-003";
+                            PopupDetails.ErrorMessage = "Failed to initialize secrets from Azure Function.";
+                        }
+                    }
+                    ); // Ensure secrets are initialized before calling the function
+
+                    // Handle the result as needed
+                }
+                catch (Exception ex)
+                {
+                    PopupDetails.IsOpen = true;
+                    PopupDetails.ErrorCode = "ERR-004";
+                    PopupDetails.ErrorMessage = ex.Message;
+                }
             });
         }
     }
