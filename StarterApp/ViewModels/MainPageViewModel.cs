@@ -95,6 +95,10 @@ namespace StarterApp.ViewModels
 
             IdTokenClaims = claims.ToList();
         }
+        [RelayCommand] void CloseErrorPopup ()
+        {
+            PopupDetails.IsOpen = false;
+        }
         [RelayCommand]
         public Task SignIn()
         {
@@ -114,13 +118,16 @@ namespace StarterApp.ViewModels
                     {
                         PopupDetails.IsOpen = true;
                         PopupDetails.ErrorCode = "ERR-001";
+                        
                         PopupDetails.ErrorMessage = ex.Message;
+                        OnPropertyChanged(nameof(PopupDetails));
                         //Console.WriteLine(ex.Message);
                     }
                     if ((token == null) && (PopupDetails.IsOpen == false))
                     {
                         PopupDetails.IsOpen = true;
-                        PopupDetails.ErrorCode = "ERR-001";
+                        PopupDetails.ErrorCode = "ERR-002 ";
+                        OnPropertyChanged(nameof(PopupDetails));
                         //todo: display error message to user that they need to sign in and the sign process was exited before completing sign in
                     }
                     else
@@ -169,11 +176,15 @@ namespace StarterApp.ViewModels
                             PopupDetails.IsOpen = true;
                             PopupDetails.ErrorCode = "INFO-001";
                             PopupDetails.ErrorMessage = "Azure Function called successfully and secrets initialized.";
+                            OnPropertyChanged(nameof(PopupDetails));
+                          
                         } else
                         {
                             PopupDetails.IsOpen = true;
                             PopupDetails.ErrorCode = "ERR-003";
                             PopupDetails.ErrorMessage = "Failed to initialize secrets from Azure Function.";
+                            OnPropertyChanged(nameof(PopupDetails));
+
                         }
                     }
                     ); // Ensure secrets are initialized before calling the function

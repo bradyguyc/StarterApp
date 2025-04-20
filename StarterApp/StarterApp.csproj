@@ -99,8 +99,8 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.0-preview.2.25163.2" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0-preview.2.25163.2" />
 
-		<PackageReference Include="Microsoft.Identity.Client" Version="4.70.1-preview" />
-		<PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.70.1-preview" />
+		<PackageReference Include="Microsoft.Identity.Client" Version="4.71.0" />
+		<PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.71.0" />
 
 
 
