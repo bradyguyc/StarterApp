@@ -39,7 +39,7 @@
   },
 
   {
-    "ErrorCode": "MNB-101",
+    "ErrorCode": "ERR-004",
     "ErrorTitle": "Connection Unauthorized",
     "WhatThisMeans": "The connection to the cloud is unauthorized.  This is more than likely a configuration problem in the cloud and the developer/provider will need to resolve the issue.",
 

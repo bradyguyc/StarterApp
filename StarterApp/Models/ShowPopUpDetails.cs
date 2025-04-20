@@ -17,5 +17,6 @@ namespace StarterApp.Models
         [ObservableProperty] private string? errorMessage;
         [ObservableProperty] private string? errorCode;
         [ObservableProperty] private string? errorReason;
+
     }
 }
