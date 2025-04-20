@@ -21,8 +21,7 @@ namespace StarterApp.Services
             // InitGetSecrets().GetAwaiter().GetResult(); // Synchronous call to ensure secrets are initialized
             //todo: is this the best way to init
         }
-        string secretsUrl = "https://myrecipebookmakerbackend.azurewebsites.net/api/GetSecrets";//?code=tY_0eSojzVVql_c3dooTNHscEgE2gH8qbfitg9nttuwvAzFuZuTE5g==";
-
+        string secretsUrl = "https://myrecipebookmakerbackend.azurewebsites.net/api/GetSecrets";
         public async Task<bool> InitGetSecrets()
         {
             using (var httpClient = new HttpClient())
