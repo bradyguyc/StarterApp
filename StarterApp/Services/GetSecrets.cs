@@ -2,26 +2,29 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
-
 using Microsoft.Identity.Client;
-
 using StarterApp.MSALClient;
+using Microsoft.Extensions.Configuration;
 
 namespace StarterApp.Services
 {
+   
     interface IGetSecrets
     {
         Task InitGetSecrets();
     }
+
     public class GetSecrets
     {
-        public static GetSecrets Instance = new GetSecrets(); // Singleton instance for GetSecrets
-        public GetSecrets()
+        string secretsUrl = string.Empty;
+        //public static GetSecrets Instance = new GetSecrets(); // Singleton instance for GetSecrets
+        private readonly IConfiguration _configuration;
+
+        public GetSecrets(IConfiguration configuration)
         {
-            // InitGetSecrets().GetAwaiter().GetResult(); // Synchronous call to ensure secrets are initialized
-            //todo: is this the best way to init
+            _configuration = configuration;
         }
-        string secretsUrl = "https://myrecipebookmakerbackend.azurewebsites.net/api/GetSecrets";
+
         public async Task<bool> InitGetSecrets()
         {
             using (var httpClient = new HttpClient())
@@ -91,7 +94,7 @@ namespace StarterApp.Services
             {
                 try
                 {
-                    secretsUrl = "https://myrecipebookmakerbe.azurewebsites.net/api/GetSecrets";//?code=T19pzT13bKRum1GPmWCIz-jcjzwxiU0r5DZCQ6ahKx6zAzFujJvXtg==";
+                    secretsUrl = "https://myrecipebookmakerbe.azurewebsites.net/api/GetSecrets";
                     string token = await PublicClientSingleton.Instance.AcquireTokenSilentAsync();
                     if (token == null)
                     {
