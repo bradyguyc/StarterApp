@@ -19,10 +19,10 @@ namespace StarterApp.Services
         string secretsUrl = string.Empty;
         //public static GetSecrets Instance = new GetSecrets(); // Singleton instance for GetSecrets
         private readonly IConfiguration _configuration;
-
-        public GetSecrets(IConfiguration configuration)
+        public static GetSecrets Instance = new GetSecrets();
+        public GetSecrets()
         {
-            _configuration = configuration;
+            //_configuration = configuration;
         }
 
         public async Task<bool> InitGetSecrets()
@@ -34,8 +34,7 @@ namespace StarterApp.Services
                     secretsUrl = "https://myrecipebookmakerbe.azurewebsites.net/api/GetSecrets";
 
                     // Define scopes
-                    var scopes = new[] { "GetSecrets.Use"
-                                                 };
+                    var scopes = new[] { "openid offline_access api://7b84f16c-c1b0-4f23-b10c-5fb19dde7c4d/GetSecrets.Use" };
                     string token;
 
                     try
