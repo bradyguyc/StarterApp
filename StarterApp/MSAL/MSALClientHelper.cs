@@ -222,14 +222,17 @@ namespace StarterApp.MSALClient
                     Debug.WriteLine($"interactive signin:{ex.Message}");
                 }
             }
-
+            throw new MsalUiRequiredException("User interaction required", "User interaction is required to acquire a token. Please use the system browser or device code flow.");
             // If the operating system does not have UI (e.g. SSH into Linux), you can fallback to device code, however this
             // flow will not satisfy the "device is managed" CA policy.
+            //todo: we don't want device code flow here, we want to use the system browser, or error out.  DeviceCode will just get stuck in an endless loop
+            /*
             return await this.PublicClientApplication.AcquireTokenWithDeviceCode(scopes, (dcr) =>
             {
                 Console.WriteLine(dcr.Message);
                 return Task.CompletedTask;
             }).ExecuteAsync().ConfigureAwait(false);
+            */
         }
 
         /// <summary>
