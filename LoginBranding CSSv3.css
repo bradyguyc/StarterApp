@@ -1,0 +1,160 @@
+
+@font-face {
+    font-family: 'Great Vibes';
+    src: url('https://fonts.gstatic.com/s/greatvibes/v10/RWmMoKWR9v4ksMfaWd_JN9XFiaQo.ttf?v=3') format('truetype');
+    font-style: normal;
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: 'Caveat';
+    src: url('https://fonts.gstatic.com/s/caveat/v28/Wnz6HA03aAXoe4PzKSBs5w.ttf?v=2') format('truetype');
+    font-style: normal;
+    font-weight: 400;
+}
+.ext-background-overlay {
+    background-color: rgba(0,0,0,0) !important;
+}
+
+/* General body styling */
+body {
+    font-family: 'Roboto';
+    color: #5D3A00; /* Dark brown text */
+    background-color: #D2B48C;
+    margin: 0;
+    padding: 0;
+    font-size: 24px;
+}
+
+/* Background image container */
+.ext-background-image {
+    background-color: transparent !important;
+}
+/* Header styling */
+.ext-header {
+    font-family: 'Great Vibes',cursive;
+    background-color: #D2B48C; /* Tan color for header */
+    color: #5D3A00; /* Dark brown text */
+    text-align: center;
+    padding: 10px;
+    font-size: 32px;
+    font-weight: bold;
+}
+
+/* Header logo styling */
+.ext-header-logo {
+    max-height: 50px; /* Ensure the logo fits well */
+}
+
+/* Sign-in box container */
+.ext-sign-in-box.text-box {
+    background-color: #EED9C4; /* Light brown color */
+}
+.ext-sign-in-box {
+    background-color: #EED9C4; /* Light brown color */
+    color: #5D3A00; /* Dark brown text */
+    border: 2px solid #C5A478; /* Slightly darker border */
+    border-radius: 10px; /* Rounded corners */
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+/* Title text inside the sign-in box */
+.ext-title {
+    font-family: 'Roboto';
+    font-size: 36px;
+    font-weight: bold;
+    color: #5D3A00; /* Dark brown text for contrast */
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+/* Subtitle text inside the sign-in box */
+.ext-subtitle {
+    font-family: 'Arial';
+    font-size: 18px;
+    color: #5D3A00; /* Dark brown text for contrast */
+    text-align: center;
+    margin-bottom: 20px;
+}
+.ext-input.ext-text-box {
+    background-color: #F8EDCD;
+}
+.ext-input.ext-text-box:focus {
+    background-color: #F8EDCD;
+}
+.ext-input.text-box.ext-input {
+    color: #5D3A00;
+    background-color: #602c1b;
+}
+/* Primary button styles */
+.ext-button.ext-primary {
+    background-color: #602c1b; /* Darker light brown for better contrast */
+    color: #FFFFFF; /* White text for high contrast */
+    border: none;
+    padding: 10px 20px;
+    font-family: 'Roboto';
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+    .ext-button.ext-primary:hover {
+        background-color: #602c1b; /* Even darker brown on hover for feedback */
+    }
+
+    .ext-button.ext-primary:focus,
+    .ext-button.ext-primary:focus:hover {
+        outline: 2px solid #5D3A00; /* Outline on focus */
+    }
+
+/* Secondary button styles */
+.ext-button.ext-secondary {
+    background-color: #C5A478; /* Slightly darker than the previous lighter brown */
+    color: #5D3A00; /* Dark brown text for contrast */
+    font-family: 'Roboto';
+    border: 1px solid #A97F50; /* Border matches the primary button's color */
+    padding: 8px 16px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+    .ext-button.ext-secondary:hover {
+        background-color: #B29064; /* Slightly darker brown on hover */
+    }
+
+
+/* Footer styles */
+.ext-footer {
+    background-color: #D2B48C; /* Tan color for footer */
+    color: #5D3A00;
+    text-align: center;
+    padding: 10px;
+    font-size: 14px;
+    font-family: 'Roboto', cursive;
+}
+
+/* Links in the footer */
+.ext-footer-links a {
+    color: #8B4513; /* SaddleBrown */
+    text-decoration: none;
+    font-weight: bold;
+    font-family: 'Roboto';
+}
+
+    .ext-footer-links a:hover {
+        text-decoration: underline;
+    }
+
+.ext-middle {
+    display: flex; /* Use flexbox for centering */
+    justify-content: center; /* Horizontal centering */
+    align-items: center; /* Vertical centering */
+    height: 100vh; /* Full viewport height */
+
+}

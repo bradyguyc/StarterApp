@@ -41,7 +41,7 @@ namespace StarterApp.CustomControls
         public static readonly BindableProperty WhatThisMeansProperty = BindableProperty.Create(nameof(WhatThisMeans), typeof(string), typeof(ErrorPopupView), propertyChanged: OnWhatThisMeansChanged);
         public static readonly BindableProperty WhatYouCanDoProperty = BindableProperty.Create(nameof(WhatYouCanDo), typeof(string), typeof(ErrorPopupView), propertyChanged: OnWhatYouCanDoChanged);
         public static readonly BindableProperty ShowWhatProperty = BindableProperty.Create(nameof(ShowWhat), typeof(bool), typeof(ErrorPopupView));
-        public static readonly BindableProperty ShoErrorMessageProperty = BindableProperty.Create(nameof(ShowErrorMessage), typeof(bool), typeof(ErrorPopupView));
+        public static readonly BindableProperty ShowErrorMessageProperty = BindableProperty.Create(nameof(ShowErrorMessage), typeof(bool), typeof(ErrorPopupView), propertyChanged: OnShowErrorMessageChanged);
 
         #endregion Fields
 
@@ -109,9 +109,31 @@ namespace StarterApp.CustomControls
         #endregion Properties
 
         #region Methods
-
-        [RelayCommand]
-        public void OpenHelpLink(string url)
+        [RelayCommand] private void CopyErrorMessageToClipBoard()
+        {
+            try
+            {
+                string error = $"Error Code: {ErrorCode}\n" +
+                             $"Error Title: {ErrorTitle}\n" +
+                             $"Error Message: {ErrorMessage}\n" +
+                             $"Error Reason: {ErrorReason}\n" +
+                             $"What This Means: {WhatThisMeans}\n" +
+                             $"What You Can Do: {WhatYouCanDo}";
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    Clipboard.Default.SetTextAsync(error);
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Failed to copy to clipboard: {ex.Message}");
+            }
+        }
+        [RelayCommand] void CloseErrorPopup()
+        {
+            ShowErrorPopup = false;
+        }
+        [RelayCommand] public void OpenHelpLink(string url)
         {
             if (url != null)
             {
@@ -147,6 +169,7 @@ namespace StarterApp.CustomControls
 
                         case "Error":
                             control.ShowErrorCode = true;
+                            control.ShowErrorMessage = true;
                             control.ShowInfo = false;
                             control.TitleContainerColor = ThemeManager.Theme.Scheme.Error;                           
                             control.TitleOnContainerColor = ThemeManager.Theme.Scheme.OnError;
@@ -154,6 +177,7 @@ namespace StarterApp.CustomControls
 
                         default:
                             control.ShowErrorCode = true;
+                            control.ShowErrorMessage = true;
                             control.ShowInfo = false;
                             control.TitleContainerColor = ThemeManager.Theme.Scheme.Error;
                             control.TitleOnContainerColor = ThemeManager.Theme.Scheme.OnError;
@@ -161,7 +185,7 @@ namespace StarterApp.CustomControls
                             break;
                     }
                     control.ShowWhat = string.IsNullOrWhiteSpace(control.WhatThisMeans) ? false : true;
-                    control.ShowErrorMessage = string.IsNullOrWhiteSpace(control.ErrorMessage) ? false : true;
+                    //control.ShowErrorMessage = string.IsNullOrWhiteSpace(control.ErrorMessage) ? false : true;
                     
                     control.OnPropertyChanged(nameof(ShowWhat));
                     control.OnPropertyChanged(nameof(ShowErrorMessage));
@@ -183,7 +207,12 @@ namespace StarterApp.CustomControls
                 throw new Exception(ex.ToString());
             }
         }
-
+        private static void OnShowErrorMessageChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            var control = (ErrorPopupView)bindable;
+            control.ShowErrorMessage = (bool)newValue;
+            control.OnPropertyChanged(nameof(ShowErrorMessage));
+        }
         private static void OnErrorMessageChanged(BindableObject bindable, object oldValue, object newValue)
         {
             var control = (ErrorPopupView)bindable;
@@ -224,7 +253,7 @@ namespace StarterApp.CustomControls
                 case "Error":
                     control.ShowErrorCode = true;
                     control.ShowInfo = false;
-
+                    control.ShowErrorMessage = true;
                     control.TitleContainerColor = Colors.Red;// ThemeManager.Theme.Scheme.ErrorContainer;
                     control.TitleOnContainerColor = Colors.White;// ThemeManager.Theme.Scheme.OnErrorContainer;
                     break;
@@ -232,6 +261,7 @@ namespace StarterApp.CustomControls
                 default:
                     control.ShowErrorCode = true;
                     control.ShowInfo = false;
+                    control.ShowErrorMessage = true;
                     control.TitleContainerColor = Colors.Red;// ThemeManager.Theme.Scheme.ErrorContainer;
                     control.TitleOnContainerColor = Colors.Blue;// ThemeManager.Theme.Scheme.OnErrorContainer;
                     break;
