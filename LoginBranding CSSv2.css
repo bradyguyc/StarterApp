@@ -1,7 +1,7 @@
 
 @font-face {
     font-family: 'Great Vibes';
-    src: url('https://fonts.gstatic.com/s/greatvibes/v10/RWmMoKWR9v4ksMfaWd_JN9XFiaQo.ttf?v=4') format('truetype');
+    src: url('https://fonts.gstatic.com/s/greatvibes/v10/RWmMoKWR9v4ksMfaWd_JN9XFiaQo.ttf?v=3') format('truetype');
     font-style: normal;
     font-weight: 400;
 }
@@ -77,7 +77,10 @@ body {
     text-align: center;
     margin-bottom: 20px;
 }
-input:-webkit-autofill {
+.ext-input.ext-text-box {
+    background-color: #F8EDCD;
+}
+.ext-input.ext-text-box:focus {
     background-color: #F8EDCD;
 }
 .ext-input.text-box.ext-input {

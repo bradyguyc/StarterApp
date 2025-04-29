@@ -129,8 +129,11 @@ namespace StarterApp.CustomControls
                 Debug.WriteLine($"Failed to copy to clipboard: {ex.Message}");
             }
         }
-        [RelayCommand]
-        public void OpenHelpLink(string url)
+        [RelayCommand] void CloseErrorPopup()
+        {
+            ShowErrorPopup = false;
+        }
+        [RelayCommand] public void OpenHelpLink(string url)
         {
             if (url != null)
             {
