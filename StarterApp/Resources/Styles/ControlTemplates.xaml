@@ -3,6 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:controls="clr-namespace:StarterApp.CustomControls"
     xmlns:dx="clr-namespace:DevExpress.Maui.Core;assembly=DevExpress.Maui.Core"
+    xmlns:fonts="clr-namespace:StarterApp.Helpers"
     xmlns:markups="clr-namespace:OnScreenSizeMarkup.Maui;assembly=OnScreenSizeMarkup.Maui"
     xmlns:models="clr-namespace:StarterApp.Models"
     xmlns:popup="clr-namespace:Syncfusion.Maui.Popup;assembly=Syncfusion.Maui.Popup"
@@ -54,17 +55,15 @@
                         Grid.Row="0"
                         Margin="5,5,5,5"
                         BackgroundColor="{Binding TitleContainerColor}"
-                        Stroke="{dx:ThemeColor Outline}"
                         HeightRequest="80"
+                        Stroke="{dx:ThemeColor Outline}"
                         StrokeShape="RoundRectangle 10"
                         StrokeThickness="1">
                         <Label
-                            
                             Margin="0,2,0,0"
                             BackgroundColor="Transparent"
                             FontSize="Medium"
                             HorizontalOptions="Center"
-                            
                             Text="{Binding ErrorTitle}"
                             TextColor="{Binding TitleOnContainerColor}"
                             VerticalOptions="Center" />
@@ -85,26 +84,7 @@
                                 Text="{Binding ErrorCode, StringFormat='Error Code: {0}'}"
                                 TextColor="{dx:ThemeColor OnTertiaryContainer}" />
 
-                            <Label
-                                Margin="1,5,0,3"
-                                FontSize="Medium"
-                                HorizontalOptions="Start"
-                                IsVisible="{Binding ShowErrorMessage}"
-                                Text="Error Message:"
-                                TextColor="{dx:ThemeColor OnTertiaryContainer}" />
-                            <Label
-                                HorizontalOptions="Start"
-                                IsVisible="{Binding ShowErrorMessage}"
-                                LineBreakMode="WordWrap"
-                                Text="{Binding ErrorMessage}"
-                                TextColor="{dx:ThemeColor OnTertiaryContainer}" />
 
-                            <Label
-                                Margin="1,5,0,3"
-                                HorizontalOptions="Start"
-                                LineBreakMode="WordWrap"
-                                Text="{Binding ErrorReason}"
-                                TextColor="{dx:ThemeColor OnTertiaryContainer}" />
                             <Label
                                 Margin="1,5,0,3"
                                 FontSize="Medium"
@@ -135,11 +115,69 @@
                                 LineBreakMode="WordWrap"
                                 Text="{Binding WhatYouCanDo}"
                                 TextColor="{dx:ThemeColor OnTertiaryContainer}" />
+                            <Label
+                                Margin="1,5,0,3"
+                                FontSize="Medium"
+                                HorizontalOptions="Start"
+                                IsVisible="{Binding ShowErrorMessage}"
+                                Text="Error Message:"
+                                TextColor="{dx:ThemeColor OnTertiaryContainer}" />
+                            <Label
+                                FontSize="Medium"
+                                HorizontalOptions="Start"
+                                IsVisible="{Binding ShowErrorMessage}"
+                                Text="{Binding ErrorMessage}"
+                                TextColor="{dx:ThemeColor OnTertiaryContainer}" />
+
+                            <Label
+                                Margin="1,5,0,3"
+                                FontSize="Medium"
+                                HorizontalOptions="Start"
+                                Text="{Binding ErrorReason}"
+                                TextColor="{dx:ThemeColor OnTertiaryContainer}" />
 
                         </VerticalStackLayout>
                     </ScrollView>
                 </DataTemplate>
             </popup:SfPopup.ContentTemplate>
+
+            <popup:SfPopup.FooterTemplate>
+                <DataTemplate>
+                    <Grid HorizontalOptions="Center" VerticalOptions="Center" ColumnDefinitions="*,60,60">
+
+                        <ImageButton
+                            Grid.Column="1"
+                            Aspect="Center"
+                            Command="{Binding CopyErrorMessageToClipBoardCommand}"
+                            HeightRequest="30"
+                            VerticalOptions="Center"
+                            WidthRequest="30">
+                            <ImageButton.Source>
+                                <FontImageSource
+                                    FontFamily="MD"
+                                    Glyph="{x:Static fonts:IconCodesMIR.Content_copy}"
+                                    Size="30"
+                                    Color="{dx:ThemeColor OnTertiaryContainer}" />
+                            </ImageButton.Source>
+                        </ImageButton>
+                        <ImageButton
+                            Grid.Column="2"
+                            Aspect="Center"
+                            Command="{Binding CloseErrorPopupCommand}"
+                            HeightRequest="30"
+                            VerticalOptions="Center"
+                            WidthRequest="30">
+                            <ImageButton.Source>
+                                <FontImageSource
+                                    FontFamily="MD"
+                                    Glyph="{x:Static fonts:IconCodesMIR.Close}"
+                                    Size="30"
+                                    Color="{dx:ThemeColor OnTertiaryContainer}" />
+                            </ImageButton.Source>
+                        </ImageButton>
+                    </Grid>
+                </DataTemplate>
+            </popup:SfPopup.FooterTemplate>
         </popup:SfPopup>
     </ControlTemplate>
 </ResourceDictionary>
