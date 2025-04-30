@@ -85,11 +85,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Azure.Data.AppConfiguration" Version="1.6.0" />
+		<PackageReference Include="Azure.Identity" Version="1.14.0-beta.3" />
 		<PackageReference Include="CommunityToolkit.Maui" Version="11.2.0" />
 		<PackageReference Include="CommunityToolkit.Maui.Markup" Version="5.1.0" />
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
 
 		<PackageReference Include="DevExpress.Maui.Core" Version="24.2.6" />
+
+		<PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="8.2.0-preview" />
 
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 

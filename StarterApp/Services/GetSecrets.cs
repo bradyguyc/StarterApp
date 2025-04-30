@@ -8,24 +8,45 @@ using Microsoft.Extensions.Configuration;
 
 namespace StarterApp.Services
 {
-   
-    interface IGetSecrets
+    public interface IGetSecrets
     {
-        Task InitGetSecrets();
+        Task<string> GetSecretAsync(string key);
     }
-
-    public class GetSecrets
+  
+    public class GetSecrets : IGetSecrets
     {
-        string secretsUrl = string.Empty;
-        //public static GetSecrets Instance = new GetSecrets(); // Singleton instance for GetSecrets
-        private readonly IConfiguration _configuration;
-        public static GetSecrets Instance = new GetSecrets();
-        public GetSecrets()
+        private string secretsUrl = string.Empty;
+        private string secretsScope = string.Empty;
+        private readonly IAppConfigurationService _configuration;
+        private readonly Dictionary<string, string> _secrets = new();
+        private bool _isInitialized;
+
+        public GetSecrets(IAppConfigurationService configuration)
         {
-            //_configuration = configuration;
+            _configuration = configuration;
+            // Don't call InitGetSecrets directly in constructor
+            // as it's async and could fail
         }
 
-        public async Task<bool> InitGetSecrets()
+        private async Task EnsureInitialized()
+        {
+            if (!_isInitialized)
+            {
+                try
+                {
+                    secretsUrl = await _configuration.GetConfigurationSettingAsync("SecretsUrl");
+                    secretsScope = await _configuration.GetConfigurationSettingAsync("SecretsScope");
+                    await InitGetSecrets();
+                    _isInitialized = true;
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException("Failed to initialize secrets service", ex);
+                }
+            }
+        }
+
+        private async Task<bool> InitGetSecrets()
         {
             using (var httpClient = new HttpClient())
             {
@@ -34,7 +55,7 @@ namespace StarterApp.Services
                     secretsUrl = "https://myrecipebookmakerbe.azurewebsites.net/api/GetSecrets";
 
                     // Define scopes
-                    var scopes = new[] { "openid offline_access api://7b84f16c-c1b0-4f23-b10c-5fb19dde7c4d/GetSecrets.Use" };
+                    var scopes = new[] { "openid offline_access api://7b84f16c-c1b0-4f23-b10c-5fb19dde7c4d/GetSecrets.Read" };
                     string token;
 
                     try
@@ -42,16 +63,9 @@ namespace StarterApp.Services
                         // Try silent token acquisition first
                         token = await PublicClientSingleton.Instance.AcquireTokenSilentAsync(scopes);
                     }
-                    catch (MsalUiRequiredException msalEx)
+                    catch
                     {
-                        // If silent fails, try interactive
-                        token = await PublicClientSingleton.Instance.MSALClientHelper
-                            .SignInUserAndAcquireAccessToken(scopes);
-                    }
-                    catch (Exception ex)
-                    {
-                        token = await PublicClientSingleton.Instance.MSALClientHelper
-                         .SignInUserAndAcquireAccessToken(scopes);
+                        throw new InvalidOperationException("Failed to acquire valid token");
                     }
 
                     if (string.IsNullOrEmpty(token))
@@ -68,72 +82,35 @@ namespace StarterApp.Services
                     var response = await httpClient.GetAsync(secretsUrl);
                     if (!response.IsSuccessStatusCode)
                     {
-                        Console.WriteLine($"Error retrieving secrets: {response.StatusCode}");
-                        throw new Exception($"{response.StatusCode.ToString()} : {await response.Content.ReadAsStringAsync()}");
+                        throw new Exception($"{response.StatusCode} : {await response.Content.ReadAsStringAsync()}");
                     }
 
-                    response.EnsureSuccessStatusCode();
-
                     var jsonResponse = await response.Content.ReadAsStringAsync();
-                    // Process the JSON response as needed
-                    Console.WriteLine("Secrets retrieved successfully: " + jsonResponse);
+                    // TODO: Parse jsonResponse into _secrets dictionary
+                    // _secrets = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonResponse);
+                    
                     return true;
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Error retrieving secrets: " + ex.Message);
-                    throw new InvalidOperationException("Error retrieving secrets: " + ex.Message, ex);
+                    throw new InvalidOperationException("Error retrieving secrets", ex);
                 }
             }
         }
 
-        public async Task<bool> InitGetSecrets2()
+        public async Task<string> GetSecretAsync(string key)
         {
-            using (var httpClient = new HttpClient())
+            await EnsureInitialized();
+
+            // Once initialized, check if we have the secret in our dictionary
+            if (_secrets.TryGetValue(key, out var secret))
             {
-                try
-                {
-                    secretsUrl = "https://myrecipebookmakerbe.azurewebsites.net/api/GetSecrets";
-                    string token = await PublicClientSingleton.Instance.AcquireTokenSilentAsync();
-                    if (token == null)
-                    {
-                        Console.WriteLine("No access token available. Please sign in first.");
-                        throw new InvalidOperationException("No access token available. Please sign in first.");
-                    }
-
-                    // Add scopes to the request
-                    //var scopes = new[] { "https://myrecipebookmakerbe.azurewebsites.net/.default" };
-                    //var authResult = await PublicClientSingleton.Instance.AcquireTokenSilentAsync(scopes);
-                    //token = PublicClientSingleton.Instance.MSALClientHelper.AuthResult.AccessToken;
-                    var scopes = new[] { "api://7b84f16c-c1b0-4f23-b10c-5fb19dde7c4d/GetSecrets.Read" };
-                    var authResult = await PublicClientSingleton.Instance.AcquireTokenSilentAsync(scopes);
-                    token = authResult;
-                    //var scopes = new[] { "GetSecrets.Read" };
-                    //var authResult = await PublicClientSingleton.Instance.AcquireTokenSilentAsync(scopes);
-
-                    httpClient.DefaultRequestHeaders.Accept.Clear();
-                    httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-                    httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-                    var response = await httpClient.GetAsync(secretsUrl);
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        Console.WriteLine($"Error retrieving secrets: {response.StatusCode}");
-                        throw new Exception($"{response.StatusCode.ToString()} : {await response.Content.ReadAsStringAsync()}");
-                    }
-
-                    response.EnsureSuccessStatusCode();
-
-                    var jsonResponse = await response.Content.ReadAsStringAsync();
-                    // Process the JSON response as needed
-                    Console.WriteLine("Secrets retrieved successfully: " + jsonResponse);
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Error retrieving secrets: " + ex.Message);
-                    throw new InvalidOperationException("Error retrieving secrets: " + ex.Message, ex);
-                }
+                return secret;
             }
+
+            // For now, keeping the dummy implementation
+            await Task.Delay(100);
+            return $"Secret value for key: {key} - {Guid.NewGuid()}";
         }
     }
 }
