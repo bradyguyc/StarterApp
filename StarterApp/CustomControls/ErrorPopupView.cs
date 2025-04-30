@@ -190,6 +190,7 @@ namespace StarterApp.CustomControls
                     control.OnPropertyChanged(nameof(ShowWhat));
                     control.OnPropertyChanged(nameof(ShowErrorMessage));
                     control.OnPropertyChanged(nameof(ErrorTitle));
+                    control.OnPropertyChanged(nameof(ShowInfo));
                     control.OnPropertyChanged(nameof(WhatThisMeans));
                     control.OnPropertyChanged(nameof(WhatYouCanDo));
                     control.OnPropertyChanged(nameof(HelpLink));

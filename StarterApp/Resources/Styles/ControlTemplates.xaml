@@ -143,7 +143,10 @@
 
             <popup:SfPopup.FooterTemplate>
                 <DataTemplate>
-                    <Grid HorizontalOptions="Center" VerticalOptions="Center" ColumnDefinitions="*,60,60">
+                    <Grid
+                        ColumnDefinitions="*,60,60"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center">
 
                         <ImageButton
                             Grid.Column="1"

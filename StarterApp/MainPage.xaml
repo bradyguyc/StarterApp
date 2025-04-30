@@ -72,12 +72,12 @@
 
                 <Button
                     x:Name="callAzureFunctions"
-                    
                     Command="{Binding CallAzureFunctionCommand}"
                     HorizontalOptions="Fill"
                     IsEnabled="{Binding IsSignedIn}"
                     SemanticProperties.Hint="Sign Out"
                     Text="Call Azure Function" />
+
                 <Border>
                     <ListView
                         Margin="0,0,0,10"

@@ -1,11 +1,12 @@
-﻿
-using CommunityToolkit.Maui;
+﻿using CommunityToolkit.Maui;
 
 using DevExpress.Maui;
 using DevExpress.Maui.Core;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
+using StarterApp.Services;
 using StarterApp.ViewModels;
 
 using Syncfusion.Maui.Core.Hosting;
@@ -16,18 +17,18 @@ namespace StarterApp
     {
         public const string synFusionKey = "Mzc3NjM3MkAzMjM5MmUzMDJlMzAzYjMyMzkzYks2UjQ4YzlyazBnZXB4RS9VMjlJOGFnYTNCTGNNSmhOYzZ0VVdTU0lRYVk9";
 
+
+
         public static MauiApp CreateMauiApp()
         {
-
             SetThemeColor();
-             var builder = MauiApp.CreateBuilder();
+            var builder = MauiApp.CreateBuilder();
             Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(synFusionKey);
             builder
                 .UseMauiApp<App>()
                 .UseDevExpress()
                 .UseMauiCommunityToolkit()              
                 .ConfigureSyncfusionCore()
-
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -38,10 +39,27 @@ namespace StarterApp
 #if DEBUG
             builder.Logging.AddDebug();
 #endif
-            builder.Services.AddSingleton<MainPage>();
-            builder.Services.AddSingleton<MainPageViewModel>();
-            return builder.Build();
+            var services = builder.Services;
+
+            // Register services
+            services.AddSingleton<MainPage>();
+            services.AddTransient<MainPageViewModel>();
+            
+            // Register scoped services with their configuration
+            services.AddScoped<IGetSecrets, GetSecrets>();
+            services.AddScoped<IAppConfigurationService>(sp =>
+            {
+                var baseUri = new Uri("https://your-app-config-url.azconfig.io"); // Get from config
+                return new AzureAppConfigurationService(baseUri);
+            });
+
+            var app = builder.Build();
+            
+           
+
+            return app;
         }
+
         static void SetThemeColor()
         {
             // Define the default theme seed color

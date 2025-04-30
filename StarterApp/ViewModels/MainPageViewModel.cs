@@ -22,22 +22,30 @@ namespace StarterApp.ViewModels
         [ObservableProperty] private List<string> idTokenClaims = new();
 
         private readonly ILogger<MainPageViewModel> _logger;
+        private readonly IGetSecrets _secretService;
+        private readonly IAppConfigurationService _configuration;
 
-
-        public MainPageViewModel(ILogger<MainPageViewModel> logger)
+        public MainPageViewModel(
+            ILogger<MainPageViewModel> logger,
+            IGetSecrets secretService,
+            IAppConfigurationService configuration)
         {
             _logger = logger;
-            PopupDetails = new ShowPopUpDetails();
+            _secretService = secretService;
+            _configuration = configuration;
 
+            PopupDetails = new ShowPopUpDetails();
             IsSignedIn = false;
             PopupDetails.IsOpen = false;
-            IAccount cachedUserAccount = PublicClientSingleton.Instance.MSALClientHelper.FetchSignedInUserFromCache().Result;
+
+            IAccount? cachedUserAccount = PublicClientSingleton.Instance.MSALClientHelper.FetchSignedInUserFromCache().Result;
             if (cachedUserAccount != null)
             {
                 IsSignedIn = true;
-                UpdateClaims();
+                _ = UpdateClaims();
             }
         }
+
         [RelayCommand]
         void TestShowError()
         {
@@ -104,14 +112,14 @@ namespace StarterApp.ViewModels
         [RelayCommand]
         public Task SignIn()
         {
-            IAccount? cachedUserAccount = null; ;
+            IAccount? cachedUserAccount = null;
             cachedUserAccount = PublicClientSingleton.Instance.MSALClientHelper.FetchSignedInUserFromCache().Result;
 
             return MainThread.InvokeOnMainThreadAsync(async () =>
             {
                 if (cachedUserAccount == null)
                 {
-                    string token = null;
+                    string? token = null;
                     try
                     {
                         token = await PublicClientSingleton.Instance.AcquireTokenSilentAsync();
@@ -120,21 +128,18 @@ namespace StarterApp.ViewModels
                     {
                         PopupDetails.IsOpen = true;
                         PopupDetails.ErrorCode = "ERR-001";
-                        
                         PopupDetails.ErrorMessage = ex.Message;
                         OnPropertyChanged(nameof(PopupDetails));
-                        //Console.WriteLine(ex.Message);
                     }
                     if ((token == null) && (PopupDetails.IsOpen == false))
                     {
                         PopupDetails.IsOpen = true;
                         PopupDetails.ErrorCode = "ERR-002 ";
                         OnPropertyChanged(nameof(PopupDetails));
-                        //todo: display error message to user that they need to sign in and the sign process was exited before completing sign in
                     }
                     else
                     {
-                        IAccount cachedUserAccount = PublicClientSingleton.Instance.MSALClientHelper.FetchSignedInUserFromCache().Result;
+                        cachedUserAccount = PublicClientSingleton.Instance.MSALClientHelper.FetchSignedInUserFromCache().Result;
                         if (cachedUserAccount != null)
                         {
                             IsSignedIn = true;
@@ -156,50 +161,57 @@ namespace StarterApp.ViewModels
             });
         }
         [RelayCommand]
-        public Task CallAzureFunction()
+        public async Task CallAzureFunction(CancellationToken cancellationToken = default)
         {
-            return MainThread.InvokeOnMainThreadAsync(async () =>
+            if (!IsSignedIn)
             {
-                if (!IsSignedIn)
+                ShowError("ERR-003", "You must be signed in to call the Azure Function.");
+                return;
+            }
+
+            try
+            {
+                if (_secretService == null)
                 {
-                    PopupDetails.IsOpen = true;
-                    PopupDetails.ErrorCode = "ERR-003";
-                    PopupDetails.ErrorMessage = "You must be signed in to call the Azure Function.";
+                    ShowError("ERR-006", "Services not initialized. Please sign in again.");
                     return;
                 }
-                try
-                {
-                    // Call your Azure Function here
-                    await Task.Run(async () =>
-                    {
-                        bool success = await GetSecrets.Instance.InitGetSecrets();
-                        if (success)
-                        {
-                            PopupDetails.IsOpen = true;
-                            PopupDetails.ErrorCode = "INFO-001";
-                            PopupDetails.ErrorMessage = "Azure Function called successfully and secrets initialized.";
-                            OnPropertyChanged(nameof(PopupDetails));
-                          
-                        } else
-                        {
-                            PopupDetails.IsOpen = true;
-                            PopupDetails.ErrorCode = "ERR-003";
-                            PopupDetails.ErrorMessage = "Failed to initialize secrets from Azure Function.";
-                            OnPropertyChanged(nameof(PopupDetails));
 
-                        }
-                    }
-                    ); // Ensure secrets are initialized before calling the function
+                string secret = await _secretService.GetSecretAsync("brady")
+                    .ConfigureAwait(false);
 
-                    // Handle the result as needed
-                }
-                catch (Exception ex)
+                if (!string.IsNullOrWhiteSpace(secret))
                 {
-                    PopupDetails.IsOpen = true;
-                    PopupDetails.ErrorCode = "ERR-004";
-                    PopupDetails.ErrorMessage = ex.Message;
+                    ShowInfo("INFO-001", "Azure Function called successfully and secrets initialized.");
                 }
-            });
+                else
+                {
+                    ShowError("ERR-003", "Failed to initialize secrets from Azure Function.");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error calling Azure Function");
+                ShowError("ERR-004", ex.Message);
+            }
         }
+
+        private void ShowError(string errorCode, string message)
+        {
+            PopupDetails.IsOpen = true;
+            PopupDetails.ErrorCode = errorCode;
+            PopupDetails.ErrorMessage = message;
+            OnPropertyChanged(nameof(PopupDetails));
+        }
+
+        private void ShowInfo(string code, string message)
+        {
+            PopupDetails.IsOpen = true;
+            PopupDetails.ErrorCode = code;
+            PopupDetails.ErrorMessage = message;
+            OnPropertyChanged(nameof(PopupDetails));
+        }
+
+   
     }
 }
