@@ -351,3 +351,27 @@ This happens with every build so beaware if something unusal starts to happen to
 </Target>
 ```
 
+# 02 - Starter App - Azure Function Calling with Authentication
+
+## Configuration Overview
+
+## Configuration Steps
+1) Create Entra External Configuration Tenant
+1) Create .NET MAUI App App Registration in Entra
+1) Create Azure Function App Registration in Entra
+1) Stub out Azure Function and Publish
+1) Configure Authorization in Azure Portal for Azure Function
+
+### 5. Configure Authorization in Azure Portal for Azure Function
+Steps
+1) Expose an API
+1) API Permissions
+
+    Add Permission
+
+    Grant admin consent
+1) 
+### Learnings
+1) Token Cache changing scopes need to factory reset emulator or delete app on emulator
+### Token Example
+![Token](doc/token.png)
