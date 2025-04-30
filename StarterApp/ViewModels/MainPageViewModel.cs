@@ -46,6 +46,7 @@ namespace StarterApp.ViewModels
             PopupDetails.ErrorReason = "From app launch get user login information.";
             PopupDetails.IsOpen = true;
             PopupDetails.ErrorCode = "ERR-001";
+            OnPropertyChanged(nameof(PopupDetails));
         }
         [RelayCommand]
         void TestShowInfo()
@@ -55,6 +56,7 @@ namespace StarterApp.ViewModels
             PopupDetails.ErrorReason = "From app launch get user login information.";
             PopupDetails.IsOpen = true;
             PopupDetails.ErrorCode = "ERR-002";
+            OnPropertyChanged(nameof(PopupDetails));
         }
         private string GetClaimValue(Claim claim)
         {
