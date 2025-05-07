@@ -1,0 +1,19 @@
+1.	For Development/Testing Only - Add Transport Security exception to iOS Info.plist:
+
+```
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+    <key>NSExceptionDomains</key>
+    <dict>
+        <key>myrecipebookmakerbe.azurewebsites.net</key>
+        <dict>
+            <key>NSExceptionAllowsInsecureHTTPLoads</key>
+            <true/>
+            <key>NSExceptionRequiresForwardSecrecy</key>
+            <false/>
+        </dict>
+    </dict>
+</dict>
+```

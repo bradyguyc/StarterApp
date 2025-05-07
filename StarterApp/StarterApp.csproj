@@ -93,7 +93,7 @@
 
 		<PackageReference Include="DevExpress.Maui.Core" Version="24.2.6" />
 
-		<PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="8.2.0-preview" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="8.1.2" />
 
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 

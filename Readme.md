@@ -1,30 +1,55 @@
 ﻿# .NET MAUI Starter App with Authorization
 
+This repository is a starter up that frames up the basic infrastructure and code for a mobile app using Entra External Identification for authentication and authorization for calling Azure functions.  Utilizing App Configuration, KeyVault, and preparing to utilizing AI Services.
+
+
+![Diagram Overview](doc/diagramOverview.png)
+
 <!--TOC-->
-- [01 - Starter App - Authentication](#01-starter-app-authentication)
-  - [a) First Things first](#a-first-things-first)
-  - [b) Standard Error Handling](#b-standard-error-handling)
+- [Overview of Starter App - Authentication](#overview-of-starter-app-authentication)
+  - [A) little color goes a long way](#a-little-color-goes-a-long-way)
+  - [B) Standard Error Handling](#b-standard-error-handling)
     - [Third Party Controls](#third-party-controls)
       - [[DevExpress](https://www.devexpress.com/maui/)](#devexpresshttpswww.devexpress.commaui)
       - [[Syncfusion](https://www.syncfusion.com/maui-controls)](#syncfusionhttpswww.syncfusion.commaui-controls)
-  - [c) Microsoft Azure AD B2C and Customer (EntraID) Authentication](#c-microsoft-azure-ad-b2c-and-customer-entraid-authentication)
-    - [Configure Entra External ID and App Registration](#configure-entra-external-id-and-app-registration)
-    - [Custom Branding](#custom-branding)
-  - [d) Updating the application Code](#d-updating-the-application-code)
-    - [Nuget Package Updates](#nuget-package-updates)
+  - [C) Microsoft Azure AD B2C and Customer (EntraID) Authentication](#c-microsoft-azure-ad-b2c-and-customer-entraid-authentication)
     - [Automating ClientID](#automating-clientid)
+- [Summary](#summary)
+- [02 - Starter App - Azure Function Calling with Authentication](#02-starter-app-azure-function-calling-with-authentication)
+  - [Configuration Overview](#configuration-overview)
+  - [Configuration Steps](#configuration-steps)
+    - [1. Create Entra External Configuration Tenant](#1.-create-entra-external-configuration-tenant)
+      - [Custom Branding](#custom-branding)
+    - [1. Create .NET MAUI App, App Registration in Entra](#1.-create-.net-maui-app-app-registration-in-entra)
+    - [3. Create Azure Function App Registration in Entra](#3.-create-azure-function-app-registration-in-entra)
+    - [4. Create and Publish Azure Function](#4.-create-and-publish-azure-function)
+    - [5. Configure Authorization in Azure Portal for Azure Function](#5.-configure-authorization-in-azure-portal-for-azure-function)
+    - [6 Assign RBAC](#6-assign-rbac)
+    - [7 The all Important (Turn EasyAuth off and Back On)](#7-the-all-important-turn-easyauth-off-and-back-on)
+    - [Learnings](#learnings)
+    - [Token Example](#token-example)
 <!--/TOC-->
 
-# 01 - Starter App - Authentication 
+# Overview of Starter App - Authentication 
 This app demonstrates how to use the Microsoft.Identity.Client library to authenticate users and access Microsoft Graph APIs in a .NET MAUI app.  It is based off of the example from [.NET MAUI Authentication](https://github.com/Azure-Samples/ms-identity-ciam-dotnet-tutorial/blob/main/1-Authentication/2-sign-in-maui/README.md)
 
-The intenet of this repo is to create a base MAUI that can be a starting point for creating new applications with the core services already implemented or frameworked out as a good starting point.  
+The intenet of this repo is to create a base MAUI that can be a starting point for creating new applications with the core services already implemented or the framework built out as a good starting point.  
+
+Features
+1) Splash Screen and App Icon
+1) Standard Error Handling
+1) Login with Entra External ID (Azure AD B2C)
+1) Custom Branding for Login Experience
+1) Azure Function App Registration and Authentication
+
 
 | Splash | Home Page |
 |---------|---------|
-| Android|
+| Android |
 |![Splash](doc/splash.png)|![Homepage](doc/homepage.png) |
+
 |Android | iOS|
+|--------|-----|
 |![Icon](doc/icon.png)|![Iosicon](doc/iosicon.png) |
 | iOS||
 |![Iosappicon](doc/iosappicon.png) |![Ioshomepage](doc/ioshomepage.png)|
@@ -32,7 +57,7 @@ The intenet of this repo is to create a base MAUI that can be a starting point f
 
 
 
-## a) First Things first
+## A) little color goes a long way
 Replace the app icon and splash screen with something that is reasonably decent to look at.  I am not sure what it is but the .NET icon and that blue splash screen just does not do it.
 
 My method before going to a pro to get work done is to use designer.microsoft.com and generate an image that you can start with and update later when you are ready to go to market and can spend some time polishing.  But until then theres no need not to have something interesting.
@@ -64,7 +89,7 @@ I use powertoys to grab a color from the image randomly picking a color for the 
 		</MauiSplashScreen>
 
 
-## b) Standard Error Handling
+## B) Standard Error Handling
 
 I wrote a blog on this topic awhile back.  One of the first components needed in an app is the ability to tell the user something went wrong. I like to have this in place even before I start with authentication in that if authentication doesn't work you need to display an error message.  So it's one fo the first things I put in place.  The details of this can be found at the following link:
 
@@ -123,35 +148,53 @@ The Rotator navigation control from syncfusion is really cool.
 
 
 
-## c) Microsoft Azure AD B2C and Customer (EntraID) Authentication
+## C) Microsoft Azure AD B2C and Customer (EntraID) Authentication
 
-Starting with the example from 1-Authentication\2-sign-in-maui as an example from the offical example at  [.NET MAUI Authentication](https://github.com/Azure-Samples/ms-identity-ciam-dotnet-tutorial/blob/main/1-Authentication/2-sign-in-maui/README.md)
+Utilizing the code from Microsoft at from 1-Authentication\2-sign-in-maui as an example from the offical example at  [.NET MAUI Authentication](https://github.com/Azure-Samples/ms-identity-ciam-dotnet-tutorial/blob/main/1-Authentication/2-sign-in-maui/README.md), I integrated this into my starter project as the basis for authentication.
 
-1. Configure Entra External Id
-1. script to update appsettings.json
-1. Updated packages
+Setting up the configuration of authentication in the Azure portal is covered in section 2 below.
 
 
-### Configure Entra External ID and App Registration
-1. Create a tenant
-1. Create App Registration
-1. Add Platform and check msal...://auth
-1. Add API Permissions
-1. Grant admin consent for the API permissions
-1. Configure User flows
-1. Link Application to User Flow
+### Automating ClientID 
 
-The following video is a step by step walk through of how to set up the Azure AD B2C tenant and configure the app registration for your .NET MAUI app. It covers creating a new tenant, registering the application, setting up user flows, and configuring API permissions.
+The ClientID is stored in the appsettings.json file.  This id comes from registering your app in Azure AD B2C. It is 'hardcode' in serveral files throughout the project and in some places can't be reference as a constant or variable.  Thus this powershell script does a search and replace of the client id in the project files.
 
-I'll call out something that may or may not be clear.
+Platforms\Android\[MsalActivity.cs,MainActivity.cs,AndroidManifest.xml]
+Are updated with the client id using the value appsettings.json file.
 
-You configure the External ID in Entra that has the overall user flow and authorization process defined.  You can multiple applications that utilizes this process and they will all have the same login experience.  So you might have a web app, mobile app, and even some azure fundctions that utilize the login process.
+This happens with every build so beaware if something unusal starts to happen to check and make sure the script hasn't mucked with anything by acident.
+
+```
+<Target Name="Update MSAL Client ID" BeforeTargets="BeforeBuild">
+	<Exec Command="powershell.exe  -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $(ProjectDir)updatemsal.ps1" />
+</Target>
+```
+
+# Summary
+At this point we have a code base that has a splash screen, app icon, error handling, and authentication.  
+
+The next step is to configure authentication and authorization in the Azure portal add code to test the error handler, sign in, sign out, and the ability to call an Azure Function with authentication.  
 
 
-[![Watch the video](https://img.youtube.com/vi/1j6J8Zk7Q9c/maxresdefault.jpg)](https://www.youtube.com/watch?v=1j6J8Zk7Q9c)
-  
+# 02 - Starter App - Azure Function Calling with Authentication
 
-### Custom Branding
+## Configuration Overview
+
+## Configuration Steps
+    1) Create Entra External Configuration Tenant
+    1) Create .NET MAUI App, App Registration in Entra
+    1) Create Azure Function App Registration in Entra
+    1) Stub out Azure Function and Publish
+    1) Configure Authorization in Azure Portal for Azure Function
+    1) Assign RBAC to Azure Function App Registration
+    1) The all Important (Turn EasyAuth off and Back On)
+
+    Don't forget that last step
+
+### 1. Create Entra External Configuration Tenant
+
+
+#### Custom Branding
 
 The following article has the detailed instructions on how to implement your own custom branding for the login experience. 
 
@@ -314,63 +357,111 @@ body {
 }
 
 ```
+az appconfig credential list --name <config-store-name>
+az appconfig credential list --name config-starterapp
+config starter app, turn on managed identity
 
-## d) Updating the application Code
+az ad sp create --id abd2cc2a-7b80-46bd-8113-ef20a06a39c3
+az role assignment create --assignee <your-app-client-id> --role "App Configuration Data Reader" --scope /subscriptions/<your-subscription-id>/resourceGroups/<your-resource-group>/providers/Microsoft.AppConfiguration/configurationStores/<your-app-config-name>
+az role assignment create --assignee abd2cc2a-7b80-46bd-8113-ef20a06a39c3 --role "App Configuration Data Reader" --scope /subscriptions/31db00c0-90ff-4d3f-993d-0cca224cf544/resourceGroups/rg-starterapp/providers/Microsoft.AppConfiguration/configurationStores/config-starterapp
 
-The code in this project is based on the official Microsoft example for .NET MAUI Authentication. It has been updated to work with the latest version of .NET MAUI and Microsoft Identity Client library. And integrated with the Error PopUp custom control.
+### 1. Create .NET MAUI App, App Registration in Entra
+  
+    1) Create a new App Registration in Entra for the .NET MAUI app.
+        1) Add platform and check msal...://auth
+        1) Add API Permissions
+            1) Microsoft Graph - User.Read
+            1) Grant admin consent for the API permissions
+        1) Configure User flows (Sign up and sign in)
+        1) Link Application to User Flow
 
-### Nuget Package Updates
-Some updates to the nuget packages are required to get the app to compile.  This may be based on upgrading to .NET SDK 10 preview or just updated changes to the structure of identity packages.
+
+az ad sp create --id abd2cc2a-7b80-46bd-8113-ef20a06a39c3 --tenant  1ccb4265-f208-4ca9-ba06-0802cb4e13ac
+### 3. Create Azure Function App Registration in Entra
+    1) Expose an API
+        1) click add a scope
+        1) set the scope name to api://<your-app-client-id>/GetSecrets.Read (for this example)
+        1) click add a client application
+            1) paste in the client id of the .NET MAUI app registration you created in step 2
+        1) Token Configuration 
+            1) add option claim and ID and Access token
+                1) add acct, aud,email, verified_primary_email
+                1) you may want other claims in the token to meet your needs
+    
+
+### 4. Create and Publish Azure Function
+    1) Publish Azure Function in Visual Studio
+    1) Publish to Azure Function App
+    1) In azure portal 
+        1) go to the function app and select the function you just published
+        1) select the function and go to the "Authentication" blade
+        1) select "Add Identity Provider"
+        1) select "Microsoft" and then select the app registration you created in step 3
+            1) Under the Basics Tab
+                1) select External Configuration
+                1) select Provide the details of an existing app registration
+                1) Application ID - the app registration id you created in step 3 for the function app
+                1) no Client Secret
+                1) Issuer URL - this is the tenant url created in step 1 for the external configuration tenant
+                    1) go to entra admin center and make sure your directory is set for the external configuration tenant
+                    1) select the overview tab
+                    1) select endpoints
+                    1) copy the authority url usually the first end point
+                    1) paste in the Issuer URL field in the azure function app registration
+                1) Allow request from specific client applications
+                    1) select the app registration you created in step 2 for the .NET MAUI app
+                    1) paste in the Application ID in the client application id field of the .NET MAUI app registration
+                    Note: this is the clientID in the .NET MAUI app settings.json file
+                1) Allow request from specific client applications
+                    1) this is the tenant id which is the guid at the end of the authority url in appsettings.json in the .NET MAUI app and you can also find it in the endpoints section of the Entra admin center for the external configuration tenant, and on the overview page of the tenant it is the direcorty (tenant id).
+                1) Set Restrict access to 'Require authentication'
+                1) Unauthorized request I set to HTTP 403 Forbidden.
+        1) click Add
+        1) Under the Identity tab for the fucntion app I also enable Managed Identity for future access to other Azure resources.
 
 
+                    
 
-`	
-		
-		<PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.0-preview.1.25080.5" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.0-preview.1.25080.5" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0-preview.1.25080.5" />
-		<PackageReference Include="Microsoft.Identity.Client" Version="4.69.1" />		
-		<PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.69.1" />
-		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0-preview.1.25080.5" /
-		
-`
+    Authentication - Microsoft Identity Platform
+    External Configuration
+    Provide details of an existing app registration
+issuer url: same as what you have 
 
-### Automating ClientID 
-
-The ClientID is stored in the appsettings.json file.  This id comes from registering your app in Azure AD B2C. It is 'hardcode' in serveral files throughout the project and in some places can't be reference as a constant or variable.  Thus this powershell script does a search and replace of the client id in the project files.
-
-Platforms\Android\[MsalActivity.cs,MainActivity.cs,AndroidManifest.xml]
-Are updated with the client id using the value appsettings.json file.
-
-This happens with every build so beaware if something unusal starts to happen to check and make sure the script hasn't mucked with anything by acident.
-
-```
-<Target Name="Update MSAL Client ID" BeforeTargets="BeforeBuild">
-	<Exec Command="powershell.exe  -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $(ProjectDir)updatemsal.ps1" />
-</Target>
-```
-
-# 02 - Starter App - Azure Function Calling with Authentication
-
-## Configuration Overview
-
-## Configuration Steps
-1) Create Entra External Configuration Tenant
-1) Create .NET MAUI App App Registration in Entra
-1) Create Azure Function App Registration in Entra
-1) Stub out Azure Function and Publish
-1) Configure Authorization in Azure Portal for Azure Function
 
 ### 5. Configure Authorization in Azure Portal for Azure Function
-Steps
-1) Expose an API
-1) API Permissions
 
-    Add Permission
+    1) In Entra under the .NET MAUI app registration you created in step 2
+    1) select API Permissions
+        1) click add a permission
+        1) select APIs my organization uses
+            1) search for the Azure Function app registration you created in step 3
+            1) select the function app registration and click add permissions
+            1) select the scope you created in step 3 for the function app registration
+            1) when added be sure you click on Grant admin consent for the API permissions
+![Permissions A P I](doc/permissionsAPI.png)
 
-    Grant admin consent
-1) 
+### 6 Assign RBAC 
+    1) Navigate to your key vault in the Azure portal.
+    1) In the left-hand menu, select "Access control (IAM)".
+    1) Click on "Add role assignment".
+    1) In the "Role" dropdown, select "Key Vault Reader".
+    1) In the "Assign access to" dropdown, select "Managed Identity".
+    1) In the "Select" field, search for and select the managed identity of your Azure Function App.
+    1) Click "Review and Assign" to assign the role.
+
+### 7 The all Important (Turn EasyAuth off and Back On)
+
+   1) In the Azure portal, navigate to your Function App.
+    1) In the left-hand menu, select "Authentication" under the "Settings" section.
+    1) Click the Edit button at the top of the page.
+    1) Set to Disabled and click "Save".
+    1) Click the Edit button again to re-enable authentication.
+
+    Not exactly sure why this step is needed but it just don't work if you don't do it.  At least as far as I have seen.
+
+
+![Function App Easy Auth](doc/functionAppEasyAuth.png)
+
 ### Learnings
 1) Token Cache changing scopes need to factory reset emulator or delete app on emulator
 ### Token Example

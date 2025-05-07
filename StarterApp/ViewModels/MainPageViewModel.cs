@@ -22,18 +22,14 @@ namespace StarterApp.ViewModels
         [ObservableProperty] private List<string> idTokenClaims = new();
 
         private readonly ILogger<MainPageViewModel> _logger;
-        private readonly IGetSecrets _secretService;
-        private readonly IAppConfigurationService _configuration;
+      
 
         public MainPageViewModel(
-            ILogger<MainPageViewModel> logger,
-            IGetSecrets secretService,
-            IAppConfigurationService configuration)
+            ILogger<MainPageViewModel> logger)
+         
         {
             _logger = logger;
-            _secretService = secretService;
-            _configuration = configuration;
-
+         
             PopupDetails = new ShowPopUpDetails();
             IsSignedIn = false;
             PopupDetails.IsOpen = false;
@@ -171,14 +167,25 @@ namespace StarterApp.ViewModels
 
             try
             {
-                if (_secretService == null)
+                //todo: not sure this is the best way to do this
+                // Get service from service provider
+                var serviceProvider = Application.Current?.Handler?.MauiContext?.Services;
+                if (serviceProvider == null)
                 {
-                    ShowError("ERR-006", "Services not initialized. Please sign in again.");
+                    ShowError("ERR-005", "Unable to access application services");
                     return;
                 }
 
-                string secret = await _secretService.GetSecretAsync("brady")
+                var secretService = serviceProvider.GetService<IGetSecrets>();
+                if (secretService == null)
+                {
+                    ShowError("ERR-006", "Secret service not configured");
+                    return;
+                }
+                _logger.LogInformation("Calling GetSecretAsync...");
+                string secret = await secretService.GetSecretAsync("brady")
                     .ConfigureAwait(false);
+                _logger.LogInformation("GetSecretAsync completed");
 
                 if (!string.IsNullOrWhiteSpace(secret))
                 {
@@ -192,7 +199,12 @@ namespace StarterApp.ViewModels
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error calling Azure Function");
-                ShowError("ERR-004", ex.Message);
+                var errorMessage = $"{ex.Message}";
+                if (ex.InnerException != null)
+                {
+                    errorMessage += $"\nInner Exception: {ex.InnerException.Message}";
+                }
+                ShowError("ERR-004", errorMessage);
             }
         }
 
