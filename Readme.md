@@ -374,7 +374,7 @@ az role assignment create --assignee abd2cc2a-7b80-46bd-8113-ef20a06a39c3 --role
             1) Grant admin consent for the API permissions
         1) Configure User flows (Sign up and sign in)
         1) Link Application to User Flow
-
+test
 
 az ad sp create --id abd2cc2a-7b80-46bd-8113-ef20a06a39c3 --tenant  1ccb4265-f208-4ca9-ba06-0802cb4e13ac
 ### 3. Create Azure Function App Registration in Entra
