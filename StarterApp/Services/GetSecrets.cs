@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Text;
 using Microsoft.Identity.Client;
 using StarterApp.MSALClient;
@@ -12,20 +13,23 @@ namespace StarterApp.Services
     {
         Task<string> GetSecretAsync(string key);
     }
-  
+
     public class GetSecrets : IGetSecrets
     {
         private string secretsUrl = string.Empty;
         private string secretsScope = string.Empty;
-        private readonly IAppConfigurationService _configuration;
         private readonly Dictionary<string, string> _secrets = new();
+        private readonly HttpClient _httpClient;
+        private readonly IConfiguration _configuration;
         private bool _isInitialized;
 
-        public GetSecrets(IAppConfigurationService configuration)
+        public GetSecrets(IConfiguration configuration)
         {
             _configuration = configuration;
-            // Don't call InitGetSecrets directly in constructor
-            // as it's async and could fail
+
+
+            _httpClient = new HttpClient();
+
         }
 
         private async Task EnsureInitialized()
@@ -34,67 +38,92 @@ namespace StarterApp.Services
             {
                 try
                 {
-                    secretsUrl = await _configuration.GetConfigurationSettingAsync("SecretsUrl");
-                    secretsScope = await _configuration.GetConfigurationSettingAsync("SecretsScope");
-                    await InitGetSecrets();
-                    _isInitialized = true;
+                    var downstreamApiSection = _configuration.GetSection("DownstreamApi");
+                    if (!downstreamApiSection.Exists())
+                    {
+                        throw new InvalidOperationException("DownstreamApi configuration section not found");
+                    }
+
+                    secretsUrl = downstreamApiSection.GetValue<string>("secretsUrl") ??
+                        throw new ArgumentException("SecretsUrl configuration value cannot be null or empty");
+
+                    secretsScope = downstreamApiSection.GetValue<string>("Scopes") ??
+                        throw new ArgumentException("SecretsScope configuration value cannot be null or empty");
+
+                    _isInitialized = await InitGetSecrets();
+
                 }
                 catch (Exception ex)
                 {
-                    throw new InvalidOperationException("Failed to initialize secrets service", ex);
+                    throw new InvalidOperationException($"Failed to initialize secrets service: {ex.Message}", ex);
                 }
             }
         }
 
         private async Task<bool> InitGetSecrets()
         {
-            using (var httpClient = new HttpClient())
+            try
             {
+                // Add logging for debugging
+                Debug.WriteLine($"Initializing secrets with URL: {secretsUrl}");
+
+                var scopes = new[] { secretsScope };
+                string? token;
+
                 try
                 {
-                    secretsUrl = "https://myrecipebookmakerbe.azurewebsites.net/api/GetSecrets";
-
-                    // Define scopes
-                    var scopes = new[] { "openid offline_access api://7b84f16c-c1b0-4f23-b10c-5fb19dde7c4d/GetSecrets.Read" };
-                    string token;
-
-                    try
-                    {
-                        // Try silent token acquisition first
-                        token = await PublicClientSingleton.Instance.AcquireTokenSilentAsync(scopes);
-                    }
-                    catch
-                    {
-                        throw new InvalidOperationException("Failed to acquire valid token");
-                    }
-
-                    if (string.IsNullOrEmpty(token))
-                    {
-                        throw new InvalidOperationException("Failed to acquire valid token");
-                    }
-
-                    httpClient.DefaultRequestHeaders.Accept.Clear();
-                    httpClient.DefaultRequestHeaders.Authorization =
-                        new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-                    httpClient.DefaultRequestHeaders.Accept.Add(
-                        new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-
-                    var response = await httpClient.GetAsync(secretsUrl);
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        throw new Exception($"{response.StatusCode} : {await response.Content.ReadAsStringAsync()}");
-                    }
-
-                    var jsonResponse = await response.Content.ReadAsStringAsync();
-                    // TODO: Parse jsonResponse into _secrets dictionary
-                    // _secrets = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonResponse);
-                    
-                    return true;
+                    token = await PublicClientSingleton.Instance.AcquireTokenSilentAsync(scopes);
+                    Debug.WriteLine("Token acquired successfully");
                 }
                 catch (Exception ex)
                 {
-                    throw new InvalidOperationException("Error retrieving secrets", ex);
+                    Debug.WriteLine($"Token acquisition failed: {ex.Message}");
+                    throw new InvalidOperationException("Failed to acquire valid token", ex);
                 }
+
+                if (string.IsNullOrEmpty(token))
+                {
+                    throw new InvalidOperationException("Token is null or empty");
+                }
+
+                // Set up request
+                secretsUrl = $"{secretsUrl}?keyVault=kv-starterapp";
+                var request = new HttpRequestMessage(HttpMethod.Get, secretsUrl);
+                request.Headers.Accept.Clear();
+                request.Headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+                // Make the request
+                try
+                {
+                    Debug.WriteLine("Sending request to secrets endpoint...");
+                    var response = await _httpClient.SendAsync(request);
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        var content = await response.Content.ReadAsStringAsync();
+                        Debug.WriteLine($"Request failed: {response.StatusCode}, Content: {content}");
+                        throw new Exception($"HTTP {response.StatusCode}: {content}");
+                    }
+
+                    var jsonResponse = await response.Content.ReadAsStringAsync();
+                    Debug.WriteLine("Secrets retrieved successfully");
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"error in InitGetSecrets: {ex.Message}\n{ex.StackTrace}");
+                    return false;
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in InitGetSecrets: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Debug.WriteLine($"Inner Exception: {ex.InnerException.Message}");
+                }
+                throw new InvalidOperationException($"Error retrieving secrets: {ex.Message}", ex);
             }
         }
 

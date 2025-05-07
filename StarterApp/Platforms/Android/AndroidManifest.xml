@@ -6,7 +6,7 @@
 				<action android:name="android.intent.action.VIEW" />
 				<category android:name="android.intent.category.DEFAULT" />
 				<category android:name="android.intent.category.BROWSABLE" />
-				<data android:scheme="msalabd2cc2a-7b80-46bd-8113-ef20a06a39c3" android:host="auth" />
+				<data android:scheme="msala8fee4bc-0b38-4680-a820-af7a5844f5c5" android:host="auth" />
 			</intent-filter>
 		</activity>
 		<activity android:name="MauiAppBasic.Platforms.Android.Resources.MsalActivity" android:configChanges="orientation|screenSize" android:exported="true">
@@ -14,7 +14,7 @@
 				<action android:name="android.intent.action.VIEW" />
 				<category android:name="android.intent.category.DEFAULT" />
 				<category android:name="android.intent.category.BROWSABLE" />
-				<data android:scheme="msalabd2cc2a-7b80-46bd-8113-ef20a06a39c3" android:host="auth" />
+				<data android:scheme="msala8fee4bc-0b38-4680-a820-af7a5844f5c5" android:host="auth" />
 			</intent-filter>
 		</activity>
 	</application>

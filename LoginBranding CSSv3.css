@@ -19,8 +19,8 @@
 /* General body styling */
 body {
     font-family: 'Roboto';
-    color: #5D3A00; /* Dark brown text */
-    background-color: #D2B48C;
+    color: #3a92c4; /* Dark brown text */
+    background-color: #3a92c4;
     margin: 0;
     padding: 0;
     font-size: 24px;
@@ -33,7 +33,7 @@ body {
 /* Header styling */
 .ext-header {
     font-family: 'Great Vibes',cursive;
-    background-color: #D2B48C; /* Tan color for header */
+    background-color: #3a92c4; /* Tan color for header */
     color: #5D3A00; /* Dark brown text */
     text-align: center;
     padding: 10px;
