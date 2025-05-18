@@ -121,7 +121,7 @@
 
 		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.0-preview.2.25165.1" />
 
-		<PackageReference Include="SentryDotNet" Version="1.4.4" />
+		<PackageReference Include="Sentry.Maui" Version="5.7.0" />
 		<PackageReference Include="Syncfusion.Maui.Core" Version="29.2.4" />
 		<PackageReference Include="Syncfusion.Maui.Popup" Version="29.2.4" />
 

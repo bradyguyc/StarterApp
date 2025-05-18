@@ -14,7 +14,7 @@ using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using Microsoft.Extensions.Configuration;
 using StarterApp.Services;
 using StarterApp.ViewModels;
-
+using Sentry.Maui;
 using Syncfusion.Maui.Core.Hosting;
 
 using static System.Net.WebRequestMethods;
@@ -59,7 +59,7 @@ namespace StarterApp
                     //options.AttachScreenshot = true;
 
                     // Other Sentry options can be set here.
-                    options.ExperimentalMetrics = new ExperimentalMetricsOptions { EnableCodeLocations = true };
+                    //options.ExperimentalMetrics = new ExperimentalMetricsOptions { EnableCodeLocations = true };
 
                 })
                 .ConfigureFonts(fonts =>

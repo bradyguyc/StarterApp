@@ -77,7 +77,7 @@ namespace StarterApp.Services
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Token acquisition failed: {ex.Message}");
+                    Debug.WriteLine($"Token acquisition failed: {ex.ToString()}");
                     throw new InvalidOperationException("Failed to acquire valid token", ex);
                 }
 
