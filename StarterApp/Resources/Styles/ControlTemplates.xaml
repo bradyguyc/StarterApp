@@ -3,7 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:controls="clr-namespace:StarterApp.CustomControls"
     xmlns:dx="clr-namespace:DevExpress.Maui.Core;assembly=DevExpress.Maui.Core"
-    xmlns:fonts="clr-namespace:StarterApp.Helpers"
+    xmlns:fonts="clr-namespace:StarterApp.Common.Helpers"
     xmlns:markups="clr-namespace:OnScreenSizeMarkup.Maui;assembly=OnScreenSizeMarkup.Maui"
     xmlns:models="clr-namespace:StarterApp.Models"
     xmlns:popup="clr-namespace:Syncfusion.Maui.Popup;assembly=Syncfusion.Maui.Popup"
