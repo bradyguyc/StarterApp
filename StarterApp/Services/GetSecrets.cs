@@ -55,7 +55,7 @@ namespace StarterApp.Services
                 }
                 catch (Exception ex)
                 {
-                    throw new InvalidOperationException($"Failed to initialize secrets service: {ex.Message}", ex);
+                    throw new InvalidOperationException($"Failed to initialize secrets service: {ex.ToString()}", ex);
                 }
             }
         }
@@ -102,8 +102,8 @@ namespace StarterApp.Services
                     if (!response.IsSuccessStatusCode)
                     {
                         var content = await response.Content.ReadAsStringAsync();
-                        Debug.WriteLine($"Request failed: {response.StatusCode}, Content: {content}");
-                        throw new Exception($"HTTP {response.StatusCode}: {content}");
+                        Debug.WriteLine($"Request failed: {response.StatusCode}, Content: {response.ToString()}");
+                        throw new Exception($"HTTP {response.StatusCode}: {response.ToString()}");
                     }
 
                     var jsonResponse = await response.Content.ReadAsStringAsync();
@@ -111,8 +111,9 @@ namespace StarterApp.Services
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"error in InitGetSecrets: {ex.Message}\n{ex.StackTrace}");
-                    return false;
+                    Debug.WriteLine($"error in InitGetSecrets: {ex.ToString()}\n{ex.StackTrace}");
+                    throw new Exception( $"error in InitGetSecrets: {ex.ToString()}\n{ex.StackTrace}",ex);
+                    
                 }
                 return true;
             }
@@ -121,25 +122,32 @@ namespace StarterApp.Services
                 Debug.WriteLine($"Error in InitGetSecrets: {ex.Message}");
                 if (ex.InnerException != null)
                 {
-                    Debug.WriteLine($"Inner Exception: {ex.InnerException.Message}");
+                    Debug.WriteLine($"Inner Exception: {ex.InnerException.ToString()}");
                 }
-                throw new InvalidOperationException($"Error retrieving secrets: {ex.Message}", ex);
+                throw new InvalidOperationException($"Error retrieving secrets: {ex.ToString()}", ex);
             }
         }
 
         public async Task<string> GetSecretAsync(string key)
         {
-            await EnsureInitialized();
-
-            // Once initialized, check if we have the secret in our dictionary
-            if (_secrets.TryGetValue(key, out var secret))
+            try
             {
-                return secret;
-            }
+                await EnsureInitialized();
 
-            // For now, keeping the dummy implementation
-            await Task.Delay(100);
-            return $"Secret value for key: {key} - {Guid.NewGuid()}";
+                // Once initialized, check if we have the secret in our dictionary
+                if (_secrets.TryGetValue(key, out var secret))
+                {
+                    return secret;
+                }
+
+                // For now, keeping the dummy implementation
+                await Task.Delay(100);
+                return $"Secret value for key: {key} - {Guid.NewGuid()}";
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString(), ex);
+            }
         }
     }
 }

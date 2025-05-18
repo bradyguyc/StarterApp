@@ -40,6 +40,28 @@ namespace StarterApp
                 .UseDevExpress()
                 .UseMauiCommunityToolkit()              
                 .ConfigureSyncfusionCore()
+                .UseSentry(options =>
+                {
+                    // The DSN is the only required setting.
+                    options.Dsn = "https://41990b90035138cb0a9dbdb374ca61e2@o4507073550155776.ingest.us.sentry.io/4507073559396352";
+
+                    // Use debug mode if you want to see what the SDK is doing.
+                    // Debug messages are written to stdout with Console.Writeline,
+                    // and are viewable in your IDE's debug console or with 'adb logcat', etc.
+                    // This option is not recommended when deploying your application.
+#if DEBUG
+                    options.Debug = false;
+                    options.DiagnosticLevel = SentryLevel.Debug;
+#endif
+                    // Set TracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
+                    // We recommend adjusting this value in production.
+                    options.TracesSampleRate = 1.0;
+                    //options.AttachScreenshot = true;
+
+                    // Other Sentry options can be set here.
+                    options.ExperimentalMetrics = new ExperimentalMetricsOptions { EnableCodeLocations = true };
+
+                })
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");

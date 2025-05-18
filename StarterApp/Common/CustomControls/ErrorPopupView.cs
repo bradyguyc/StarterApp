@@ -7,8 +7,8 @@ using DevExpress.Maui.Core;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 
-using StarterApp.Helpers;
-using StarterApp.Models;
+using StarterApp.Common.Helpers;
+using StarterApp.Common.Models;
 
 using System;
 using System.Collections.Generic;
