@@ -1,0 +1,3 @@
+[submodule "StarterApp/maui-starterapp-common-code"]
+	path = StarterApp/maui-starterapp-common-code
+	url = https://github.com/bradyguyc/maui-starterapp-common-code.git
