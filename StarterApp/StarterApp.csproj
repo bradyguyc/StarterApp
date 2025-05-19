@@ -46,7 +46,7 @@
 	</PropertyGroup>
 
 	<Target Name="Update MSAL Client ID" BeforeTargets="BeforeBuild">
-		<Exec Command="powershell.exe  -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $(ProjectDir)\Common\Helpers\updatemsal.ps1" />
+		<Exec Command="powershell.exe  -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $(ProjectDir)\maui-starterapp-common-code\Helpers\updatemsal.ps1" />
 	</Target>
 
 	<ItemGroup>
