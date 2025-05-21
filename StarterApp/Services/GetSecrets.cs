@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
 using Microsoft.Identity.Client;
-using StarterApp.MSALClient;
+using CommonCode.MSALClient;
 using Microsoft.Extensions.Configuration;
 
 namespace StarterApp.Services

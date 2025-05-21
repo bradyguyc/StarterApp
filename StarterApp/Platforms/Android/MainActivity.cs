@@ -5,7 +5,7 @@ using Android.OS;
 
 using Microsoft.Identity.Client;
 
-using StarterApp.MSALClient;
+using CommonCode.MSALClient;
 
 namespace StarterApp
 {

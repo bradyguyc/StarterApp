@@ -9,8 +9,8 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
 
-using StarterApp.Models;
-using StarterApp.MSALClient;
+using CommonCode.Models;
+using CommonCode.MSALClient;
 using StarterApp.Services;
 
 namespace StarterApp.ViewModels
