@@ -156,6 +156,13 @@ Utilizing the code from Microsoft at from 1-Authentication\2-sign-in-maui as an 
 
 Setting up the configuration of authentication in the Azure portal is covered in section 2 below.
 
+Line 58 in PublicClientSingleton.cs I updated the code to get the name of the app vs hardcoding, this way you don't have to change it each time you clone the starter app.
+
+```csharp
+using var stream = assembly.GetManifestResourceStream($"{assembly.GetName().Name}.appsettings.json");
+```
+
+I also updated MSALClientHelper.cs not to try and login with a devicecode.  If the end user hits the backbutton during an interactive login, the code previously would go into an infinate loop trying to log in via device code method.  For mobile apps I just commented this out.  Around line 227.
 
 ### Automating ClientID 
 
@@ -465,3 +472,49 @@ body {
 }
 
 ```
+
+
+# Clone the Starter App (This content AI generated)
+You can **duplicate your GitHub repository**, rename it, and push it to a new repository with these steps:
+
+### **1. Clone the Existing Repository**
+```bash
+git clone --bare https://github.com/YOUR-USERNAME/OLD-REPOSITORY.git
+```
+This creates a **bare clone** without working files.
+
+### **2. Create a New Repository on GitHub**
+- Go to **GitHub** and create a new repository with the desired name.
+
+### **3. Push the Cloned Repository to the New One**
+```bash
+cd OLD-REPOSITORY.git
+git push --mirror https://github.com/YOUR-USERNAME/NEW-REPOSITORY.git
+```
+This **mirrors** the repository, including branches and history.
+
+### **4. Remove the Temporary Local Clone**
+```bash
+cd ..
+rm -rf OLD-REPOSITORY.git
+```
+
+### **5. Clone the New Repository Locally**
+```bash
+git clone https://github.com/YOUR-USERNAME/NEW-REPOSITORY.git
+cd NEW-REPOSITORY
+```
+
+### **6. Rename the Solution in Visual Studio**
+- Open the solution in **Visual Studio**.
+- Rename the project and solution files.
+- Update any references to the old repository name.
+
+### **7. Commit and Push the Changes**
+```bash
+git add .
+git commit -m "Renamed solution and updated references"
+git push origin main
+```
+
+Now, your **starter app** is copied, renamed, and pushed to a new repository! 🚀 Let me know if you need help with any step.
