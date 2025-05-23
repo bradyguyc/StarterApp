@@ -12,6 +12,8 @@ using CommonCode.MSALClient;
 using CommonCode.Helpers;
 using System.Reflection;
 using CommunityToolkit.Mvvm.Input;
+using MyNextBook.Helpers;
+using MyNextBook.Views;
 
 namespace MyNextBook.ViewModels
 {
@@ -22,6 +24,7 @@ namespace MyNextBook.ViewModels
         [ObservableProperty] private string introText = string.Empty;
         [ObservableProperty] private bool? signInEnabled = true;
         [ObservableProperty] private bool? showWelcome = false;
+
         private ILogger<MainPageViewModel> _logger;
 
         public bool IsSignedIn { get; private set; }
@@ -50,8 +53,26 @@ namespace MyNextBook.ViewModels
                     await PublicClientSingleton.Instance.MSALClientHelper.FetchSignedInUserFromCache();
                 IsSignedIn = cachedUserAccount != null;
             });
-            if (IsSignedIn == true)
-                await Shell.Current.GoToAsync("MySeriesPage/SettingsPage");
+            bool credentialAvailable = await StaticHelpers.OLAreCredentialsSetAsync();
+            if ((IsSignedIn == true) && (credentialAvailable))
+            {
+                //await UpdateClaims();
+                ShowWelcome = false;
+            
+                    //Application.Current.Windows[0].Page = new MySeriesPage();
+
+              
+            }
+            else if (IsSignedIn == true && credentialAvailable)
+            {
+                //Application.Current.Windows[0].Page = new MySeriesPage();
+                await Shell.Current.GoToAsync("SettingsPage");
+
+            }
+
+
+            //ShowWelcome = true;
+
         }
 
         [RelayCommand]
@@ -100,13 +121,25 @@ namespace MyNextBook.ViewModels
                         else SignInEnabled = true;
                     }
                 }
-                if (IsSignedIn == true)
+                bool credentialAvailable = await StaticHelpers.OLAreCredentialsSetAsync();
+                if ((IsSignedIn == true) && (credentialAvailable))
                 {
-                    await Shell.Current.GoToAsync("SettingsPage");
+                    //await UpdateClaims();
+                    ShowWelcome = false;
+                    //Application.Current.Windows[0].Page = new MySeriesPage();
                 }
+                else if (IsSignedIn == true && credentialAvailable)
+                {
+                    //Application.Current.Windows[0].Page = new MySeriesPage();
+                    await Shell.Current.GoToAsync("SettingsPage");
+
+                }
+
+
+               // ShowWelcome = true;
             });
-          
-           
+
+
         }
 
     }
