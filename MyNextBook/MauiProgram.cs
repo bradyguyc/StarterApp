@@ -84,8 +84,10 @@ namespace MyNextBook
             builder.Services.AddTransient<SettingsViewModel>();
 
             services.AddScoped<IGetSecrets, GetSecrets>();
+            services.AddScoped<IOpenLibraryService, OpenLibraryService>();
+
             // Register scoped services with their configuration
-         
+
 
             var app = builder.Build();
             

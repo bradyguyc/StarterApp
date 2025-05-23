@@ -156,10 +156,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="Helpers\" />
-	</ItemGroup>
-
-	<ItemGroup>
 	  <MauiAsset Include="Resources\Splash\splash.svg">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </MauiAsset>

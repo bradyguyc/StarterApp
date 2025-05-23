@@ -8,6 +8,17 @@ namespace MyNextBook
             InitializeComponent();
             Routing.RegisterRoute("SettingsPage", typeof(SettingsPage));
             Routing.RegisterRoute("MySeriesPage", typeof(MySeriesPage));
+            Routing.RegisterRoute("MySeriesPage/SettingsPage", typeof(SettingsPage));
+
         }
+        /*
+        protected override void OnNavigated(ShellNavigatedEventArgs args)
+        {
+            base.OnNavigated(args);
+
+
+            //pageTitle.Text = Current.CurrentPage.Title;
+        }
+        */
     }
 }
