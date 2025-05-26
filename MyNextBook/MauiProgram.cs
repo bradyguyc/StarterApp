@@ -18,6 +18,7 @@ using CommonCode.Helpers;
 using MyNextBook.Services;
 using MyNextBook.Views;
 using MyNextBook.ViewModels;
+using OpenLibraryNET;
 using static System.Net.WebRequestMethods;
 
 namespace MyNextBook
@@ -39,7 +40,7 @@ namespace MyNextBook
             builder
                 .UseMauiApp<App>()
                 .UseDevExpress()
-                .UseMauiCommunityToolkit()              
+                .UseMauiCommunityToolkit()
                 .ConfigureSyncfusionCore()
                 .UseSentry(options =>
                 {
@@ -70,7 +71,7 @@ namespace MyNextBook
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
 
-           // services.AddAzureAppConfiguration(Environment.GetEnvironmentVariable("ConnectionString"));
+            // services.AddAzureAppConfiguration(Environment.GetEnvironmentVariable("ConnectionString"));
 
 #if DEBUG
             builder.Logging.AddDebug();
@@ -80,22 +81,22 @@ namespace MyNextBook
             // Register services
             services.AddSingleton<MainPage>();
             services.AddSingleton<MainPageViewModel>();
-            builder.Services.AddTransient<SettingsPage>();
-            builder.Services.AddTransient<SettingsViewModel>();
 
+            services.AddTransient<SettingsPage>();
+            services.AddTransient<SettingsViewModel>();
+            services.AddSingleton<IOpenLibraryService, OpenLibraryService>();
             services.AddScoped<IGetSecrets, GetSecrets>();
-            services.AddScoped<IOpenLibraryService, OpenLibraryService>();
-
+       
             // Register scoped services with their configuration
 
 
             var app = builder.Build();
-            
-           
+
+
 
             return app;
         }
 
-     
+
     }
 }

@@ -19,6 +19,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
+
 		<!-- Display name -->
 		<ApplicationTitle>MyNextBook</ApplicationTitle>
 
@@ -39,34 +40,38 @@
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
 	</PropertyGroup>
-
+	<ItemGroup>
+		<ProjectReference Include="c:\r\OpenLibrary.NET\src\openlibrarynet.csproj">
+		  <Private>True</Private>
+		</ProjectReference>
+		</ItemGroup>
 	<PropertyGroup Condition="'$(TargetFramework)'=='net10.0-ios'">
 		<ProvisioningType>manual</ProvisioningType>
 		<CodesignProvision>StarterAppProfile</CodesignProvision>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net10.0-android|AnyCPU'">
-	  <ApplicationId>com.logicloop18.mynextbook</ApplicationId>
+		<ApplicationId>com.logicloop18.mynextbook</ApplicationId>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net10.0-ios|AnyCPU'">
-	  <ApplicationId>com.logicloop18.mynextbook</ApplicationId>
+		<ApplicationId>com.logicloop18.mynextbook</ApplicationId>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net10.0-maccatalyst|AnyCPU'">
-	  <ApplicationId>com.logicloop18.mynextbook</ApplicationId>
+		<ApplicationId>com.logicloop18.mynextbook</ApplicationId>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net10.0-android|AnyCPU'">
-	  <ApplicationId>com.logicloop18.mynextbook</ApplicationId>
+		<ApplicationId>com.logicloop18.mynextbook</ApplicationId>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net10.0-ios|AnyCPU'">
-	  <ApplicationId>com.logicloop18.mynextbook</ApplicationId>
+		<ApplicationId>com.logicloop18.mynextbook</ApplicationId>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net10.0-maccatalyst|AnyCPU'">
-	  <ApplicationId>com.logicloop18.mynextbook</ApplicationId>
+		<ApplicationId>com.logicloop18.mynextbook</ApplicationId>
 	</PropertyGroup>
 
 	<Target Name="Update MSAL Client ID" BeforeTargets="BeforeBuild">
@@ -79,7 +84,7 @@
 
 		<!-- Splash Screen -->
 		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#323943" BaseSize="128,128" />
-		
+
 
 
 		<!-- Images -->
@@ -93,15 +98,6 @@
 		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <AndroidResource Remove="NewFolder\**" />
-	  <Compile Remove="NewFolder\**" />
-	  <EmbeddedResource Remove="NewFolder\**" />
-	  <MauiCss Remove="NewFolder\**" />
-	  <MauiXaml Remove="NewFolder\**" />
-	  <None Remove="NewFolder\**" />
-	</ItemGroup>
-
 
 
 	<ItemGroup>
@@ -111,7 +107,7 @@
 
 
 	<ItemGroup>
-	  <None Remove="Resources\Splash\splash.svg" />
+		<None Remove="Resources\Splash\splash.svg" />
 	</ItemGroup>
 
 
@@ -156,26 +152,32 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiAsset Include="Resources\Splash\splash.svg">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </MauiAsset>
+		<MauiAsset Include="Resources\Splash\splash.svg">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiAsset>
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiAsset Update="Resources\Raw\introtext.txt">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </MauiAsset>
+		<Reference Include="OpenLibraryNET">
+			<HintPath>..\..\OpenLibrary.NET\src\bin\Debug\net9.0\OpenLibraryNET.dll</HintPath>
+		</Reference>
 	</ItemGroup>
 
 	<ItemGroup>
+		<MauiAsset Update="Resources\Raw\introtext.txt">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiAsset>
+	</ItemGroup>
+
+	<ItemGroup>
+		<MauiXaml Update="DataTemplates\SeriesTemplates.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
 		<MauiXaml Update="Resources\Styles\ControlTemplates.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
-		<MauiXaml Update="Views\MySeriesPage.xaml">
-		  <Generator>MSBuild:Compile</Generator>
-		</MauiXaml>
 		<MauiXaml Update="Views\SettingsPage.xaml">
-		  <Generator>MSBuild:Compile</Generator>
+			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
 	</ItemGroup>
 

@@ -1,4 +1,5 @@
-﻿using MyNextBook.Views;
+﻿using Microsoft.Maui.Controls;
+using MyNextBook.Views;
 namespace MyNextBook
 {
     public partial class AppShell : Shell
@@ -7,8 +8,8 @@ namespace MyNextBook
         {
             InitializeComponent();
             Routing.RegisterRoute("SettingsPage", typeof(SettingsPage));
-            Routing.RegisterRoute("MySeriesPage", typeof(MySeriesPage));
-            Routing.RegisterRoute("MySeriesPage/SettingsPage", typeof(SettingsPage));
+         
+            Routing.RegisterRoute("MainPage/SettingsPage", typeof(SettingsPage));
 
         }
         /*
@@ -17,7 +18,7 @@ namespace MyNextBook
             base.OnNavigated(args);
 
 
-            //pageTitle.Text = Current.CurrentPage.Title;
+            pageTitle.Text = Current.CurrentPage.Title;
         }
         */
     }
