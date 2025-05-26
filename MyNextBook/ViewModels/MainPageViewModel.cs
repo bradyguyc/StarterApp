@@ -13,6 +13,7 @@ using CommonCode.Helpers;
 using System.Reflection;
 using CommunityToolkit.Mvvm.Input;
 using MyNextBook.Helpers;
+using MyNextBook.Services;
 using MyNextBook.Views;
 
 namespace MyNextBook.ViewModels
@@ -24,13 +25,14 @@ namespace MyNextBook.ViewModels
         [ObservableProperty] private string introText = string.Empty;
         [ObservableProperty] private bool? signInEnabled = true;
         [ObservableProperty] private bool? showWelcome = false;
+        private readonly IOpenLibraryService OLService;
+        private readonly ILogger<MainPageViewModel> _logger;
+     
+        [ObservableProperty] private bool isSignedIn;
 
-        private ILogger<MainPageViewModel> _logger;
-
-        public bool IsSignedIn { get; private set; }
-
-        public MainPageViewModel(ILogger<MainPageViewModel> logger)
+        public MainPageViewModel(IOpenLibraryService olService, ILogger<MainPageViewModel> logger)
         {
+            OLService = olService;
             _logger = logger;
             App.Current.UserAppTheme = AppTheme.Dark;
             PopupDetails = new ShowPopUpDetails();
@@ -44,6 +46,7 @@ namespace MyNextBook.ViewModels
         {
             //todo: I don't like loading error dictionary here.  Seems like it should be done in constructor. But had performance and timing issues.
             await ErrorDictionary.LoadErrorsFromFile();
+            //todo double check that this needs to run on main thread.  I think it does.
             await MainThread.InvokeOnMainThreadAsync(async () =>
             {
 
@@ -63,7 +66,7 @@ namespace MyNextBook.ViewModels
 
               
             }
-            else if (IsSignedIn == true && credentialAvailable)
+            else if (IsSignedIn == true && !credentialAvailable)
             {
                 //Application.Current.Windows[0].Page = new MySeriesPage();
                 await Shell.Current.GoToAsync("SettingsPage");
@@ -71,10 +74,16 @@ namespace MyNextBook.ViewModels
             }
 
 
-            //ShowWelcome = true;
+            ShowWelcome = true;
 
         }
 
+        [RelayCommand]
+        async void GoToSettingsPage()
+        {
+            await Shell.Current.GoToAsync("SettingsPage");
+
+        }
         [RelayCommand]
         public Task SignIn()
         {
@@ -135,12 +144,22 @@ namespace MyNextBook.ViewModels
 
                 }
 
-
-               // ShowWelcome = true;
             });
 
 
         }
+        partial void OnIsSignedInChanged(bool value)
+        {
+            if (value)
+            {
+                Task.Run(()=>OLService.GetLists());
+            }
+        }
 
+        private async Task LoadSeries()
+        {
+            // TODO: Implement the logic to load series here.
+            await Task.Delay(0); // Placeholder for async work.
+        }
     }
 }

@@ -5,8 +5,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:dx="clr-namespace:DevExpress.Maui.Core;assembly=DevExpress.Maui.Core"
     xmlns:viewmodels="clr-namespace:MyNextBook.ViewModels"
-    x:DataType="viewmodels:SettingsViewModel"
     Title="Settings"
+    x:DataType="viewmodels:SettingsViewModel"
     BackgroundColor="{dx:ThemeColor PrimaryContainer}">
 
     <ScrollView>
@@ -15,8 +15,8 @@
             <!--  Appearance Section  -->
             <Border
                 Padding="12"
-                Stroke="{dx:ThemeColor Primary}"
                 BackgroundColor="{dx:ThemeColor SecondaryContainer}"
+                Stroke="{dx:ThemeColor Primary}"
                 StrokeShape="RoundRectangle 8"
                 StrokeThickness="1">
                 <VerticalStackLayout Spacing="16">
@@ -38,7 +38,11 @@
                             Text="Theme Color"
                             TextColor="{dx:ThemeColor OnSecondaryContainer}"
                             VerticalOptions="Center" />
-                        <Picker ItemsSource="{Binding ThemeColorsList}" SelectedItem="{Binding ThemeColor, Mode=TwoWay}" TextColor="{dx:ThemeColor OnSecondaryContainer}" WidthRequest="200" />                    
+                        <Picker
+                            ItemsSource="{Binding ThemeColorsList}"
+                            SelectedItem="{Binding ThemeColor, Mode=TwoWay}"
+                            TextColor="{dx:ThemeColor OnSecondaryContainer}"
+                            WidthRequest="200" />
                     </HorizontalStackLayout>
 
                     <!--  Custom Color Picker  -->
@@ -52,8 +56,8 @@
             <!--  OpenLibrary Credentials Section  -->
             <Border
                 Padding="12"
-                Stroke="{dx:ThemeColor Primary}"
                 BackgroundColor="{dx:ThemeColor SecondaryContainer}"
+                Stroke="{dx:ThemeColor Primary}"
                 StrokeShape="RoundRectangle 8"
                 StrokeThickness="1">
                 <VerticalStackLayout Spacing="16">
@@ -63,10 +67,10 @@
                         TextColor="{dx:ThemeColor OnSecondaryContainer}" />
 
                     <Entry
-                        Placeholder="Username"
                         HeightRequest="40"
+                        Placeholder="Username"
                         Text="{Binding OpenLibraryUsername, Mode=TwoWay}"
-                        TextColor="{dx:ThemeColor OnSecondaryContainer}"/>
+                        TextColor="{dx:ThemeColor OnSecondaryContainer}" />
 
                     <Entry
                         HeightRequest="40"

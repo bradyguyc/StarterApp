@@ -27,6 +27,7 @@
                 Grid.Row="0"
                 Grid.Column="2"
                 Margin="0,0,0,0"
+                Command="{Binding GoToSettingsPageCommand}"
                 HeightRequest="30"
                 HorizontalOptions="EndAndExpand"
                 VerticalOptions="Center"
@@ -43,13 +44,13 @@
         </Grid>
     </Shell.TitleView>
     <TabBar>
-        <Tab Title="Home" Icon="home.png">
+        <Tab Title="Home">
             <ShellContent ContentTemplate="{DataTemplate local:MainPage}" />
         </Tab>
-        <Tab Title="Profile" Icon="profile.png">
-            <ShellContent ContentTemplate="{DataTemplate views:MySeriesPage}" />
+        <Tab Title="Profile">
+            <ShellContent ContentTemplate="{DataTemplate views:SettingsPage}" />
         </Tab>
-        <Tab Title="Settings" Icon="settings.png">
+        <Tab Title="Settings">
             <ShellContent ContentTemplate="{DataTemplate views:SettingsPage}" />
         </Tab>
     </TabBar>
