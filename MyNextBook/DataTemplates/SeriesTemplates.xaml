@@ -2,10 +2,114 @@
 <ResourceDictionary
     x:Class="MyNextBook.DataTemplates.SeriesTemplates"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:dx="http://schemas.devexpress.com/maui"
+    xmlns:fonts="clr-namespace:CommonCode.Helpers"
+    xmlns:models="clr-namespace:MyNextBook.Models">
 
-    <DataTemplate x:Key="seriesListItem">
-        <Grid />
+    <DataTemplate x:Key="seriesListItem" x:DataType="models:Series">
+
+        <Border
+            Margin="5,0,5,5"
+            BackgroundColor="{dx:ThemeColor SecondaryContainer}"
+            HorizontalOptions="FillAndExpand"
+            Stroke="{dx:ThemeColor Outline}"
+            StrokeShape="RoundRectangle 30"
+            StrokeThickness="3">
+
+
+
+            <Grid
+                ColumnDefinitions="90,*"
+                ColumnSpacing="16"
+                HorizontalOptions="FillAndExpand"
+                RowDefinitions="Auto,30,20">
+           
+                <Frame
+                    Grid.RowSpan="3"
+                    Grid.Column="0"
+                    Padding="0"
+                    BorderColor="Transparent"
+                    CornerRadius="10"
+                    IsClippedToBounds="True">
+
+                    <Grid ColumnDefinitions="*,40" RowDefinitions="*,40">
+                        <Image
+                            Grid.Row="0"
+                            Grid.RowSpan="2"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            Aspect="Fill"
+                            HeightRequest="120"
+                            Source="{Binding OpenImageUrl}" />
+                        <Frame
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            BackgroundColor="{dx:ThemeColor SecondaryContainer}"
+                            BorderColor="Transparent"
+                            CornerRadius="50"
+                            HeightRequest="40"
+                            HorizontalOptions="End"
+                            Opacity=".9"
+                            VerticalOptions="End"
+                            WidthRequest="40">
+
+                            <Label
+                                Margin="-8,-8"
+                                BackgroundColor="{dx:ThemeColor SecondaryContainer}"
+                                FontAttributes="Bold"
+                                FontSize="12"
+                                HorizontalOptions="End"
+                                Style="{DynamicResource SecondaryText}"
+                                Text="{Binding UserSeriesDisplayOrder}"
+                                VerticalOptions="End" />
+                        </Frame>
+                    </Grid>
+                </Frame>
+
+                <Label
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    HorizontalOptions="Start"
+                    MaxLines="2"
+                    Style="{StaticResource PrimaryText}"
+                    Text="{Binding Name}"
+                    VerticalOptions="Start" />
+
+                <Label
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    HorizontalOptions="Start"
+                    MaxLines="2"
+                    Style="{StaticResource SecondaryText}"
+                    Text="{Binding SeriesAuthor}"
+                    VerticalOptions="Start" />
+
+
+
+                <Label
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    Margin="0,0,5,0"
+                    HorizontalOptions="End"
+                    Style="{StaticResource SecondaryText}">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="{Binding UserBooksRead}" />
+                            <Span Text=" of " />
+                            <Span Text="{Binding BookCount}" />
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+
+
+
+
+            </Grid>
+
+        </Border>
+
+
     </DataTemplate>
     <DataTemplate x:Key="seriesListItemSelected">
         <Grid />

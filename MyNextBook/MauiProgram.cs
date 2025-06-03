@@ -15,6 +15,9 @@ using Microsoft.Extensions.Configuration;
 using Sentry.Maui;
 using Syncfusion.Maui.Core.Hosting;
 using CommonCode.Helpers;
+#if ANDROID
+using MyNextBook.Platforms.Android;
+#endif 
 using MyNextBook.Services;
 using MyNextBook.Views;
 using MyNextBook.ViewModels;
@@ -38,10 +41,20 @@ namespace MyNextBook
             builder.Configuration.AddJsonStream(stream);
 
             builder
+                .ConfigureMauiHandlers(handlers =>
+                {
+#if ANDROID
+                    handlers.AddHandler(typeof(AppShell), typeof(CustomShellRenderer));
+#endif
+                })
                 .UseMauiApp<App>()
-                .UseDevExpress()
+                .UseDevExpress(useLocalization: false)
+                .UseDevExpressEditors()
+                .UseDevExpressCollectionView()
+                .UseDevExpressControls()
                 .UseMauiCommunityToolkit()
                 .ConfigureSyncfusionCore()
+              
                 .UseSentry(options =>
                 {
                     // The DSN is the only required setting.
@@ -72,7 +85,7 @@ namespace MyNextBook
                 });
 
             // services.AddAzureAppConfiguration(Environment.GetEnvironmentVariable("ConnectionString"));
-
+      
 #if DEBUG
             builder.Logging.AddDebug();
 #endif

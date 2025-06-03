@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,28 +14,32 @@ using CommonCode.Helpers;
 using System.Reflection;
 using CommunityToolkit.Mvvm.Input;
 using MyNextBook.Helpers;
+using MyNextBook.Models;
 using MyNextBook.Services;
 using MyNextBook.Views;
+using OpenLibraryNET.Data;
 
 namespace MyNextBook.ViewModels
 {
     public partial class MainPageViewModel : ObservableObject
     {
+        [ObservableProperty] ObservableCollection<Series> itemsSeries;
         [ObservableProperty] ShowPopUpDetails popupDetails;
         [ObservableProperty] private List<string> idTokenClaims = new();
         [ObservableProperty] private string introText = string.Empty;
         [ObservableProperty] private bool? signInEnabled = true;
         [ObservableProperty] private bool? showWelcome = false;
+        [ObservableProperty] private bool? showSeries = false;
         private readonly IOpenLibraryService OLService;
         private readonly ILogger<MainPageViewModel> _logger;
-     
+
         [ObservableProperty] private bool isSignedIn;
 
         public MainPageViewModel(IOpenLibraryService olService, ILogger<MainPageViewModel> logger)
         {
             OLService = olService;
             _logger = logger;
-            App.Current.UserAppTheme = AppTheme.Dark;
+            //App.Current.UserAppTheme = AppTheme.Dark;
             PopupDetails = new ShowPopUpDetails();
             PopupDetails.IsOpen = false;
             InitializeAsync();
@@ -56,28 +61,58 @@ namespace MyNextBook.ViewModels
                     await PublicClientSingleton.Instance.MSALClientHelper.FetchSignedInUserFromCache();
                 IsSignedIn = cachedUserAccount != null;
             });
-            bool credentialAvailable = await StaticHelpers.OLAreCredentialsSetAsync();
-            if ((IsSignedIn == true) && (credentialAvailable))
+            if (IsSignedIn == false)
             {
                 //await UpdateClaims();
-                ShowWelcome = false;
-            
-                    //Application.Current.Windows[0].Page = new MySeriesPage();
-
-              
-            }
-            else if (IsSignedIn == true && !credentialAvailable)
-            {
+                ShowWelcome = true;
+                ShowSeries = false;
                 //Application.Current.Windows[0].Page = new MySeriesPage();
-                await Shell.Current.GoToAsync("SettingsPage");
+
 
             }
+            else
+            {
+                bool credentialAvailable = await StaticHelpers.OLAreCredentialsSetAsync();
 
+                if (!credentialAvailable)
+                {
+                    //Application.Current.Windows[0].Page = new MySeriesPage();
+                    await Shell.Current.GoToAsync("SettingsPage");
 
-            ShowWelcome = true;
+                }
+                else
+                {
+                    ShowWelcome = false;
+                    ShowSeries = true;
+                }
+            }
+
 
         }
 
+        [RelayCommand]
+        async Task Appearing()
+        {
+            if (!IsSignedIn)
+            {
+                ShowSeries = false;
+                ShowWelcome = true;
+            }
+            bool credentialAvailable = await StaticHelpers.OLAreCredentialsSetAsync();
+            if (IsSignedIn && credentialAvailable)
+            {
+                ShowSeries = true;
+                EnsureSeriesAreLoaded();
+            }
+            else
+            {
+                ShowWelcome = true;
+                PopupDetails.IsOpen = true;
+                PopupDetails.ErrorCode = "ERR-005";
+                OnPropertyChanged(nameof(PopupDetails));
+                return;
+            }
+        }
         [RelayCommand]
         async void GoToSettingsPage()
         {
@@ -137,7 +172,7 @@ namespace MyNextBook.ViewModels
                     ShowWelcome = false;
                     //Application.Current.Windows[0].Page = new MySeriesPage();
                 }
-                else if (IsSignedIn == true && credentialAvailable)
+                else if (IsSignedIn == true && !credentialAvailable)
                 {
                     //Application.Current.Windows[0].Page = new MySeriesPage();
                     await Shell.Current.GoToAsync("SettingsPage");
@@ -152,14 +187,25 @@ namespace MyNextBook.ViewModels
         {
             if (value)
             {
-                Task.Run(()=>OLService.GetLists());
+                EnsureSeriesAreLoaded();
             }
         }
-
-        private async Task LoadSeries()
+        private async Task EnsureSeriesAreLoaded()
         {
-            // TODO: Implement the logic to load series here.
-            await Task.Delay(0); // Placeholder for async work.
+            try
+            {
+                ItemsSeries = await OLService.GetSeries();
+            }
+            catch (Exception ex)
+            {
+                SignInEnabled = true;
+                PopupDetails.IsOpen = true;
+                PopupDetails.ErrorMessage = ex.Message;
+                PopupDetails.ErrorCode = "ERR-002 ";
+                OnPropertyChanged(nameof(PopupDetails));
+            }
+
         }
+      
     }
 }

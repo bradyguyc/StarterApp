@@ -3,85 +3,109 @@
     x:Class="MyNextBook.Views.SettingsPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:customControls="clr-namespace:CommonCode.CustomControls"
     xmlns:dx="clr-namespace:DevExpress.Maui.Core;assembly=DevExpress.Maui.Core"
+    xmlns:dxs="http://schemas.devexpress.com/maui"
     xmlns:viewmodels="clr-namespace:MyNextBook.ViewModels"
     Title="Settings"
     x:DataType="viewmodels:SettingsViewModel"
     BackgroundColor="{dx:ThemeColor PrimaryContainer}">
+    <Grid>
 
-    <ScrollView>
-        <VerticalStackLayout Padding="16" Spacing="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-            <!--  Appearance Section  -->
-            <Border
-                Padding="12"
-                BackgroundColor="{dx:ThemeColor SecondaryContainer}"
-                Stroke="{dx:ThemeColor Primary}"
-                StrokeShape="RoundRectangle 8"
-                StrokeThickness="1">
-                <VerticalStackLayout Spacing="16">
-                    <Label
-                        FontAttributes="Bold"
-                        Text="Appearance"
-                        TextColor="{dx:ThemeColor OnSecondaryContainer}" />
+        <customControls:ErrorPopupView
+            Grid.Row="0"
+            ControlTemplate="{StaticResource ErrorPopupStandard}"
+            ErrorCode="{Binding PopupDetails.ErrorCode}"
+            ErrorMessage="{Binding PopupDetails.ErrorMessage}"
+            ErrorReason="{Binding PopupDetails.ErrorReason}"
+            HeightRequest="500"
+            ShowErrorPopup="{Binding PopupDetails.IsOpen, Mode=TwoWay}"
+            WidthRequest="300" />
+        <ScrollView>
+            <VerticalStackLayout Padding="16" Spacing="24">
 
-                    <HorizontalStackLayout Spacing="12" VerticalOptions="Center">
+                <!--  Appearance Section  -->
+                <Border
+                    Padding="12"
+                    BackgroundColor="{dx:ThemeColor SecondaryContainer}"
+                    Stroke="{dx:ThemeColor Primary}"
+                    StrokeShape="RoundRectangle 8"
+                    StrokeThickness="1">
+                    <VerticalStackLayout Spacing="16">
                         <Label
-                            Text="Light Mode"
-                            TextColor="{dx:ThemeColor OnSecondaryContainer}"
-                            VerticalOptions="Center" />
-                        <Switch IsToggled="{Binding LightMode, Mode=TwoWay}" />
-                    </HorizontalStackLayout>
+                            FontAttributes="Bold"
+                            Text="Appearance"
+                            TextColor="{dx:ThemeColor OnSecondaryContainer}" />
 
-                    <HorizontalStackLayout Spacing="12" VerticalOptions="Center">
+                        <HorizontalStackLayout Spacing="12" VerticalOptions="Center">
+                            <Label
+                                Text="Light Mode"
+                                TextColor="{dx:ThemeColor OnSecondaryContainer}"
+                                VerticalOptions="Center" />
+                            <Switch IsToggled="{Binding LightMode, Mode=TwoWay}" />
+                        </HorizontalStackLayout>
+
+                        <HorizontalStackLayout Spacing="12" VerticalOptions="Center">
+                            <Label
+                                Text="Theme Color"
+                                TextColor="{dx:ThemeColor OnSecondaryContainer}"
+                                VerticalOptions="Center" />
+                            <Picker
+                                ItemsSource="{Binding ThemeColorsList}"
+                                SelectedItem="{Binding ThemeColor, Mode=TwoWay}"
+                                TextColor="{dx:ThemeColor OnSecondaryContainer}"
+                                WidthRequest="200" />
+                        </HorizontalStackLayout>
+
+                        <!--  Custom Color Picker  -->
+                        <Grid IsVisible="{Binding ThemeColor, Converter={StaticResource EqualsConverter}, ConverterParameter=Custom}">
+                            <Label Text="Custom Color" TextColor="{dx:ThemeColor OnPrimaryContainer}" />
+                            <!--  Replace with your preferred color picker control  -->
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!--  OpenLibrary Credentials Section  -->
+                <Border
+                    Padding="12"
+                    BackgroundColor="{dx:ThemeColor SecondaryContainer}"
+                    Stroke="{dx:ThemeColor Primary}"
+                    StrokeShape="RoundRectangle 8"
+                    StrokeThickness="1">
+                    <VerticalStackLayout Spacing="16">
                         <Label
-                            Text="Theme Color"
-                            TextColor="{dx:ThemeColor OnSecondaryContainer}"
-                            VerticalOptions="Center" />
-                        <Picker
-                            ItemsSource="{Binding ThemeColorsList}"
-                            SelectedItem="{Binding ThemeColor, Mode=TwoWay}"
-                            TextColor="{dx:ThemeColor OnSecondaryContainer}"
-                            WidthRequest="200" />
-                    </HorizontalStackLayout>
+                            FontAttributes="Bold"
+                            Text="openlibrary.org credentials"
+                            TextColor="{dx:ThemeColor OnSecondaryContainer}" />
 
-                    <!--  Custom Color Picker  -->
-                    <Grid IsVisible="{Binding ThemeColor, Converter={StaticResource EqualsConverter}, ConverterParameter=Custom}">
-                        <Label Text="Custom Color" TextColor="{dx:ThemeColor OnPrimaryContainer}" />
-                        <!--  Replace with your preferred color picker control  -->
-                    </Grid>
-                </VerticalStackLayout>
-            </Border>
+                        <dxs:TextEdit
+                            HeightRequest="40"
+                            PlaceholderText="Username"
+                            Text="{Binding OpenLibraryUsername, Mode=TwoWay}"
+                            TextColor="{dx:ThemeColor OnSecondaryContainer}" />
+                        <dxs:PasswordEdit
+                            BoxMode="Outlined"
+                            HelpText="*Required"
+                            LabelText="Password"
+                            PasswordIconVisibility="Always"
+                            PlaceholderText="Enter password"
+                            Text="{Binding OpenLibraryPassword, Mode=TwoWay}"
+                            TextColor="{dx:ThemeColor OnSecondaryContainer}" />
 
-            <!--  OpenLibrary Credentials Section  -->
-            <Border
-                Padding="12"
-                BackgroundColor="{dx:ThemeColor SecondaryContainer}"
-                Stroke="{dx:ThemeColor Primary}"
-                StrokeShape="RoundRectangle 8"
-                StrokeThickness="1">
-                <VerticalStackLayout Spacing="16">
-                    <Label
-                        FontAttributes="Bold"
-                        Text="openlibrary.org credentials"
-                        TextColor="{dx:ThemeColor OnSecondaryContainer}" />
+                        <Button
+                            Command="{Binding TestOLCredentialsCommand}"
+                            Text="Test Sign In"
+                            TextColor="{dx:ThemeColor OnSecondaryContainer}" />
+                    </VerticalStackLayout>
+                </Border>
 
-                    <Entry
-                        HeightRequest="40"
-                        Placeholder="Username"
-                        Text="{Binding OpenLibraryUsername, Mode=TwoWay}"
-                        TextColor="{dx:ThemeColor OnSecondaryContainer}" />
-
-                    <Entry
-                        HeightRequest="40"
-                        IsPassword="True"
-                        Placeholder="Password"
-                        Text="{Binding OpenLibraryPassword, Mode=TwoWay}"
-                        TextColor="{dx:ThemeColor OnSecondaryContainer}" />
-                </VerticalStackLayout>
-            </Border>
-
-        </VerticalStackLayout>
-    </ScrollView>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
 </ContentPage>
 

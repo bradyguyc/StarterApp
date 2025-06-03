@@ -11,16 +11,17 @@
     Title="MyNextBook">
 
     <Shell.TitleView>
-        <Grid BackgroundColor="{dx:ThemeColor PrimaryContainer}" ColumnDefinitions="30,*,40">
+        <Grid BackgroundColor="{dx:ThemeColor PrimaryContainer}" ColumnDefinitions="50,*,40">
             <toolkit:AvatarView
                 Grid.Column="0"
                 HorizontalOptions="Start"
-                Text="BC" />
+                Text="BC"
+                WidthRequest="45" />
             <Label
                 x:Name="pageTitle"
                 Grid.Column="1"
                 FontSize="Large"
-                TextColor="Black"
+                TextColor="{dx:ThemeColor OnPrimaryContainer}"
                 VerticalOptions="Center" />
 
             <ImageButton

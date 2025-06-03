@@ -1,17 +1,25 @@
 ﻿using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
 using System.Threading.RateLimiting;
+
 using CommonCode.MSALClient;
+
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
-using MyNextBook.Helpers;
 using Microsoft.Maui.Storage;
+
+using MyNextBook.Helpers;
+using MyNextBook.Models;
+
 using OpenLibraryNET;
 using OpenLibraryNET.Data;
 using OpenLibraryNET.Loader;
 using OpenLibraryNET.OLData;
+
 using Polly;
 using Polly.CircuitBreaker;
 using Polly.Retry;
@@ -20,51 +28,74 @@ namespace MyNextBook.Services
 {
     public interface IOpenLibraryService
     {
-        Task<string> GetOpenLibraryUsernameAsync();
         Task<bool> Login();
-        Task<OLListData[]> GetLists();
+        Task<ObservableCollection<Series>> GetSeries();
+        void SetUsernamePassword(string username, string password);
+
     }
 
     public class OpenLibraryService : IOpenLibraryService
     {
-        private readonly OpenLibraryClient OLClient;
+        private OpenLibraryClient OLClient;
         private readonly ILogger<OpenLibraryService> _logger;
-        private string OLUserName = string.Empty;
-       
+
+        private string OLLoginId = string.Empty;
+        private string OLPassword = string.Empty;
+        public void SetUsernamePassword(string username, string password)
+        {
+            OLLoginId = username;
+            OLPassword = password;
+        }
+
 
         public OpenLibraryService(ILogger<OpenLibraryService> logger)
         {
             Debug.WriteLine("in constructor");
-            var rateLimiter = new FixedWindowRateLimiter(
-                new FixedWindowRateLimiterOptions
-                {
-                    PermitLimit = 2,
-                    Window = TimeSpan.FromSeconds(1),
-                    QueueLimit = int.MaxValue,
-                }
-            );
-            OLClient =
-                new OpenLibraryClient(
-                    configureOptions: options =>
-                    
-                
-                     
+            InitOpenLibraryService();
+
+            _logger = logger;
+        }
+        async Task InitOpenLibraryService()
+        {
+            try
+            {
+                var rateLimiter = new FixedWindowRateLimiter(
+                    new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 2,
+                        Window = TimeSpan.FromSeconds(1),
+                        QueueLimit = int.MaxValue,
+                    }
+                );
+                OLClient =
+                    new OpenLibraryClient(
+                        configureOptions: options =>
                         {
                             options.RateLimiter = new HttpRateLimiterStrategyOptions
                             {
                                 Name = $"{nameof(HttpStandardResilienceOptions.RateLimiter)}",
-                                RateLimiter = args => rateLimiter.AcquireAsync(cancellationToken: args.Context.CancellationToken)
+                                RateLimiter = args =>
+                                    rateLimiter.AcquireAsync(cancellationToken: args.Context.CancellationToken)
                             };
                         }
                         // Copy other properties if you add them to BuildResilienceOptions
-                    ,
-                    logBuilder: builder => builder.AddDebug()// or your preferred logger
-                );
-
-            _logger = logger;
+                        ,
+                        logBuilder: builder => builder.AddDebug() // or your preferred logger
+                    );
+#if ANDROID || IOS
+                OLLoginId = await SecureStorage.Default.GetAsync(Constants.OpenLibraryUsernameKey).ConfigureAwait(false);
+                OLPassword = await SecureStorage.Default.GetAsync(Constants.OpenLibraryPasswordKey).ConfigureAwait(false);
+                Debug.WriteLine($"username:{OLLoginId} password: {OLPassword}");
+                EnsureLoggedIn();
+            }
+            catch (Exception ex)
+            {
+                ErrorHandler.AddError(ex);
+                _logger.LogError(ex, "Failed to initialize OpenLibraryService");
+                throw new Exception("Failed to initialize OpenLibraryService", ex);
+            }
+#endif
         }
-
-
         public static class MyResilienceKeys
         {
             public static readonly ResiliencePropertyKey<TimeSpan> SleepDuration = new("SleepDuration");
@@ -115,7 +146,18 @@ namespace MyNextBook.Services
         {
             if (OLClient.LoggedIn == false)
             {
-                return await Login();
+                try
+                {
+                    if (string.IsNullOrEmpty(OLLoginId) || string.IsNullOrEmpty(OLPassword))
+                    {
+                        throw new Exception("Username or password is not set. Please set them before logging in.");
+                    }
+                    return await Login();
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("login failed", ex);
+                }
             }
 
             return true;
@@ -125,12 +167,11 @@ namespace MyNextBook.Services
         {
             try
             {
-                OLUserName = await SecureStorage.Default.GetAsync(Constants.OpenLibraryUsernameKey);
-                string OLPassword = await SecureStorage.Default.GetAsync(Constants.OpenLibraryUsernameKey);
 
-                await OLClient.LoginAsync(OLUserName, OLPassword).ConfigureAwait(false);
+                await OLClient.LoginAsync(OLLoginId, OLPassword).ConfigureAwait(false);
                 if (OLClient.LoggedIn == true)
                 {
+
                     return true;
                 }
                 else
@@ -145,31 +186,70 @@ namespace MyNextBook.Services
             }
         }
 
-        public async Task<string> GetOpenLibraryUsernameAsync()
+
+
+        public async Task<ObservableCollection<Series>> GetSeries()
         {
+            if (!await EnsureLoggedIn()) throw new Exception("Openlibrary failed login");
             try
             {
-                string OpenLibraryUsername = SecureStorage.Default.GetAsync(Constants.OpenLibraryUsernameKey).Result ?? string.Empty;
-                return OpenLibraryUsername;
+                ObservableCollection<Series> bookSeries = new ObservableCollection<Series>();
+                OLListData[]? userLists = await OLListLoader
+                    .GetUserListsAsync(OLClient.BackingClient, OLClient.Username).ConfigureAwait(false);
+                if (userLists != null)
+                {
+                    foreach (var list in userLists)
+                    {
+                        Series s = new Series
+                        {
+                            seriesData = list,
+
+                            seeds = await OLClient.List.GetListSeedsAsync(OLClient.Username, list.ID),
+
+                        };
+                        OLEditionData[] ed = await OLClient.List.GetListEditionsAsync(OLClient.Username, list.ID).ConfigureAwait(false);
+                        foreach (var e in ed)
+                        {
+
+                            if (e != null)
+                            {
+                                s.editions.Add(e);
+                            }
+                        }
+                      
+                        foreach (OLSeedData seed in s.seeds)
+                        {
+                            if (seed.Type == "work")
+                            {
+
+                            }
+                            if (seed.Type == "edition")
+                            {
+                               // Task<(bool, OLEditionData?)> 
+                               OLEditionData edition = await OLEditionLoader.GetDataByOLIDAsync(OLClient.BackingClient,seed.ID);
+                                 
+                                if (edition != null)
+                                {
+                                    s.editions.Add(edition); 
+                                }
+                            }
+                        }  
+                        bookSeries.Add(s);
+                    }
+                    return bookSeries;
+                }
+                throw new Exception("No lists found for the user.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving OpenLibrary username from secure storage.");
-            }
-            return "";
-        }
-
-        public async Task<OLListData[]> GetLists()
-        {
-            if (!await EnsureLoggedIn()) throw new Exception("Openlibrary failed login");
-
-            OLListData[]? userLists = await OLListLoader.GetUserListsAsync(OLClient.BackingClient, OLUserName).ConfigureAwait(false);
-            if (userLists != null)
-            {
-                return userLists; // Return the first list for simplicity
+                ErrorHandler.AddError(ex);
+                _logger.LogError(ex, "Failed to retrieve user lists from OpenLibrary");
+                throw new Exception("Failed to retrieve user lists from OpenLibrary", ex);
             }
 
-            throw new Exception("No lists found for the user.");
+
         }
+
+
     }
 }

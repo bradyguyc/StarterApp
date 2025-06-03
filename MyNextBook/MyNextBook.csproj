@@ -1,7 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
+		<TargetFrameworks>net10.0-android;net10.0-ios</TargetFrameworks>
+		<TargetAndroidVersion>33</TargetAndroidVersion>
+		<AndroidTargetSdkVersion>33</AndroidTargetSdkVersion>
+		<AndroidMinSdkVersion>33</AndroidMinSdkVersion>
+		<MauiIosResourcePrefix>Assets</MauiIosResourcePrefix>
+
 		<!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
 		<!-- <TargetFrameworks>$(TargetFrameworks);net9.0-tizen</TargetFrameworks> -->
 
@@ -18,8 +23,8 @@
 		<SingleProject>true</SingleProject>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-
-
+		<MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation> 
+		
 		<!-- Display name -->
 		<ApplicationTitle>MyNextBook</ApplicationTitle>
 
@@ -33,9 +38,9 @@
 		<!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
 		<WindowsPackageType>None</WindowsPackageType>
 
-		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">13.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
-		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">34.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">33.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
@@ -47,15 +52,17 @@
 		</ItemGroup>
 	<PropertyGroup Condition="'$(TargetFramework)'=='net10.0-ios'">
 		<ProvisioningType>manual</ProvisioningType>
-		<CodesignProvision>StarterAppProfile</CodesignProvision>
+		<CodesignProvision>com.logicloop18.mynextbook</CodesignProvision>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net10.0-android|AnyCPU'">
 		<ApplicationId>com.logicloop18.mynextbook</ApplicationId>
+		<EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net10.0-ios|AnyCPU'">
 		<ApplicationId>com.logicloop18.mynextbook</ApplicationId>
+		<RuntimeIdentifier>iossimulator-x64</RuntimeIdentifier>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net10.0-maccatalyst|AnyCPU'">
@@ -98,17 +105,14 @@
 		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
 	</ItemGroup>
 
-
-
 	<ItemGroup>
-		<MauiImage Remove="Resources\Images\startappicon.svg" />
+	  <AndroidResource Remove="Platforms\Android\Resources\values\colors.xml" />
+	  <AndroidResource Remove="Platforms\Android\Resources\values\styles.xml" />
 	</ItemGroup>
 
 
 
-	<ItemGroup>
-		<None Remove="Resources\Splash\splash.svg" />
-	</ItemGroup>
+
 
 
 	<ItemGroup>
@@ -123,68 +127,65 @@
 		<PackageReference Include="CommunityToolkit.Maui" Version="11.2.0" />
 		<PackageReference Include="CommunityToolkit.Maui.Markup" Version="6.0.0" />
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+		<PackageReference Include="DevExpress.Maui.Controls" Version="24.2.7" />
 
 		<PackageReference Include="DevExpress.Maui.Core" Version="24.2.7" />
 
+		<PackageReference Include="DevExpress.Maui.Editors" Version="24.2.7" />
+	
 		<PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="8.2.0" />
 
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 
 		<PackageReference Include="OnScreenSizeMarkup.Maui" Version="3.0.18" />
 
-		<PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.0-preview.2.25163.2" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.0-preview.2.25163.2" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0-preview.2.25163.2" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.0-preview.4.25258.110" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.0-preview.4.25258.110" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0-preview.4.25258.110" />
 
-		<PackageReference Include="Microsoft.Identity.Client" Version="4.72.1" />
-		<PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.72.1" />
+		<PackageReference Include="Microsoft.Identity.Client" Version="4.73.0-preview" />
+		<PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.73.0-preview" />
 
 
 
-		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0-preview.2.25163.2" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0-preview.4.25258.110" />
 
-		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.0-preview.2.25165.1" />
+		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.0-preview.4.25263.4" />
 
-		<PackageReference Include="Sentry.Maui" Version="5.8.0" />
-		<PackageReference Include="Syncfusion.Maui.Core" Version="29.2.5" />
-		<PackageReference Include="Syncfusion.Maui.Popup" Version="29.2.5" />
+		<PackageReference Include="Sentry.Maui" Version="5.9.0" />
+		<PackageReference Include="Syncfusion.Maui.Core" Version="29.2.7" />
+		<PackageReference Include="Syncfusion.Maui.Popup" Version="29.2.7" />
 
 	</ItemGroup>
 
-	<ItemGroup>
-		<MauiAsset Include="Resources\Splash\splash.svg">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</MauiAsset>
-	</ItemGroup>
+	
 
-	<ItemGroup>
-		<Reference Include="OpenLibraryNET">
-			<HintPath>..\..\OpenLibrary.NET\src\bin\Debug\net9.0\OpenLibraryNET.dll</HintPath>
-		</Reference>
-	</ItemGroup>
 
-	<ItemGroup>
-		<MauiAsset Update="Resources\Raw\introtext.txt">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</MauiAsset>
-	</ItemGroup>
+
 
 	<ItemGroup>
 		<MauiXaml Update="DataTemplates\SeriesTemplates.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
-		<MauiXaml Update="Resources\Styles\ControlTemplates.xaml">
-			<Generator>MSBuild:Compile</Generator>
-		</MauiXaml>
 		<MauiXaml Update="Views\SettingsPage.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
 	</ItemGroup>
-
+	<PropertyGroup>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+	</PropertyGroup>
 	<ItemGroup>
 		<None Update="Resources\Styles\ControlTemplates.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</None>
+	</ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'net10.0-android'">
+	  <PackageReference Include="Xamarin.AndroidX.Lifecycle.Common.Java8">
+	    <Version>2.8.7.3</Version>
+	  </PackageReference>
+	  <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData">
+	    <Version>2.8.7.3</Version>
+	  </PackageReference>
 	</ItemGroup>
 
 </Project>
