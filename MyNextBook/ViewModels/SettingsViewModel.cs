@@ -6,7 +6,9 @@ using Microsoft.Maui.Storage;
 using System.Linq;
 using DevExpress.Maui.Core;
 using System.Reflection;
+using CommonCode.Models;
 using MyNextBook.Helpers;
+using MyNextBook.Services;
 
 namespace MyNextBook.ViewModels
 {
@@ -17,6 +19,7 @@ namespace MyNextBook.ViewModels
 
         [ObservableProperty] private List<string> themeColorsList;
 
+        [ObservableProperty] ShowPopUpDetails popupDetails;
 
         [ObservableProperty]
         private bool lightMode;
@@ -33,11 +36,57 @@ namespace MyNextBook.ViewModels
         [ObservableProperty]
         private string openLibraryPassword;
 
-        public SettingsViewModel()
+        private readonly IOpenLibraryService _OLService;
+        public SettingsViewModel(IOpenLibraryService olService)
         {
+            _OLService = olService;
             LoadSettings();
         }
 
+        [RelayCommand]
+        async Task TestOLCredentials()
+        {
+            try
+            {
+                PopupDetails = new ShowPopUpDetails();
+
+                string OLUserName = await SecureStorage.Default.GetAsync(Constants.OpenLibraryUsernameKey);
+                string OLPassword = await SecureStorage.Default.GetAsync(Constants.OpenLibraryPasswordKey);
+
+
+                bool r = await _OLService.Login();
+                if (r == true)
+                {
+                 
+                    PopupDetails.IsOpen = true;
+
+                    PopupDetails.ErrorCode = "INFO-001";
+                    OnPropertyChanged(nameof(PopupDetails));
+
+                }
+                else
+                {
+                    PopupDetails.IsOpen = true;
+
+                    PopupDetails.ErrorCode = "ERR-003";
+                    OnPropertyChanged(nameof(PopupDetails));
+
+                }
+            }
+            catch (Exception ex)
+            {
+                PopupDetails = new ShowPopUpDetails
+                {
+                    IsOpen = true,
+                    ErrorMessage = ex.Message,
+                    ErrorCode = "ERR-003"
+                };
+              
+                OnPropertyChanged(nameof(PopupDetails));
+
+                
+            }
+        }
         private async void LoadSettings()
         {
                 LightMode = Preferences.Default.Get<bool>(Constants.LightModeKey, false);

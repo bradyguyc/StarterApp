@@ -5,16 +5,24 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:controls="clr-namespace:CommonCode.CustomControls"
-    xmlns:dx="clr-namespace:DevExpress.Maui.Core;assembly=DevExpress.Maui.Core"
+ 
+    xmlns:dx="http://schemas.devexpress.com/maui"
+    xmlns:dx1="clr-namespace:DevExpress.Maui.Core;assembly=DevExpress.Maui.Core"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:viewmodels="clr-namespace:MyNextBook.ViewModels"
     Title="MyNextBook"
     x:DataType="viewmodels:MainPageViewModel">
     <ContentPage.Resources>
         <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/DataTemplates/SeriesTemplates.xaml" />
+            </ResourceDictionary.MergedDictionaries>
             <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
         </ResourceDictionary>
     </ContentPage.Resources>
+    <ContentPage.Behaviors>
+        <toolkit:EventToCommandBehavior Command="{Binding AppearingCommand}" EventName="Loaded" />
+    </ContentPage.Behaviors>
     <Grid>
         <controls:ErrorPopupView
             Grid.Row="0"
@@ -29,9 +37,9 @@
         <Grid
             Margin="0,0"
             BackgroundColor="{dx:ThemeColor PrimaryContainer}"
-           
+            IsVisible="{Binding ShowWelcome}"
             RowDefinitions="60,*,65">
-        
+
             <Label
                 Grid.Row="0"
                 Margin="0,10"
@@ -74,6 +82,12 @@
                 IsVisible="{Binding ShowWelcome, Converter={StaticResource InvertedBoolConverter}}"
                 Source="owlonbookslargel.png" />
         </Grid>
-       
+
+        <dx:DXCollectionView
+            Margin="10,10,10,10"
+            IsVisible="{Binding ShowWelcome, Converter={StaticResource InvertedBoolConverter}}"
+            ItemTemplate="{StaticResource seriesListItem}"
+            ItemsSource="{Binding ItemsSeries}"
+            SelectedItem="{Binding seriesListItemSelected, Mode=TwoWay}" />
     </Grid>
 </ContentPage>
