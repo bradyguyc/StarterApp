@@ -46,10 +46,9 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
 	</PropertyGroup>
 	<ItemGroup>
-		<ProjectReference Include="c:\r\OpenLibrary.NET\src\openlibrarynet.csproj">
-		  <Private>True</Private>
-		</ProjectReference>
-		</ItemGroup>
+		<ProjectReference Include="c:\r\OpenLibrary.NET\src\openlibrarynet.csproj" />
+		
+	</ItemGroup>
 	<PropertyGroup Condition="'$(TargetFramework)'=='net10.0-ios'">
 		<ProvisioningType>manual</ProvisioningType>
 		<CodesignProvision>com.logicloop18.mynextbook</CodesignProvision>
@@ -57,20 +56,26 @@
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net10.0-android|AnyCPU'">
 		<ApplicationId>com.logicloop18.mynextbook</ApplicationId>
-		<EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
+	
+		<AndroidEnableAssemblyCompression>true</AndroidEnableAssemblyCompression>
+		<AndroidUseSharedRuntime>false</AndroidUseSharedRuntime>
+		<EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
+		<TrimMode>link</TrimMode>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net10.0-ios|AnyCPU'">
 		<ApplicationId>com.logicloop18.mynextbook</ApplicationId>
 		<RuntimeIdentifier>iossimulator-x64</RuntimeIdentifier>
 	</PropertyGroup>
-
+	
+	
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net10.0-maccatalyst|AnyCPU'">
 		<ApplicationId>com.logicloop18.mynextbook</ApplicationId>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net10.0-android|AnyCPU'">
 		<ApplicationId>com.logicloop18.mynextbook</ApplicationId>
+		<TrimMode>link</TrimMode>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net10.0-ios|AnyCPU'">
@@ -84,6 +89,8 @@
 	<Target Name="Update MSAL Client ID" BeforeTargets="BeforeBuild">
 		<Exec Command="powershell.exe  -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $(ProjectDir)\maui-starterapp-common-code\Helpers\updatemsal.ps1" />
 	</Target>
+
+
 
 	<ItemGroup>
 		<!-- App Icon -->
@@ -108,6 +115,15 @@
 	<ItemGroup>
 	  <AndroidResource Remove="Platforms\Android\Resources\values\colors.xml" />
 	  <AndroidResource Remove="Platforms\Android\Resources\values\styles.xml" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <MauiFont Remove="C:\Users\brady\.nuget\packages\syncfusion.maui.core\29.2.7\buildTransitive\..\buildTransitive\Resources\Fonts\MauiMaterialAssets.ttf" />
+	  <MauiFont Remove="Resources\Fonts\MauiMaterialAssets.ttf" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Remove="Resources\Fonts\MauiMaterialAssets.ttf" />
 	</ItemGroup>
 
 
@@ -181,10 +197,12 @@
 	</ItemGroup>
 	<ItemGroup Condition="'$(TargetFramework)' == 'net10.0-android'">
 	  <PackageReference Include="Xamarin.AndroidX.Lifecycle.Common.Java8">
-	    <Version>2.8.7.3</Version>
+		  <Version>2.8.7.3</Version>
+
 	  </PackageReference>
 	  <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData">
-	    <Version>2.8.7.3</Version>
+		  <Version>2.8.7.3</Version>
+
 	  </PackageReference>
 	</ItemGroup>
 

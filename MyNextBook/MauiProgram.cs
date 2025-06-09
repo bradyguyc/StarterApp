@@ -97,7 +97,7 @@ namespace MyNextBook
 
             services.AddTransient<SettingsPage>();
             services.AddTransient<SettingsViewModel>();
-            services.AddSingleton<IOpenLibraryService, OpenLibraryService>();
+            services.AddScoped<IOpenLibraryService, OpenLibraryService>();
             services.AddScoped<IGetSecrets, GetSecrets>();
        
             // Register scoped services with their configuration

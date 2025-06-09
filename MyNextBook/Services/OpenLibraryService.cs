@@ -41,6 +41,10 @@ namespace MyNextBook.Services
 
         private string OLLoginId = string.Empty;
         private string OLPassword = string.Empty;
+        OLMyBooksData currentlyReading = new();
+        OLMyBooksData alreadyRead = new();
+        OLMyBooksData wantToRead = new();
+        public static List<OLAuthorData> authorsList = new();
         public void SetUsernamePassword(string username, string password)
         {
             OLLoginId = username;
@@ -62,26 +66,13 @@ namespace MyNextBook.Services
                 var rateLimiter = new FixedWindowRateLimiter(
                     new FixedWindowRateLimiterOptions
                     {
-                        PermitLimit = 2,
+                        PermitLimit = 15,
                         Window = TimeSpan.FromSeconds(1),
                         QueueLimit = int.MaxValue,
                     }
                 );
-                OLClient =
-                    new OpenLibraryClient(
-                        configureOptions: options =>
-                        {
-                            options.RateLimiter = new HttpRateLimiterStrategyOptions
-                            {
-                                Name = $"{nameof(HttpStandardResilienceOptions.RateLimiter)}",
-                                RateLimiter = args =>
-                                    rateLimiter.AcquireAsync(cancellationToken: args.Context.CancellationToken)
-                            };
-                        }
-                        // Copy other properties if you add them to BuildResilienceOptions
-                        ,
-                        logBuilder: builder => builder.AddDebug() // or your preferred logger
-                    );
+                OLClient = new OpenLibraryClient(logBuilder: builder => builder.AddDebug());
+                OLClient.BackingClient.Timeout = TimeSpan.FromMinutes(1);
 #if ANDROID || IOS
                 OLLoginId = await SecureStorage.Default.GetAsync(Constants.OpenLibraryUsernameKey).ConfigureAwait(false);
                 OLPassword = await SecureStorage.Default.GetAsync(Constants.OpenLibraryPasswordKey).ConfigureAwait(false);
@@ -144,6 +135,7 @@ namespace MyNextBook.Services
 
         private async Task<bool> EnsureLoggedIn()
         {
+            if (OLClient == null) InitOpenLibraryService();
             if (OLClient.LoggedIn == false)
             {
                 try
@@ -193,6 +185,7 @@ namespace MyNextBook.Services
             if (!await EnsureLoggedIn()) throw new Exception("Openlibrary failed login");
             try
             {
+                await OLGetBookStatus();
                 ObservableCollection<Series> bookSeries = new ObservableCollection<Series>();
                 OLListData[]? userLists = await OLListLoader
                     .GetUserListsAsync(OLClient.BackingClient, OLClient.Username).ConfigureAwait(false);
@@ -202,7 +195,7 @@ namespace MyNextBook.Services
                     {
                         Series s = new Series
                         {
-                            seriesData = list,
+                            SeriesData = list,
 
                             seeds = await OLClient.List.GetListSeedsAsync(OLClient.Username, list.ID),
 
@@ -213,27 +206,44 @@ namespace MyNextBook.Services
 
                             if (e != null)
                             {
-                                s.editions.Add(e);
+                                s.Editions.Add(e);
                             }
                         }
-                      
+
                         foreach (OLSeedData seed in s.seeds)
                         {
                             if (seed.Type == "work")
                             {
 
+                                OLWorkData work = await OLWorkLoader.GetDataAsync(OLClient.BackingClient, seed.ID);
+                                OlWorkDataExt w = new OlWorkDataExt();
+                                if (work != null)
+                                {
+                                    CopyProperties(work, w);
+                                    s.Works.Add(w); // Add the extended version if you want
+                                }
+                                foreach (var authorKey in work.AuthorKeys)
+                                {
+                                    OLAuthorData? author = await OLAuthorLoader.GetDataAsync(OLClient.BackingClient, authorKey);
+                                    if (author != null && !authorsList.Contains(author))
+                                    {
+                                        authorsList.Add(author);
+                                    }
+                                }
+
                             }
                             if (seed.Type == "edition")
                             {
-                               // Task<(bool, OLEditionData?)> 
-                               OLEditionData edition = await OLEditionLoader.GetDataByOLIDAsync(OLClient.BackingClient,seed.ID);
-                                 
+                                // Task<(bool, OLEditionData?)> 
+                                OLEditionData edition = await OLEditionLoader.GetDataByOLIDAsync(OLClient.BackingClient, seed.ID);
+
                                 if (edition != null)
                                 {
-                                    s.editions.Add(edition); 
+                                    s.Editions.Add(edition);
                                 }
                             }
-                        }  
+                        }
+                        //s.StateUpdate();
                         bookSeries.Add(s);
                     }
                     return bookSeries;
@@ -250,6 +260,45 @@ namespace MyNextBook.Services
 
         }
 
+        public async Task OLGetBookStatus()
+        {
+            try
+            {
+
+                currentlyReading = await OLClient.MyBooks.GetCurrentlyReadingAsync(OLClient.Username,
+                    new KeyValuePair<string, string>("limit", "500"));
+                alreadyRead = await OLClient.MyBooks.GetAlreadyReadAsync(OLClient.Username,
+                    new KeyValuePair<string, string>("limit", "500"));
+                wantToRead = await OLClient.MyBooks.GetWantToReadAsync(OLClient.Username,
+                    new KeyValuePair<string, string>("limit", "500"));
+
+            }
+
+
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex);
+            }
+        }
+        // Utility method to copy all public properties from OLWorkData to OlWorkDataExt using reflection
+        public static void CopyProperties<TBase, TDerived>(TBase source, TDerived destination)
+            where TBase : class
+            where TDerived : class
+        {
+            var baseType = typeof(TBase);
+            var derivedType = typeof(TDerived);
+
+            foreach (var prop in baseType.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance))
+            {
+                if (!prop.CanRead) continue;
+                var derivedProp = derivedType.GetProperty(prop.Name, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                if (derivedProp != null && derivedProp.CanWrite)
+                {
+                    var value = prop.GetValue(source, null);
+                    derivedProp.SetValue(destination, value, null);
+                }
+            }
+        }
 
     }
 }
