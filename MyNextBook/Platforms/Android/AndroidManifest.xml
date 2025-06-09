@@ -3,6 +3,7 @@
 	<application android:allowBackup="true" 
 				 android:icon="@mipmap/appicon" 
 				 android:roundIcon="@mipmap/appicon_round" 
+				 android:theme="@style/MainTheme"
 				 android:supportsRtl="true" >
 		<activity android:name="microsoft.identity.client.BrowserTabActivity"
 				  android:configChanges="orientation|screenSize" 

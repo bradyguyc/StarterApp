@@ -8,15 +8,20 @@
     xmlns:local="clr-namespace:MyNextBook"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:views="clr-namespace:MyNextBook.Views"
-    Title="MyNextBook">
+    Title="MyNextBook"
+    BackgroundColor="{dx:ThemeColor PrimaryContainer}">
 
     <Shell.TitleView>
-        <Grid BackgroundColor="{dx:ThemeColor PrimaryContainer}" ColumnDefinitions="50,*,40">
+        <Grid
+            Padding="0,0,0,0"
+            BackgroundColor="{dx:ThemeColor PrimaryContainer}"
+            ColumnDefinitions="50,*,40">
             <toolkit:AvatarView
                 Grid.Column="0"
+                HeightRequest="40"
                 HorizontalOptions="Start"
                 Text="BC"
-                WidthRequest="45" />
+                WidthRequest="40" />
             <Label
                 x:Name="pageTitle"
                 Grid.Column="1"
@@ -46,12 +51,21 @@
     </Shell.TitleView>
     <TabBar>
         <Tab Title="Home">
+            <Tab.Icon>
+                <FontImageSource FontFamily="MD" Glyph="{x:Static fonts:IconCodesMIR.Home}" />
+            </Tab.Icon>
             <ShellContent ContentTemplate="{DataTemplate local:MainPage}" />
         </Tab>
         <Tab Title="Profile">
+            <Tab.Icon>
+                <FontImageSource FontFamily="MD" Glyph="{x:Static fonts:IconCodesMIR.Read_more}" />
+            </Tab.Icon>
             <ShellContent ContentTemplate="{DataTemplate views:SettingsPage}" />
         </Tab>
         <Tab Title="Settings">
+            <Tab.Icon>
+                <FontImageSource FontFamily="MD" Glyph="{x:Static fonts:IconCodesMIR.Settings}" />
+            </Tab.Icon>
             <ShellContent ContentTemplate="{DataTemplate views:SettingsPage}" />
         </Tab>
     </TabBar>

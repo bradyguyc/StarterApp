@@ -63,7 +63,7 @@
                         </HorizontalStackLayout>
 
                         <!--  Custom Color Picker  -->
-                        <Grid IsVisible="{Binding ThemeColor, Converter={StaticResource EqualsConverter}, ConverterParameter=Custom}">
+                        <Grid IsVisible="{Binding IsCustomColorTheme}">
                             <Label Text="Custom Color" TextColor="{dx:ThemeColor OnPrimaryContainer}" />
                             <!--  Replace with your preferred color picker control  -->
                         </Grid>

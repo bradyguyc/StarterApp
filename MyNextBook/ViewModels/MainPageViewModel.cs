@@ -43,6 +43,7 @@ namespace MyNextBook.ViewModels
             PopupDetails = new ShowPopUpDetails();
             PopupDetails.IsOpen = false;
             InitializeAsync();
+     
         }
 
 
@@ -201,7 +202,7 @@ namespace MyNextBook.ViewModels
                 SignInEnabled = true;
                 PopupDetails.IsOpen = true;
                 PopupDetails.ErrorMessage = ex.Message;
-                PopupDetails.ErrorCode = "ERR-002 ";
+                PopupDetails.ErrorCode = "ERR-000 ";
                 OnPropertyChanged(nameof(PopupDetails));
             }
 

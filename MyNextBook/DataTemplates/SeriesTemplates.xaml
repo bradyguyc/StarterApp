@@ -40,6 +40,7 @@
                             Grid.Column="0"
                             Grid.ColumnSpan="2"
                             Aspect="Fill"
+                            BackgroundColor="{dx:ThemeColor SecondaryContainer}"
                             HeightRequest="120"
                             Source="{Binding OpenImageUrl}" />
                         <Frame
@@ -61,7 +62,7 @@
                                 FontSize="12"
                                 HorizontalOptions="End"
                                 Style="{DynamicResource SecondaryText}"
-                                Text="{Binding UserSeriesDisplayOrder}"
+                                Text="Or"
                                 VerticalOptions="End" />
                         </Frame>
                     </Grid>
@@ -73,7 +74,7 @@
                     HorizontalOptions="Start"
                     MaxLines="2"
                     Style="{StaticResource PrimaryText}"
-                    Text="{Binding Name}"
+                    Text="{Binding SeriesData.Name}"
                     VerticalOptions="Start" />
 
                 <Label
@@ -82,7 +83,7 @@
                     HorizontalOptions="Start"
                     MaxLines="2"
                     Style="{StaticResource SecondaryText}"
-                    Text="{Binding SeriesAuthor}"
+                    Text="{Binding FirstWorkAuthors}"
                     VerticalOptions="Start" />
 
 
@@ -111,7 +112,7 @@
 
 
     </DataTemplate>
-    <DataTemplate x:Key="seriesListItemSelected">
+    <DataTemplate x:Key="SeriesListItemSelected">
         <Grid />
     </DataTemplate>
 </ResourceDictionary>
