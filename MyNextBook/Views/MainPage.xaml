@@ -4,7 +4,8 @@
     x:Class="MyNextBook.MainPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:controls="clr-namespace:CommonCode.CustomControls"
+    xmlns:sharedcontrols="clr-namespace:CommonCode.CustomControls;assembly=CommonCode"
+    
     xmlns:dx="http://schemas.devexpress.com/maui"
     xmlns:dx1="clr-namespace:DevExpress.Maui.Core;assembly=DevExpress.Maui.Core"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
@@ -24,7 +25,7 @@
         <toolkit:EventToCommandBehavior Command="{Binding AppearingCommand}" EventName="Loaded" />
     </ContentPage.Behaviors>
     <Grid>
-        <controls:ErrorPopupView
+        <sharedcontrols:ErrorPopupView
             Grid.Row="0"
             Grid.Column="0"
          

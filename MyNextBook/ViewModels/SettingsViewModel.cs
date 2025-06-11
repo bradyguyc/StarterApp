@@ -14,29 +14,25 @@ namespace MyNextBook.ViewModels
 {
     public partial class SettingsViewModel : ObservableObject
     {
-     
+
         [ObservableProperty] private bool isCustomColorTheme = false;
 
         [ObservableProperty] private List<string> themeColorsList;
 
         [ObservableProperty] ShowPopUpDetails popupDetails;
 
-        [ObservableProperty]
-        private bool lightMode;
+        [ObservableProperty] private bool lightMode;
 
-        [ObservableProperty]
-        private string themeColor;
+        [ObservableProperty] private string themeColor;
 
-        [ObservableProperty]
-        private string customColor; // Hex string, e.g. "#FF0000"
+        [ObservableProperty] private string customColor; // Hex string, e.g. "#FF0000"
 
-        [ObservableProperty]
-        private string openLibraryUsername;
+        [ObservableProperty] private string openLibraryUsername;
 
-        [ObservableProperty]
-        private string openLibraryPassword;
+        [ObservableProperty] private string openLibraryPassword;
 
         private readonly IOpenLibraryService _OLService;
+
         public SettingsViewModel(IOpenLibraryService olService)
         {
             _OLService = olService;
@@ -57,7 +53,7 @@ namespace MyNextBook.ViewModels
                 bool r = await _OLService.Login();
                 if (r == true)
                 {
-                 
+
                     PopupDetails.IsOpen = true;
 
                     PopupDetails.ErrorCode = "INFO-001";
@@ -81,24 +77,29 @@ namespace MyNextBook.ViewModels
                     ErrorMessage = ex.Message,
                     ErrorCode = "ERR-003"
                 };
-              
+
                 OnPropertyChanged(nameof(PopupDetails));
 
-                
+
             }
         }
+
         private async void LoadSettings()
         {
-                LightMode = Preferences.Default.Get<bool>(Constants.LightModeKey, false);
-                if (Preferences.Default.ContainsKey(Constants.ThemeColorKey)) ThemeColor = Preferences.Default.Get<string>(Constants.ThemeColorKey, "");
-                if (Preferences.Default.ContainsKey(Constants.CustomColorKey)) CustomColor = Preferences.Default.Get<string>(Constants.CustomColorKey, "");
+            LightMode = Preferences.Default.Get<bool>(Constants.LightModeKey, false);
+            if (Preferences.Default.ContainsKey(Constants.ThemeColorKey))
+                ThemeColor = Preferences.Default.Get<string>(Constants.ThemeColorKey, "");
+            if (Preferences.Default.ContainsKey(Constants.CustomColorKey))
+                CustomColor = Preferences.Default.Get<string>(Constants.CustomColorKey, "");
 
-                ThemeColorsList = GetThemeSeedColorNames();
-            
+            ThemeColorsList = GetThemeSeedColorNames();
 
 
-            OpenLibraryUsername = await SecureStorage.Default.GetAsync(Constants.OpenLibraryUsernameKey) ?? string.Empty;
-            OpenLibraryPassword = await SecureStorage.Default.GetAsync(Constants.OpenLibraryPasswordKey) ?? string.Empty;
+
+            OpenLibraryUsername =
+                await SecureStorage.Default.GetAsync(Constants.OpenLibraryUsernameKey) ?? string.Empty;
+            OpenLibraryPassword =
+                await SecureStorage.Default.GetAsync(Constants.OpenLibraryPasswordKey) ?? string.Empty;
         }
 
         partial void OnLightModeChanged(bool value)
@@ -167,6 +168,13 @@ namespace MyNextBook.ViewModels
                 .Where(f => f.FieldType == typeof(Color) || f.FieldType.Name.Contains("Color"))
                 .Select(f => f.Name)
                 .ToList();
+        }
+
+        [RelayCommand]
+        async Task GotoImport()
+        {
+            await Shell.Current.GoToAsync("ImportCSV");
+
         }
 
     }

@@ -4,8 +4,10 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:dx="http://schemas.devexpress.com/maui"
-    xmlns:fonts="clr-namespace:CommonCode.Helpers"
+    xmlns:fonts="clr-namespace:CommonCode.Helpers;assembly=CommonCode"
     xmlns:local="clr-namespace:MyNextBook"
+    xmlns:shared="clr-namespace:CommonCode.Helpers;assembly=CommonCode"
+
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:views="clr-namespace:MyNextBook.Views"
     Title="MyNextBook"
@@ -42,7 +44,7 @@
                 <ImageButton.Source>
                     <FontImageSource
                         FontFamily="MD"
-                        Glyph="{x:Static fonts:IconCodesMIR.Settings}"
+                        Glyph="{x:Static shared:IconCodesMIR.Add_box}"
                         Size="20"
                         Color="{dx:ThemeColor OnSecondaryContainer}" />
                 </ImageButton.Source>
@@ -52,19 +54,19 @@
     <TabBar>
         <Tab Title="Home">
             <Tab.Icon>
-                <FontImageSource FontFamily="MD" Glyph="{x:Static fonts:IconCodesMIR.Home}" />
+                <FontImageSource FontFamily="MD" Glyph="{x:Static shared:IconCodesMIR.Home}" />
             </Tab.Icon>
             <ShellContent ContentTemplate="{DataTemplate local:MainPage}" />
         </Tab>
         <Tab Title="Profile">
             <Tab.Icon>
-                <FontImageSource FontFamily="MD" Glyph="{x:Static fonts:IconCodesMIR.Read_more}" />
+                <FontImageSource FontFamily="MD" Glyph="{x:Static shared:IconCodesMIR.Read_more}" />
             </Tab.Icon>
             <ShellContent ContentTemplate="{DataTemplate views:SettingsPage}" />
         </Tab>
         <Tab Title="Settings">
             <Tab.Icon>
-                <FontImageSource FontFamily="MD" Glyph="{x:Static fonts:IconCodesMIR.Settings}" />
+                <FontImageSource FontFamily="MD" Glyph="{x:Static shared:IconCodesMIR.Settings}" />
             </Tab.Icon>
             <ShellContent ContentTemplate="{DataTemplate views:SettingsPage}" />
         </Tab>

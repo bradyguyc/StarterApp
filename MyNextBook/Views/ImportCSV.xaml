@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="MyNextBook.Views.ImportCSV"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:core="clr-namespace:Syncfusion.Maui.Core;assembly=Syncfusion.Maui.Core"
+    xmlns:dx="clr-namespace:DevExpress.Maui.Core;assembly=DevExpress.Maui.Core"
+    xmlns:dxco="clr-namespace:DevExpress.Maui.Controls;assembly=DevExpress.Maui.Controls"
+    xmlns:dxcv="clr-namespace:DevExpress.Maui.CollectionView;assembly=DevExpress.Maui.CollectionView"
+    xmlns:dxe="clr-namespace:DevExpress.Maui.Editors;assembly=DevExpress.Maui.Editors"
+    xmlns:dxs="http://schemas.devexpress.com/maui"
+    xmlns:fonts="clr-namespace:MyNextBook.Helpers"
+    xmlns:local="clr-namespace:MyNextBook.ViewModels"
+    xmlns:markups="clr-namespace:OnScreenSizeMarkup.Maui;assembly=OnScreenSizeMarkup.Maui"
+    xmlns:models="clr-namespace:MyNextBook.Models"
+    xmlns:popup="clr-namespace:Syncfusion.Maui.Popup;assembly=Syncfusion.Maui.Popup"
+    xmlns:progressBar="clr-namespace:Syncfusion.Maui.ProgressBar;assembly=Syncfusion.Maui.ProgressBar"
+    xmlns:sharedcontrols="clr-namespace:CommonCode.CustomControls;assembly=CommonCode"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:views="clr-namespace:MyNextBook.Views"
+    Title="Import Series"
+    BackgroundColor="{dx:ThemeColor SecondaryContainer}">
+
+    <ContentPage.BindingContext>
+        <local:ImportCSVViewModel />
+    </ContentPage.BindingContext>
+    <Shell.BackButtonBehavior>
+        <BackButtonBehavior Command="{Binding BackCommand}" />
+    </Shell.BackButtonBehavior>
+    <ContentPage.Resources>
+        <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+        <toolkit:BoolToObjectConverter
+            x:Key="BoolToMatchStatus"
+            FalseObject="Unmatched"
+            TrueObject="Matched" />
+        <Style TargetType="Label">
+            <Setter Property="TextColor" Value="{dx:ThemeColor OnSecondaryContainer}" />
+            <Setter Property="BackgroundColor" Value="{dx:ThemeColor SecondaryContainer}" />
+        </Style>
+
+        <Style TargetType="CheckBox">
+
+            <Setter Property="BackgroundColor" Value="{dx:ThemeColor TertiaryContainer}" />
+        </Style>
+
+    </ContentPage.Resources>
+
+
+
+    <!--#region Import Get File-->
+    <Grid
+        BackgroundColor="{dx:ThemeColor SecondaryContainer}"
+        ColumnDefinitions="*,*"
+        RowDefinitions="Auto,*,60">
+        <Label
+            Grid.Row="0"
+            Grid.RowSpan="2"
+            Grid.Column="0"
+            Grid.ColumnSpan="3"
+            Margin="15,20,15,0"
+            FontSize="Medium"
+            HorizontalOptions="Center"
+            IsVisible="{Binding ShowInitial}"
+            MaxLines="8"
+            ZIndex="8">
+            <Label.FormattedText>
+                <FormattedString>
+                    <Span Text="{Binding ImportInstructions}" />
+                    <Span Text=" " />
+                    <Span Text="more info..." TextDecorations="Underline">
+                        <Span.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding OpenMoreInfoCommand}" />
+                        </Span.GestureRecognizers>
+
+                    </Span>
+                </FormattedString>
+            </Label.FormattedText>
+        </Label>
+
+        <!--#region ErrorPopUp-->
+        <sharedcontrols:ErrorPopupView
+            Grid.Row="1"
+            Grid.Column="0"
+            Grid.ColumnSpan="2"
+            ControlTemplate="{StaticResource ErrorPopupStandard}"
+            ErrorCode="{Binding ErrorCode}"
+            ErrorMessage="{Binding ErrorMessage}"
+            ErrorReason="{Binding ErrorReason}"
+            HeightRequest="1"
+            ShowErrorPopup="{Binding ShowErrorPopup, Mode=TwoWay}"
+            WidthRequest="1" />
+        <!--#endregion-->
+        <dxs:DataGridView
+            Grid.Row="0"
+            Grid.RowSpan="2"
+            Grid.Column="0"
+            Grid.ColumnSpan="2"
+            AllowVirtualHorizontalScrolling="True"
+            AutoGenerateColumnsMode="Auto"
+            IsHorizontalScrollBarVisible="True"
+            IsVerticalScrollBarVisible="True"
+            IsVisible="{Binding ShowImport}"
+            ItemsSource="{Binding iCSVData.CsvData}" />
+
+        <Button
+            Grid.Row="2"
+            Grid.Column="0"
+            Command="{Binding PerformImportCommand}"
+            HeightRequest="40"
+            IsVisible="{Binding ShowInitial}"
+            Text="Select File"
+            WidthRequest="150" />
+        <Button
+            Grid.Row="2"
+            Grid.Column="1"
+            Command="{Binding CancelImportCommand}"
+            HeightRequest="40"
+            IsVisible="{Binding ShowInitial}"
+            Text="Cancel"
+            WidthRequest="150" />
+        <Button
+            Grid.Row="2"
+            Grid.Column="0"
+            Command="{Binding AddToLibraryCommand}"
+            HeightRequest="40"
+            IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
+            IsVisible="{Binding ShowImporting}"
+            Text="Add To Library"
+            WidthRequest="100" />
+        <Button
+            Grid.Row="2"
+            Grid.Column="1"
+            Command="{Binding CancelImportCommand}"
+            HeightRequest="40"
+            IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
+            IsVisible="{Binding ShowImporting}"
+            Text="Close"
+            WidthRequest="100" />
+        <ActivityIndicator
+            Grid.Row="2"
+            Grid.Column="1"
+            HeightRequest="30"
+            HorizontalOptions="End"
+            IsRunning="{Binding IsBusy}"
+            VerticalOptions="Center"
+            WidthRequest="40"
+            Color="{dx:ThemeColor OnPrimary}" />
+
+
+    </Grid>
+
+
+
+
+</ContentPage>

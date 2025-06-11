@@ -7,6 +7,7 @@ using CommunityToolkit.Maui;
 
 using DevExpress.Maui;
 using DevExpress.Maui.Core;
+using DevExpress.Maui.DataGrid;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -52,6 +53,7 @@ namespace MyNextBook
                 .UseDevExpressEditors()
                 .UseDevExpressCollectionView()
                 .UseDevExpressControls()
+                .UseDevExpressDataGrid()
                 .UseMauiCommunityToolkit()
                 .ConfigureSyncfusionCore()
               
@@ -94,15 +96,17 @@ namespace MyNextBook
             // Register services
             services.AddSingleton<MainPage>();
             services.AddSingleton<MainPageViewModel>();
+            services.AddSingleton<ImportCSV>();
+            services.AddSingleton<ImportCSVViewModel>();
 
             services.AddTransient<SettingsPage>();
             services.AddTransient<SettingsViewModel>();
             services.AddScoped<IOpenLibraryService, OpenLibraryService>();
             services.AddScoped<IGetSecrets, GetSecrets>();
-       
+
             // Register scoped services with their configuration
 
-
+           
             var app = builder.Build();
 
 

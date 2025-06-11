@@ -3,9 +3,9 @@
     x:Class="MyNextBook.Views.SettingsPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:customControls="clr-namespace:CommonCode.CustomControls"
     xmlns:dx="clr-namespace:DevExpress.Maui.Core;assembly=DevExpress.Maui.Core"
     xmlns:dxs="http://schemas.devexpress.com/maui"
+    xmlns:sharedcontrols="clr-namespace:CommonCode.CustomControls;assembly=CommonCode"
     xmlns:viewmodels="clr-namespace:MyNextBook.ViewModels"
     Title="Settings"
     x:DataType="viewmodels:SettingsViewModel"
@@ -17,7 +17,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <customControls:ErrorPopupView
+        <sharedcontrols:ErrorPopupView
             Grid.Row="0"
             ControlTemplate="{StaticResource ErrorPopupStandard}"
             ErrorCode="{Binding PopupDetails.ErrorCode}"
@@ -97,10 +97,23 @@
                             Text="{Binding OpenLibraryPassword, Mode=TwoWay}"
                             TextColor="{dx:ThemeColor OnSecondaryContainer}" />
 
-                        <Button
-                            Command="{Binding TestOLCredentialsCommand}"
-                            Text="Test Sign In"
-                            TextColor="{dx:ThemeColor OnSecondaryContainer}" />
+                        <Button Command="{Binding TestOLCredentialsCommand}" Text="Test Sign In" />
+                    </VerticalStackLayout>
+                </Border>
+
+
+                <Border
+                    Padding="12"
+                    BackgroundColor="{dx:ThemeColor SecondaryContainer}"
+                    Stroke="{dx:ThemeColor Primary}"
+                    StrokeShape="RoundRectangle 8"
+                    StrokeThickness="1">
+                    <VerticalStackLayout Spacing="16">
+                        <Label FontAttributes="Bold" Text="Import Data" />
+
+
+
+                        <Button Command="{Binding GotoImportCommand}" Text="Import from CSV" />
                     </VerticalStackLayout>
                 </Border>
 
