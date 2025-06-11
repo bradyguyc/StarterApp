@@ -96,11 +96,19 @@
             Grid.Column="0"
             Grid.ColumnSpan="2"
             AllowVirtualHorizontalScrolling="True"
-            AutoGenerateColumnsMode="Auto"
+            AutoGeneratingColumn="DataGridView_OnAutoGeneratingColumn"
+            BackgroundColor="{dx:ThemeColor PrimaryContainer}"
+            EditorShowMode="Tap"
             IsHorizontalScrollBarVisible="True"
+            IsReadOnly="false"
             IsVerticalScrollBarVisible="True"
             IsVisible="{Binding ShowImport}"
-            ItemsSource="{Binding iCSVData.CsvData}" />
+            ItemsSource="{Binding iCSVData.CsvData}"
+            ShowGroupedColumns="True">
+            <dxs:DataGridView.ColumnHeaderAppearance>
+                <dxs:ColumnHeaderAppearance BackgroundColor="{dx:ThemeColor PrimaryContainer}" />
+            </dxs:DataGridView.ColumnHeaderAppearance>
+        </dxs:DataGridView>
 
         <Button
             Grid.Row="2"
