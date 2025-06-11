@@ -60,6 +60,14 @@ public partial class ImportCSVData : ObservableObject
                 return false;
             }
 
+            // Add "Ready" column first
+            this.CsvData.Columns.Add("Ready", typeof(bool));
+            if (this.CsvData.Columns.Contains("Ready")) // Ensure it was added before setting ordinal
+            {
+                this.CsvData.Columns["Ready"].SetOrdinal(0); // Make it the first column
+            }
+
+
             using (var stream = await csvFile.OpenReadAsync())
             using (var reader = new StreamReader(stream))
             {
@@ -86,11 +94,14 @@ public partial class ImportCSVData : ObservableObject
                         return false;
                     }
 
-                    // Add columns to DataTable
+                    // Add columns to DataTable from CSV headers
                     foreach (var header in headers)
                     {
                         this.CsvData.Columns.Add(header);
                     }
+
+                 
+
 
                     int localSeriesNameColumnIndex = -1;
                     for (int i = 0; i < headers.Length; i++)
@@ -102,25 +113,6 @@ public partial class ImportCSVData : ObservableObject
                         }
                     }
 
-                    if (localSeriesNameColumnIndex == -1)
-                    {
-                        // Attempt to find "Name" as a fallback
-                        for (int i = 0; i < headers.Length; i++)
-                        {
-                            if (headers[i].Trim().Equals("Name", StringComparison.OrdinalIgnoreCase))
-                            {
-                                localSeriesNameColumnIndex = i;
-                                // Consider logging a warning that "Series.Name" was not found and "Name" is used as fallback.
-                                break;
-                            }
-                        }
-                        if (localSeriesNameColumnIndex == -1)
-                        {
-                            errorMessage = "Column 'Series.Name' or 'Name' not found in CSV headers. Cannot determine unique series count.";
-                            // We can still load the data, but SeriesFound might be inaccurate or 0.
-                            // Depending on requirements, this could be a return false scenario.
-                        }
-                    }
 
                     var uniqueSeriesNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                     int rowCount = 0;
@@ -129,39 +121,56 @@ public partial class ImportCSVData : ObservableObject
                     {
                         rowCount++;
                         DataRow dataRow = this.CsvData.NewRow();
-                        bool rowHasSeriesName = false;
-                        string currentSeriesName = null;
+
+                        // Set default value for the "Ready" column
+                        dataRow["Ready"] = false;
+
+                        string currentSeriesName = null; // Renamed to avoid conflict if class field was used
 
                         for (int i = 0; i < headers.Length; i++)
                         {
                             try
                             {
                                 var fieldValue = csvReader.GetField(i);
-                                dataRow[i] = fieldValue;
+                                // Use header name to access DataColumn, as "Ready" column shifts indices
+                                if (fieldValue != null)
+                                {
+                                    dataRow[headers[i]] = fieldValue;
+                                }
+                                else
+                                {
+                                    dataRow[headers[i]] = DBNull.Value;
+                                }
                                 if (i == localSeriesNameColumnIndex && !string.IsNullOrWhiteSpace(fieldValue))
                                 {
                                     currentSeriesName = fieldValue.Trim();
-                                    rowHasSeriesName = true;
+                                    // rowHasSeriesName = true; // This variable was unused
                                     uniqueSeriesNames.Add(currentSeriesName);
                                 }
                             }
-                            catch (MissingFieldException) // Handles if a row is shorter than header count
+                            catch (MissingFieldException)
                             {
-                                dataRow[i] = DBNull.Value; // Or string.Empty, depending on preference
+                                dataRow[headers[i]] = DBNull.Value;
                             }
-                            catch (IndexOutOfRangeException) // Should not happen if GetField(i) is used with headers.Length
+                            catch (IndexOutOfRangeException)
                             {
-                                dataRow[i] = DBNull.Value;
+                                dataRow[headers[i]] = DBNull.Value;
                             }
                         }
-                        this.CsvData.Rows.Add(dataRow);
+                        // Set default values for the new trailing columns
+                
 
-                    
+                        this.CsvData.Rows.Add(dataRow);
                     }
 
-                 
-
                     CsvData.TableName = "BooksToImport";
+                    // Add additional columns at the end
+                   
+                    this.CsvData.Columns.Add("OLWork", typeof(string));
+                    this.CsvData.Columns.Add("OLEdition", typeof(string));
+                    this.CsvData.Columns.Add("OLStatus", typeof(string));
+                    this.CsvData.Columns.Add("OLReady", typeof(string));
+                    this.CsvData.Columns["OLReady"].SetOrdinal(1); // Make "OLReady" the first column
                     this.BooksFound = rowCount;
                     this.SeriesFound = uniqueSeriesNames.Count;
                     this.rowsRead = rowCount;
@@ -179,11 +188,11 @@ public partial class ImportCSVData : ObservableObject
         {
             this.errorMessage = $"CSV header validation failed: {ex.Message}";
             ErrorHandler.AddError(new Exception("CSV header validation failed.", ex));
-            this.CsvData?.Clear(); // Clear data on error
+            this.CsvData?.Clear();
             this.CsvData?.Columns.Clear();
             return false;
         }
-        catch (CsvHelperException ex) // Catches CsvHelper specific exceptions
+        catch (CsvHelperException ex)
         {
             this.errorMessage = $"Error processing CSV file with CsvHelper: {ex.Message}";
             ErrorHandler.AddError(new Exception("Error processing CSV file with CsvHelper.", ex));

@@ -2,7 +2,8 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:dx="clr-namespace:DevExpress.Maui.Core;assembly=DevExpress.Maui.Core">
+    xmlns:dx="clr-namespace:DevExpress.Maui.Core;assembly=DevExpress.Maui.Core"
+    xmlns:dxs="http://schemas.devexpress.com/maui">
 
     <Style TargetType="ActivityIndicator">
         <Setter Property="Color" Value="{dx:ThemeColor Primary}" />
@@ -69,6 +70,14 @@
                 </VisualStateGroup>
             </VisualStateGroupList>
         </Setter>
+    </Style>
+
+    <Style TargetType="dxs:PickerColumn">
+        <Setter Property="FontColor" Value="{dx:ThemeColor OnPrimary}" />
+        <Setter Property="BackgroundColor" Value="{dx:ThemeColor PrimaryContainer}" />
+        <Setter Property="FontFamily" Value="OpenSansRegular" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontAttributes" Value="Bold" />
     </Style>
 
     <Style x:Key="PrimaryText" TargetType="Label">
@@ -198,7 +207,10 @@
             </OnPlatform>
         </Style.BasedOn>
     </Style>
+    <Style ApplyToDerivedTypes="True" TargetType="dxs:DataGridView">
 
+        <Setter Property="BackgroundColor" Value="{dx:ThemeColor PrimaryContainer}" />
+    </Style>
     <Style ApplyToDerivedTypes="True" TargetType="Page">
         <Setter Property="Padding" Value="0" />
         <Setter Property="BackgroundColor" Value="{dx:ThemeColor Surface}" />
