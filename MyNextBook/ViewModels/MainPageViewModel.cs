@@ -1,22 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
+using CommonCode.Helpers;
+using CommonCode.Models;
+using CommonCode.MSALClient;
+
+using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
-using CommonCode.Models;
-using CommonCode.MSALClient;
-using CommonCode.Helpers;
-using System.Reflection;
-using CommunityToolkit.Mvvm.Input;
+
 using MyNextBook.Helpers;
 using MyNextBook.Models;
 using MyNextBook.Services;
 using MyNextBook.Views;
+
 using OpenLibraryNET.Data;
 
 namespace MyNextBook.ViewModels
@@ -195,6 +200,7 @@ namespace MyNextBook.ViewModels
         {
             try
             {
+                ShowSyncingToast();
                 ItemsSeries = await OLService.GetSeries();
             }
             catch (Exception ex)
@@ -207,6 +213,17 @@ namespace MyNextBook.ViewModels
             }
 
         }
-      
+        public async Task ShowSyncingToast()
+        {
+            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+            string text = "Syncing with OpenLibrary";
+            ToastDuration duration = ToastDuration.Short;
+            double fontSize = 14;
+
+            var toast = Toast.Make(text, duration, fontSize);
+            await toast.Show(cancellationTokenSource.Token);
+        }
+
+
     }
 }

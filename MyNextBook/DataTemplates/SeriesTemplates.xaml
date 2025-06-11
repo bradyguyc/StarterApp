@@ -4,7 +4,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:dx="http://schemas.devexpress.com/maui"
-    xmlns:fonts="clr-namespace:CommonCode.Helpers"
+    xmlns:fonts="clr-namespace:CommonCode.Helpers;assembly=CommonCode"
     xmlns:models="clr-namespace:MyNextBook.Models">
 
     <DataTemplate x:Key="seriesListItem" x:DataType="models:Series">
@@ -24,14 +24,14 @@
                 ColumnSpacing="16"
                 HorizontalOptions="FillAndExpand"
                 RowDefinitions="Auto,30,20">
-           
-                <Frame
+
+                <Border
                     Grid.RowSpan="3"
                     Grid.Column="0"
                     Padding="0"
-                    BorderColor="Transparent"
-                    CornerRadius="10"
-                    IsClippedToBounds="True">
+                    Stroke="Transparent"
+                    StrokeShape="RoundRectangle 10">
+                    <!-- IsClippedToBounds is generally true by default for Border with StrokeShape -->
 
                     <Grid ColumnDefinitions="*,40" RowDefinitions="*,40">
                         <Image
@@ -43,15 +43,15 @@
                             BackgroundColor="{dx:ThemeColor SecondaryContainer}"
                             HeightRequest="120"
                             Source="{Binding OpenImageUrl}" />
-                        <Frame
+                        <Border
                             Grid.Row="1"
                             Grid.Column="1"
                             BackgroundColor="{dx:ThemeColor SecondaryContainer}"
-                            BorderColor="Transparent"
-                            CornerRadius="50"
+                            Stroke="Transparent"
+                            StrokeShape="RoundRectangle 50"
                             HeightRequest="40"
                             HorizontalOptions="End"
-                            Opacity=".9"
+                            Opacity="0.9"
                             VerticalOptions="End"
                             WidthRequest="40">
 
@@ -62,11 +62,11 @@
                                 FontSize="12"
                                 HorizontalOptions="End"
                                 Style="{DynamicResource SecondaryText}"
-                                Text="Or"
+                                Text="{Binding displayOrder }"
                                 VerticalOptions="End" />
-                        </Frame>
+                        </Border>
                     </Grid>
-                </Frame>
+                </Border>
 
                 <Label
                     Grid.Row="0"
@@ -83,7 +83,7 @@
                     HorizontalOptions="Start"
                     MaxLines="2"
                     Style="{StaticResource SecondaryText}"
-                    Text="{Binding FirstWorkAuthors}"
+                    Text="{Binding authors}"
                     VerticalOptions="Start" />
 
 
@@ -91,7 +91,7 @@
                 <Label
                     Grid.Row="2"
                     Grid.Column="1"
-                    Margin="0,0,5,0"
+                    Margin="0,0,15,0"
                     HorizontalOptions="End"
                     Style="{StaticResource SecondaryText}">
                     <Label.FormattedText>

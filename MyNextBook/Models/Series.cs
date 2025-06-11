@@ -11,9 +11,10 @@ using OpenLibraryNET.OLData;
 
 namespace MyNextBook.Models
 {
-    public record OlWorkDataExt : OLWorkData
+    public record OlWorkDataExt : OLWorkData 
     {
-        public string Status;
+        public string Status = "";
+        public int displayOrder = 0;
         public string OpenImageUrl
         {
             get

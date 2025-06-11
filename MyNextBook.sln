@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenLibraryNET.SourceGenera
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenLibraryNET.RemoveGeneratorAttributes", "..\OpenLibrary.NET\code generation\OpenLibraryNET.RemoveGeneratorAttributes\OpenLibraryNET.RemoveGeneratorAttributes.csproj", "{2D53353A-C7D3-63BC-509F-C1560DA9503D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommonCode", "..\CommonCode\CommonCode\CommonCode.csproj", "{9F8F46CB-4FC5-34EC-F90F-DEC2D35AE86C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -73,6 +75,14 @@ Global
 		{2D53353A-C7D3-63BC-509F-C1560DA9503D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2D53353A-C7D3-63BC-509F-C1560DA9503D}.Release|PhysicalDevice.ActiveCfg = Release|Any CPU
 		{2D53353A-C7D3-63BC-509F-C1560DA9503D}.Release|PhysicalDevice.Build.0 = Release|Any CPU
+		{9F8F46CB-4FC5-34EC-F90F-DEC2D35AE86C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F8F46CB-4FC5-34EC-F90F-DEC2D35AE86C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F8F46CB-4FC5-34EC-F90F-DEC2D35AE86C}.Debug|PhysicalDevice.ActiveCfg = Debug|Any CPU
+		{9F8F46CB-4FC5-34EC-F90F-DEC2D35AE86C}.Debug|PhysicalDevice.Build.0 = Debug|Any CPU
+		{9F8F46CB-4FC5-34EC-F90F-DEC2D35AE86C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F8F46CB-4FC5-34EC-F90F-DEC2D35AE86C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F8F46CB-4FC5-34EC-F90F-DEC2D35AE86C}.Release|PhysicalDevice.ActiveCfg = Release|Any CPU
+		{9F8F46CB-4FC5-34EC-F90F-DEC2D35AE86C}.Release|PhysicalDevice.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

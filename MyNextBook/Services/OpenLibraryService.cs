@@ -54,7 +54,7 @@ namespace MyNextBook.Services
 
         public OpenLibraryService(ILogger<OpenLibraryService> logger)
         {
-            Debug.WriteLine("in constructor");
+      
             InitOpenLibraryService();
 
             _logger = logger;
@@ -71,13 +71,18 @@ namespace MyNextBook.Services
                         QueueLimit = int.MaxValue,
                     }
                 );
-                OLClient = new OpenLibraryClient(logBuilder: builder => builder.AddDebug());
-                OLClient.BackingClient.Timeout = TimeSpan.FromMinutes(1);
+                if (OLClient == null)
+                {
+                    OLClient = new OpenLibraryClient(logBuilder: builder => builder.AddDebug());
+                    OLClient.BackingClient.Timeout = TimeSpan.FromMinutes(1);
 #if ANDROID || IOS
-                OLLoginId = await SecureStorage.Default.GetAsync(Constants.OpenLibraryUsernameKey).ConfigureAwait(false);
-                OLPassword = await SecureStorage.Default.GetAsync(Constants.OpenLibraryPasswordKey).ConfigureAwait(false);
-                Debug.WriteLine($"username:{OLLoginId} password: {OLPassword}");
-                EnsureLoggedIn();
+                    OLLoginId = await SecureStorage.Default.GetAsync(Constants.OpenLibraryUsernameKey)
+                        .ConfigureAwait(false);
+                    OLPassword = await SecureStorage.Default.GetAsync(Constants.OpenLibraryPasswordKey)
+                        .ConfigureAwait(false);
+                    Debug.WriteLine($"username:{OLLoginId} password: {OLPassword}");
+                    EnsureLoggedIn();
+                }
             }
             catch (Exception ex)
             {

@@ -12,6 +12,7 @@ namespace MyNextBook
             BindingContext = new AppShellViewModel();
             Routing.RegisterRoute("SettingsPage", typeof(SettingsPage));
             Routing.RegisterRoute("MainPage/SettingsPage", typeof(SettingsPage));
+            Routing.RegisterRoute("ImportCSV", typeof(ImportCSV));
         }
         
         protected override void OnNavigated(ShellNavigatedEventArgs args)

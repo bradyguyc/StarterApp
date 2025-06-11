@@ -4,7 +4,11 @@ using System.Text;
 
 namespace MyNextBook.Models
 {
-    internal class Book
+    public class Book
     {
+        public string Title { get; set; }
+        public string Author { get; set; }
+       
+        public string Series { get; set; }
     }
 }
