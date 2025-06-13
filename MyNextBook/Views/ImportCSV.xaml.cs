@@ -1,3 +1,5 @@
+using System.Data;
+
 using DevExpress.Maui.Core;
 using DevExpress.Maui.DataGrid;
 
@@ -24,67 +26,148 @@ public partial class ImportCSV : ContentPage
     {
         DataGridView dgv = sender as DataGridView;
 
-        if (e.Column.FieldName == "Series.Name")
-        {
-            dgv.GroupBy(e.Column);
-        }
-        if (e.Column.FieldName == "Ready")
+        if (e.Column.FieldName == "OLReady")
         {
             e.Column.Width = 80;
             e.Column.IsReadOnly = false;
+            if (e.Column.HeaderContentTemplate == null)
+            {
+                DataTemplate dt = new DataTemplate(() =>
+                {
+                    var label = new Label
+                    {
+                        Text = e.Column.FieldName,
+
+                        HorizontalTextAlignment = TextAlignment.Center,
+                        WidthRequest = 200,
+                        FontAttributes = FontAttributes.Bold
+                    };
+
+
+                    var label1 = new Label
+                    {
+                        Text = "Mapped to:",
+
+                        HorizontalTextAlignment = TextAlignment.Center,
+                        WidthRequest = 200,
+                        FontAttributes = FontAttributes.Bold
+                    };
+
+                    var layout = new VerticalStackLayout();
+
+                    layout.BackgroundColor = ThemeManager.Theme.Scheme.PrimaryContainer;
+                    layout.Margin = new Thickness(1, 1, 1, 1);
+                    layout.Children.Add(label);
+                    layout.Children.Add(label1);
+
+                    return layout;
+                });
+                e.Column.HeaderContentTemplate = dt;
+            }
         }
         else
         {
             e.Column.IsReadOnly = true;
             e.Column.Width = 200;
-        }
 
 
-        if (!columnHeaderMap.ContainsKey(e.Column.Column))
-        {
-            columnHeaderMap.Add(e.Column.Column, e.Column.FieldName);
-        }
-        else
-        {
-            columnHeaderMap[e.Column.Column] = e.Column.FieldName;
-        }
 
-        if (e.Column.HeaderContentTemplate == null)
-        {
-            DataTemplate dt = new DataTemplate(() =>
+            if (!columnHeaderMap.ContainsKey(e.Column.Column))
             {
-                var label = new Label
+                columnHeaderMap.Add(e.Column.Column, e.Column.FieldName);
+            }
+            else
+            {
+                columnHeaderMap[e.Column.Column] = e.Column.FieldName;
+            }
+
+            if (e.Column.HeaderContentTemplate == null)
+            {
+                DataTemplate dt = new DataTemplate(() =>
                 {
-                    Text = e.Column.FieldName,
+                    var label = new Label
+                    {
+                        Text = e.Column.FieldName,
 
-                    HorizontalTextAlignment = TextAlignment.Center,
-                    WidthRequest = 200,
-                    FontAttributes = FontAttributes.Bold
-                };
+                        HorizontalTextAlignment = TextAlignment.Center,
+                        WidthRequest = 200,
+                        FontAttributes = FontAttributes.Bold
+                    };
 
 
 
-                var picker = new Picker
+                    var picker = new Picker
+                    {
+                        ItemsSource = validHeaderNames,
+                        SelectedIndex = validHeaderNames.IndexOf(e.Column.FieldName),
+                        WidthRequest = 200,
+                        BackgroundColor = ThemeManager.Theme.Scheme.TertiaryContainer
+
+
+                    };
+
+                    var layout = new VerticalStackLayout();
+
+                    layout.BackgroundColor = ThemeManager.Theme.Scheme.PrimaryContainer;
+                    layout.Margin = new Thickness(0, 0, 0, 0);
+                    layout.Children.Add(label);
+                    layout.Children.Add(picker);
+                    return layout;
+                });
+                e.Column.HeaderContentTemplate = dt;
+            }
+        }
+    }
+
+    private void gridControl_CustomGroupDisplayText(object sender, CustomGroupDisplayTextEventArgs e)
+    {
+        DataGridView gridControl = sender as DataGridView;
+        if (e.Column.FieldName == "Series.Name") // Replace with your grouped column
+        {
+            int totalRows = gridControl.GetChildRowCount(e.RowHandle);
+            int readyCount = 0;
+
+            for (int i = 0; i < totalRows; i++)
+            {
+                int childRowHandle = gridControl.GetChildRowHandle(e.RowHandle, i); // Updated to use gridControl
+                var rowData = gridControl.GetRowItem(childRowHandle) as DataRow; // Updated to use gridControl
+
+                if (rowData != null && rowData["OLReady"] != DBNull.Value && (bool)rowData["OLReady"])
                 {
-                    ItemsSource = validHeaderNames,
-                    SelectedIndex = validHeaderNames.IndexOf(e.Column.FieldName),
-                    WidthRequest = 200,
-                    BackgroundColor = ThemeManager.Theme.Scheme.TertiaryContainer
+                    readyCount++;
+                }
 
 
-                };
+            }
 
-                var layout = new VerticalStackLayout();
-
-                layout.BackgroundColor = ThemeManager.Theme.Scheme.PrimaryContainer;
-                layout.Margin = new Thickness(0, 0, 0, 0);
-                layout.Children.Add(label);
-                layout.Children.Add(picker);
-                return layout;
-            });
-            e.Column.HeaderContentTemplate = dt;
+            e.DisplayText = $"{e.Value}\n{totalRows} Books, {readyCount} ready to import";
         }
 
+    }
+
+    private void gridControl_ValidateCell(object sender, ValidateCellEventArgs e)
+    {
+        if (e.FieldName == "OLReady")
+        {
+            int totalRows = gridControl.GetChildRowCount(e.RowHandle);
+            int readyCount = 0;
+
+            for (int i = 0; i < totalRows; i++)
+            {
+                int childRowHandle = gridControl.GetChildRowHandle(e.RowHandle, i); // Updated to use gridControl
+                var rowData = gridControl.GetRowItem(childRowHandle) as DataRow; // Updated to use gridControl
+
+                if (rowData != null && rowData["OLReady"] != DBNull.Value && (bool)rowData["OLReady"])
+                {
+                    readyCount++;
+                }
+
+
+            }
+            DataGridView gridInstance = sender as DataGridView;
+            gridInstance.RefreshData();
+    
+        }
     }
 }
 
