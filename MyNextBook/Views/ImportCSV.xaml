@@ -24,9 +24,10 @@
     <ContentPage.BindingContext>
         <local:ImportCSVViewModel />
     </ContentPage.BindingContext>
-    <Shell.BackButtonBehavior>
-        <BackButtonBehavior Command="{Binding BackCommand}" />
-    </Shell.BackButtonBehavior>
+    <ContentPage.Behaviors>
+        <toolkit:EventToCommandBehavior Command="{Binding AppearingCommand}" EventName="Loaded" />
+    </ContentPage.Behaviors>
+
     <ContentPage.Resources>
         <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
         <toolkit:BoolToObjectConverter
@@ -62,20 +63,11 @@
             HorizontalOptions="Center"
             IsVisible="{Binding ShowInitial}"
             MaxLines="8"
-            ZIndex="8">
-            <Label.FormattedText>
-                <FormattedString>
-                    <Span Text="{Binding ImportInstructions}" />
-                    <Span Text=" " />
-                    <Span Text="more info..." TextDecorations="Underline">
-                        <Span.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding OpenMoreInfoCommand}" />
-                        </Span.GestureRecognizers>
+            Text="{Binding ImportInstructions}"
+            ZIndex="8" />
 
-                    </Span>
-                </FormattedString>
-            </Label.FormattedText>
-        </Label>
+
+
 
         <!--#region ErrorPopUp-->
         <sharedcontrols:ErrorPopupView
@@ -91,6 +83,7 @@
             WidthRequest="1" />
         <!--#endregion-->
         <dxs:DataGridView
+            x:Name="gridControl"
             Grid.Row="0"
             Grid.RowSpan="2"
             Grid.Column="0"
@@ -98,13 +91,17 @@
             AllowVirtualHorizontalScrolling="True"
             AutoGeneratingColumn="DataGridView_OnAutoGeneratingColumn"
             BackgroundColor="{dx:ThemeColor PrimaryContainer}"
+            CustomGroupDisplayText="gridControl_CustomGroupDisplayText"
             EditorShowMode="Tap"
+            ValidateCell="gridControl_ValidateCell"
+           
             IsHorizontalScrollBarVisible="True"
             IsReadOnly="false"
             IsVerticalScrollBarVisible="True"
             IsVisible="{Binding ShowImport}"
             ItemsSource="{Binding iCSVData.CsvData}"
             ShowGroupedColumns="True">
+
             <dxs:DataGridView.ColumnHeaderAppearance>
                 <dxs:ColumnHeaderAppearance BackgroundColor="{dx:ThemeColor PrimaryContainer}" />
             </dxs:DataGridView.ColumnHeaderAppearance>
@@ -114,6 +111,7 @@
             Grid.Row="2"
             Grid.Column="0"
             Command="{Binding PerformImportCommand}"
+            CommandParameter="{x:Reference gridControl}"
             HeightRequest="40"
             IsVisible="{Binding ShowInitial}"
             Text="Select File"
@@ -152,7 +150,19 @@
             IsRunning="{Binding IsBusy}"
             VerticalOptions="Center"
             WidthRequest="40"
-            Color="{dx:ThemeColor OnPrimary}" />
+            Color="{dx:ThemeColor TertiaryContainer}" />
+        <Grid
+            Grid.Row="2"
+            Margin="10,3"
+            IsVisible="{Binding ShowImporting}"
+            RowDefinitions="*,*">
+            <Label Grid.Row="0" Text="{Binding iCSVData.BooksFound, StringFormat='Books to import  {0}'}" />
+
+
+            <Label Grid.Row="1" Text="{Binding iCSVData.SeriesFound, StringFormat='Series to import {0}'}" />
+
+
+        </Grid>
 
 
     </Grid>

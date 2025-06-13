@@ -6,8 +6,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using CommonCode.Models;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+
 
 using DevExpress.Maui.DataGrid;
 
@@ -26,13 +29,13 @@ namespace MyNextBook.ViewModels
             try
             {
                 IsBusy = false;
-                FinishedFillingIn = false;
+                
 
                 ShowInitial = true;
                 ShowImporting = false;
                 ShowErrorPopup = false;
                 ShowImport = false;
-                FillInData = true;
+                
                 iCSVData = new ImportCSVData();
                 //  PerformImport(null);
 
@@ -51,23 +54,29 @@ namespace MyNextBook.ViewModels
         [ObservableProperty] private string errorReason;
         #endregion
 
-        [ObservableProperty] private string matchedText = Constants.matchedText;
+        //[ObservableProperty] private string matchedText = Constants.matchedText;
         [ObservableProperty] private string importInstructions = Constants.ImportInstructions;
-        [ObservableProperty] private decimal importProgress = 0;
-        [ObservableProperty] private bool showImport = false;
-        [ObservableProperty] private ObservableCollection<Book> allBooks;
-        [ObservableProperty] private string fillinMissingDataText = Constants.FillinMissingDataText;
-        [ObservableProperty] private bool fillInData = true;
-        [ObservableProperty] private string fillInStatusText;
+        //[ObservableProperty] private decimal importProgress = 0;
+        //[ObservableProperty] private bool showImport = false;
+        //[ObservableProperty] private ObservableCollection<Book> allBooks;
+        //[ObservableProperty] private string fillinMissingDataText = Constants.FillinMissingDataText;
+        //[ObservableProperty] private bool fillInData = true;
+        //[ObservableProperty] private string fillInStatusText;
         [ObservableProperty] private string fileToImport;
         //[ObservableProperty] private int booksFilledIn;
-        [ObservableProperty] private bool finishedFillingIn = false;
+        //[ObservableProperty] private bool finishedFillingIn = false;
         [ObservableProperty] private bool showInitial = false;
         [ObservableProperty] private bool showImporting = false;
+        
+        [ObservableProperty] private bool showImport = false;
+        [ObservableProperty] private ShowPopUpDetails popupDetails;
         [ObservableProperty] private ObservableCollection<ImportSeriesResults> bookProcesingList = new ObservableCollection<ImportSeriesResults>();
 
         public ImportCSVData iCSVData { get; set; }
-
+        [RelayCommand] private async Task Loaded()
+        {
+            ShowImport = false;
+        }
         #region import csv file
         [RelayCommand]
         private async Task CancelImport(Object param)
@@ -84,9 +93,7 @@ namespace MyNextBook.ViewModels
         {
             try
             {
-
                 ShowImporting = false;
-
                 ShowInitial = false;
                 var options = new PickOptions
                 {
@@ -102,27 +109,63 @@ namespace MyNextBook.ViewModels
                 if (result != null)
                 {
                     IsBusy = true;
+                    // Yield control to allow the UI to update and show the ActivityIndicator
+                    await Task.Yield(); 
+                    
                     FileToImport = "File: " + result.FileName;
 
-                    await iCSVData.PrepFileForCSVImport(result);
-                    OnPropertyChanged("iCSVData");
-                    IsBusy = false;
-                    ShowImport = true;
+                    try
+                    {
+                        await iCSVData.PrepFileForCSVImport(result);
+                        DataGridView gridView = param as DataGridView;
+                        if (gridView != null) // Check if the cast is successful
+                        {
+                            gridView.GroupBy("Series.Name");
+                            var checkBoxColumn = gridView.Columns.FirstOrDefault(c => c.FieldName == "OLReady") as CheckBoxColumn;
+                            if (checkBoxColumn != null)
+                            {
+                                checkBoxColumn.PropertyChanged += (s, e) => { gridView.RefreshData(); };
+                            }
 
+                        }
+
+
+                        OnPropertyChanged("iCSVData");
+                        ShowImport = true;
+                    } catch (Exception ex)
+                    {
+                        PopupDetails = new ShowPopUpDetails
+                        {
+                            IsOpen = true,
+                            ErrorMessage = ex.Message,
+                            ErrorCode = "ERR-003"
+                        };
+
+                        OnPropertyChanged(nameof(PopupDetails));
+                    }
+                    finally
+                    {
+                        // Ensure IsBusy is set to false regardless of success or failure
+                        IsBusy = false; 
+                    }
                     //Debug.WriteLine("Sereis:" + iCSVData.SeriesFound + " books:" + iCSVData.BooksFound);
                 }
                 else
                 {
-                    Shell.Current.GoToAsync($"..");
+                    await Shell.Current.GoToAsync($"..");
                 }
             }
             catch (Exception ex)
             {
                 // The user canceled or something went wrong
-                //todo: throw error here
+                // It's good practice to also set IsBusy = false here if an unexpected error occurs
+                // before the try/finally block for IsBusy is reached, though in this specific
+                // structure, the main concern is the try/finally around PrepFileForCSVImport.
+                IsBusy = false; 
                 ErrorHandler.AddError(ex);
             }
         }
+
         #endregion
 
         #region Import Step 2

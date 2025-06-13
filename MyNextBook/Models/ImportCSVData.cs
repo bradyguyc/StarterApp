@@ -39,6 +39,8 @@ public partial class ImportCSVData : ObservableObject
 
         errorMessage = "";
     }
+ 
+
 
     public async Task<bool> PrepFileForCSVImport(FileResult csvFile)
     {
@@ -59,14 +61,7 @@ public partial class ImportCSVData : ObservableObject
                 errorMessage = "No CSV file was provided.";
                 return false;
             }
-
-            // Add "Ready" column first
-            this.CsvData.Columns.Add("Ready", typeof(bool));
-            if (this.CsvData.Columns.Contains("Ready")) // Ensure it was added before setting ordinal
-            {
-                this.CsvData.Columns["Ready"].SetOrdinal(0); // Make it the first column
-            }
-
+       
 
             using (var stream = await csvFile.OpenReadAsync())
             using (var reader = new StreamReader(stream))
@@ -93,14 +88,14 @@ public partial class ImportCSVData : ObservableObject
                         errorMessage = "CSV header row is missing or empty.";
                         return false;
                     }
-
+                    this.CsvData.Columns.Add("OLReady", typeof(bool));
                     // Add columns to DataTable from CSV headers
                     foreach (var header in headers)
                     {
                         this.CsvData.Columns.Add(header);
                     }
 
-                 
+
 
 
                     int localSeriesNameColumnIndex = -1;
@@ -123,7 +118,7 @@ public partial class ImportCSVData : ObservableObject
                         DataRow dataRow = this.CsvData.NewRow();
 
                         // Set default value for the "Ready" column
-                        dataRow["Ready"] = false;
+                        dataRow["OLReady"] = false;
 
                         string currentSeriesName = null; // Renamed to avoid conflict if class field was used
 
@@ -158,19 +153,19 @@ public partial class ImportCSVData : ObservableObject
                             }
                         }
                         // Set default values for the new trailing columns
-                
+
 
                         this.CsvData.Rows.Add(dataRow);
                     }
 
                     CsvData.TableName = "BooksToImport";
                     // Add additional columns at the end
-                   
+
                     this.CsvData.Columns.Add("OLWork", typeof(string));
                     this.CsvData.Columns.Add("OLEdition", typeof(string));
                     this.CsvData.Columns.Add("OLStatus", typeof(string));
-                    this.CsvData.Columns.Add("OLReady", typeof(string));
-                    this.CsvData.Columns["OLReady"].SetOrdinal(1); // Make "OLReady" the first column
+                
+                   // this.CsvData.Columns["OLReady"].SetOrdinal(1); // Make "OLReady" the first column
                     this.BooksFound = rowCount;
                     this.SeriesFound = uniqueSeriesNames.Count;
                     this.rowsRead = rowCount;
@@ -181,7 +176,7 @@ public partial class ImportCSVData : ObservableObject
             {
                 errorMessage = "CSV file contains headers but no data rows.";
             }
-
+       
             return true;
         }
         catch (HeaderValidationException ex)
@@ -190,7 +185,7 @@ public partial class ImportCSVData : ObservableObject
             ErrorHandler.AddError(new Exception("CSV header validation failed.", ex));
             this.CsvData?.Clear();
             this.CsvData?.Columns.Clear();
-            return false;
+            throw new Exception(this.errorMessage, ex);
         }
         catch (CsvHelperException ex)
         {
@@ -198,15 +193,16 @@ public partial class ImportCSVData : ObservableObject
             ErrorHandler.AddError(new Exception("Error processing CSV file with CsvHelper.", ex));
             this.CsvData?.Clear();
             this.CsvData?.Columns.Clear();
-            return false;
+            throw new Exception(this.errorMessage, ex);
         }
         catch (Exception ex)
         {
-            this.errorMessage = $"Unable to read in CSV file: {ex.Message}";
-            ErrorHandler.AddError(new Exception("Unable to read in csv file.", ex));
+            this.errorMessage = $"Unable to read CSV file: {ex.Message}";
+            ErrorHandler.AddError(new Exception("Unable to read  csv file.", ex));
             this.CsvData?.Clear();
             this.CsvData?.Columns.Clear();
-            return false;
+            throw new Exception(this.errorMessage, ex);
         }
+    
     }
 }
