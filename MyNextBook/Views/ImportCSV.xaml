@@ -93,14 +93,14 @@
             BackgroundColor="{dx:ThemeColor PrimaryContainer}"
             CustomGroupDisplayText="gridControl_CustomGroupDisplayText"
             EditorShowMode="Tap"
-            ValidateCell="gridControl_ValidateCell"
-           
+            EnableImmediatePosting="True"
             IsHorizontalScrollBarVisible="True"
             IsReadOnly="false"
             IsVerticalScrollBarVisible="True"
             IsVisible="{Binding ShowImport}"
             ItemsSource="{Binding iCSVData.CsvData}"
-            ShowGroupedColumns="True">
+            ShowGroupedColumns="True"
+            ValidateAndSave="gridControl_ValidateAndSave">
 
             <dxs:DataGridView.ColumnHeaderAppearance>
                 <dxs:ColumnHeaderAppearance BackgroundColor="{dx:ThemeColor PrimaryContainer}" />

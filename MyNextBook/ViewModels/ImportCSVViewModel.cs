@@ -121,12 +121,7 @@ namespace MyNextBook.ViewModels
                         if (gridView != null) // Check if the cast is successful
                         {
                             gridView.GroupBy("Series.Name");
-                            var checkBoxColumn = gridView.Columns.FirstOrDefault(c => c.FieldName == "OLReady") as CheckBoxColumn;
-                            if (checkBoxColumn != null)
-                            {
-                                checkBoxColumn.PropertyChanged += (s, e) => { gridView.RefreshData(); };
-                            }
-
+                          
                         }
 
 
