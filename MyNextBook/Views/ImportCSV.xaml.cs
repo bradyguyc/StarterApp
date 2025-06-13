@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Data;
 
 using DevExpress.Maui.Core;
@@ -126,13 +127,12 @@ public partial class ImportCSV : ContentPage
         {
             int totalRows = gridControl.GetChildRowCount(e.RowHandle);
             int readyCount = 0;
+            ArrayList groupsRows = new ArrayList();
+            GetChildRows(gridControl, e.RowHandle, groupsRows);
 
-            for (int i = 0; i < totalRows; i++)
+            foreach (DataRowView row in groupsRows)
             {
-                int childRowHandle = gridControl.GetChildRowHandle(e.RowHandle, i); // Updated to use gridControl
-                var rowData = gridControl.GetRowItem(childRowHandle) as DataRow; // Updated to use gridControl
-
-                if (rowData != null && rowData["OLReady"] != DBNull.Value && (bool)rowData["OLReady"])
+                if (row["OLReady"] != DBNull.Value && (bool)row["OLReady"])
                 {
                     readyCount++;
                 }
@@ -145,29 +145,35 @@ public partial class ImportCSV : ContentPage
 
     }
 
-    private void gridControl_ValidateCell(object sender, ValidateCellEventArgs e)
+
+    public void GetChildRows(DataGridView view, int groupRowHandle, ArrayList childRows)
     {
-        if (e.FieldName == "OLReady")
+        if (!view.IsGroupRow(groupRowHandle)) return;
+        // Get the number of immediate children 
+        int childCount = view.GetChildRowCount(groupRowHandle);
+        for (int i = 0; i < childCount; i++)
         {
-            int totalRows = gridControl.GetChildRowCount(e.RowHandle);
-            int readyCount = 0;
-
-            for (int i = 0; i < totalRows; i++)
+            // Get the handle of a child row 
+            int childHandle = view.GetChildRowHandle(groupRowHandle, i);
+            // If the child is a group row, add its children to the list 
+            if (view.IsGroupRow(childHandle))
+                GetChildRows(view, childHandle, childRows);
+            else
             {
-                int childRowHandle = gridControl.GetChildRowHandle(e.RowHandle, i); // Updated to use gridControl
-                var rowData = gridControl.GetRowItem(childRowHandle) as DataRow; // Updated to use gridControl
-
-                if (rowData != null && rowData["OLReady"] != DBNull.Value && (bool)rowData["OLReady"])
-                {
-                    readyCount++;
-                }
-
-
+                // The child is a data row
+                // Add the row to childRows if it wasn't added before 
+                object row = view.GetRowItem(childHandle);
+                if (!childRows.Contains(row))
+                    childRows.Add(row);
             }
-            DataGridView gridInstance = sender as DataGridView;
-            gridInstance.RefreshData();
-    
         }
+    }
+
+    private void gridControl_ValidateAndSave(object sender, ValidateItemEventArgs e)
+    {
+        e.ForceUpdateItemsSource();
+
+        gridControl.RefreshData();
     }
 }
 
