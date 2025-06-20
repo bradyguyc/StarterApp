@@ -17,7 +17,7 @@ namespace MyNextBook
             PlatformConfig.Instance.RedirectUri = $"msal{PublicClientSingleton.Instance.MSALClientHelper.AzureAdConfig.ClientId}://auth";
 
             // Initialize MSAL and platformConfig is set
-            IAccount existinguser = Task.Run(async () => await PublicClientSingleton.Instance.MSALClientHelper.InitializePublicClientAppAsync()).Result;
+            _ = Task.Run(async () => await PublicClientSingleton.Instance.MSALClientHelper.InitializePublicClientAppAsync());
 
             return base.FinishedLaunching(application, launchOptions);
         }

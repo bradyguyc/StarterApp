@@ -1,20 +1,17 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
-<Application
+﻿<Application
     x:Class="MyNextBook.App"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:dx="clr-namespace:DevExpress.Maui.Core;assembly=DevExpress.Maui.Core"
     xmlns:local="clr-namespace:MyNextBook"
-    xmlns:sharedstyles="clr-namespace:CommonCode.Resources;assembly=CommonCode"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
-                <sharedstyles:SharedStyles />
-
-
+              
+                <ResourceDictionary Source="Resources/Styles/ControlTemplates.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

@@ -35,14 +35,14 @@ namespace MyNextBook.ViewModels
         [ObservableProperty] private bool? signInEnabled = true;
         [ObservableProperty] private bool? showWelcome = false;
         [ObservableProperty] private bool? showSeries = false;
-        private readonly IOpenLibraryService OLService;
+        IOpenLibraryService OLService;
         private readonly ILogger<MainPageViewModel> _logger;
 
         [ObservableProperty] private bool isSignedIn;
 
-        public MainPageViewModel(IOpenLibraryService olService, ILogger<MainPageViewModel> logger)
+        public MainPageViewModel(ILogger<MainPageViewModel> logger)
         {
-            OLService = olService;
+          
             _logger = logger;
             //App.Current.UserAppTheme = AppTheme.Dark;
             PopupDetails = new ShowPopUpDetails();
@@ -78,6 +78,7 @@ namespace MyNextBook.ViewModels
             }
             else
             {
+                
                 bool credentialAvailable = await StaticHelpers.OLAreCredentialsSetAsync();
 
                 if (!credentialAvailable)
@@ -87,12 +88,13 @@ namespace MyNextBook.ViewModels
 
                 }
                 else
-                {
+                {  
+                  
                     ShowWelcome = false;
                     ShowSeries = true;
                 }
             }
-
+            //SignIn();
 
         }
 
@@ -115,7 +117,6 @@ namespace MyNextBook.ViewModels
                 ShowWelcome = true;
                 PopupDetails.IsOpen = true;
                 PopupDetails.ErrorCode = "ERR-005";
-                OnPropertyChanged(nameof(PopupDetails));
                 return;
             }
         }
@@ -140,7 +141,8 @@ namespace MyNextBook.ViewModels
                     string? token = null;
                     try
                     {
-                        token = await PublicClientSingleton.Instance.AcquireTokenSilentAsync();
+                        token =  await PublicClientSingleton.Instance.AcquireTokenSilentAsync();
+                        IsSignedIn = true;
                     }
                     catch (Exception ex)
                     {
@@ -149,7 +151,6 @@ namespace MyNextBook.ViewModels
 
                         PopupDetails.ErrorMessage = ex.Message;
                         PopupDetails.ErrorCode = "ERR-001";
-                        OnPropertyChanged(nameof(PopupDetails));
                         return;
                     }
                     if ((token == null) && (PopupDetails.IsOpen == false))
@@ -157,7 +158,6 @@ namespace MyNextBook.ViewModels
                         SignInEnabled = true;
                         PopupDetails.IsOpen = true;
                         PopupDetails.ErrorCode = "ERR-002 ";
-                        OnPropertyChanged(nameof(PopupDetails));
                     }
                     else
                     {
@@ -193,6 +193,7 @@ namespace MyNextBook.ViewModels
         {
             if (value)
             {
+                OLService = DependencyService.Get<IOpenLibraryService>();
                 EnsureSeriesAreLoaded();
             }
         }
@@ -209,7 +210,6 @@ namespace MyNextBook.ViewModels
                 PopupDetails.IsOpen = true;
                 PopupDetails.ErrorMessage = ex.Message;
                 PopupDetails.ErrorCode = "ERR-000 ";
-                OnPropertyChanged(nameof(PopupDetails));
             }
 
         }

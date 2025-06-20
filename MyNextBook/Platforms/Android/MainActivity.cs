@@ -14,13 +14,15 @@ namespace MyNextBook
     {
         protected override void OnCreate(Bundle savedInstanceState)
         {
+            base.SetTheme(Resource.Style.MainTheme);
+
             base.OnCreate(savedInstanceState);
             // configure platform specific params
             PlatformConfig.Instance.RedirectUri = $"msal{PublicClientSingleton.Instance.MSALClientHelper.AzureAdConfig.ClientId}://auth";
             PlatformConfig.Instance.ParentWindow = this;
 
             // Initialize MSAL and platformConfig is set
-            _ = Task.Run(async () => await PublicClientSingleton.Instance.MSALClientHelper.InitializePublicClientAppAsync()).Result;
+            _ = Task.Run(async () => await PublicClientSingleton.Instance.MSALClientHelper.InitializePublicClientAppAsync());
         }
 
         protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)

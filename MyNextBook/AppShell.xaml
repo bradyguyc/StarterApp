@@ -7,7 +7,6 @@
     xmlns:fonts="clr-namespace:CommonCode.Helpers;assembly=CommonCode"
     xmlns:local="clr-namespace:MyNextBook"
     xmlns:shared="clr-namespace:CommonCode.Helpers;assembly=CommonCode"
-
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:views="clr-namespace:MyNextBook.Views"
     Title="MyNextBook"
