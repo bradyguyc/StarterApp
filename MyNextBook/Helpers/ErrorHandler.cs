@@ -55,7 +55,7 @@ namespace MyNextBook.Helpers
 
             //todo: add method to track errors/send errors...
             //Crashes.TrackError(ex);
-            SentrySdk.CaptureException(ex);
+           // SentrySdk.CaptureException(ex);
             string s = $"^^ {ex.Message} : {memberName} : {sourceLineNumber}  : {sourceFilePath} : {ex.ToString()} ";
 
             System.Diagnostics.Debug.WriteLine(s);

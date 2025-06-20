@@ -31,7 +31,7 @@
                     Padding="0"
                     Stroke="Transparent"
                     StrokeShape="RoundRectangle 10">
-                    <!-- IsClippedToBounds is generally true by default for Border with StrokeShape -->
+                    <!--  IsClippedToBounds is generally true by default for Border with StrokeShape  -->
 
                     <Grid ColumnDefinitions="*,40" RowDefinitions="*,40">
                         <Image
@@ -47,11 +47,11 @@
                             Grid.Row="1"
                             Grid.Column="1"
                             BackgroundColor="{dx:ThemeColor SecondaryContainer}"
-                            Stroke="Transparent"
-                            StrokeShape="RoundRectangle 50"
                             HeightRequest="40"
                             HorizontalOptions="End"
                             Opacity="0.9"
+                            Stroke="Transparent"
+                            StrokeShape="RoundRectangle 50"
                             VerticalOptions="End"
                             WidthRequest="40">
 
@@ -62,7 +62,7 @@
                                 FontSize="12"
                                 HorizontalOptions="End"
                                 Style="{DynamicResource SecondaryText}"
-                                Text="{Binding displayOrder }"
+                                Text="{Binding displayOrder}"
                                 VerticalOptions="End" />
                         </Border>
                     </Grid>

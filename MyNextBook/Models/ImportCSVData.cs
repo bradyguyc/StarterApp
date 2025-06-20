@@ -20,9 +20,7 @@ using MissingFieldException = CsvHelper.MissingFieldException;
 
 public partial class ImportCSVData : ObservableObject
 {
-    //public ObservableCollection<Series> csvData { get; set; }
-    public ObservableCollection<CsvHeaders> headerProperties { get; set; }
-    public ObservableCollection<CsvHeaders> unknownProperties { get; set; }
+ 
     public int rowsRead { get; set; } = 0;
     public int SeriesFound { get; set; } = 0;
     public int BooksFound { get; set; } = 0;
@@ -34,8 +32,8 @@ public partial class ImportCSVData : ObservableObject
     public ImportCSVData()
     {
         csvData = new DataTable();
-        headerProperties = new ObservableCollection<CsvHeaders>();
-        unknownProperties = new ObservableCollection<CsvHeaders>();
+      
+
 
         errorMessage = "";
     }
@@ -205,4 +203,43 @@ public partial class ImportCSVData : ObservableObject
         }
     
     }
+    public async Task<bool> MatchImportedDataToOL()
+    {
+        for (int i = 0; i < this.CsvData.Rows.Count; i++)
+        {
+            DataRow row = this.CsvData.Rows[i];
+            string seriesName = row["Series.Name"]?.ToString()?.Trim();
+            string bookTitle = row["Title"]?.ToString()?.Trim();
+            string authorName = row["Author.Name"]?.ToString()?.Trim();
+            if (string.IsNullOrWhiteSpace(seriesName) || string.IsNullOrWhiteSpace(bookTitle) || string.IsNullOrWhiteSpace(authorName))
+            {
+                return true; // Skip rows with missing required fields
+            }
+            try
+            {
+                // Attempt to find the series in Open Library
+                /*
+                var seriesResult = await OpenLibraryNET.Data.Series.GetSeriesByNameAsync(seriesName);
+                if (seriesResult != null && seriesResult.Works != null && seriesResult.Works.Any())
+               {
+                    row["OLWork"] = seriesResult.Works.FirstOrDefault()?.Key;
+                    row["OLEdition"] = seriesResult.Key;
+                    row["OLStatus"] = "Found";
+                }
+                else
+                {
+                    row["OLStatus"] = "Not Found";
+             */
+                return true;
+            }
+            catch (Exception ex)
+            {
+                ErrorHandler.AddError(ex);
+                row["OLStatus"] = "Error";
+                throw new Exception("", ex);
+            }
+        }
+        return true;
+    }
+   
 }

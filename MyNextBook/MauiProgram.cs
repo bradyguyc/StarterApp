@@ -13,9 +13,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using Microsoft.Extensions.Configuration;
-using Sentry.Maui;
+//using Sentry.Maui;
 using Syncfusion.Maui.Core.Hosting;
 using CommonCode.Helpers;
+using CommonCode.MSALClient; // Required for PublicClientSingleton
 #if ANDROID
 using MyNextBook.Platforms.Android;
 #endif 
@@ -24,6 +25,7 @@ using MyNextBook.Views;
 using MyNextBook.ViewModels;
 using OpenLibraryNET;
 using static System.Net.WebRequestMethods;
+using System.Reflection;
 
 namespace MyNextBook
 {
@@ -56,7 +58,7 @@ namespace MyNextBook
                 .UseDevExpressDataGrid()
                 .UseMauiCommunityToolkit()
                 .ConfigureSyncfusionCore()
-              
+              /*
                 .UseSentry(options =>
                 {
                     // The DSN is the only required setting.
@@ -79,6 +81,7 @@ namespace MyNextBook
                     //options.ExperimentalMetrics = new ExperimentalMetricsOptions { EnableCodeLocations = true };
 
                 })
+              */
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -86,11 +89,30 @@ namespace MyNextBook
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
 
-            // services.AddAzureAppConfiguration(Environment.GetEnvironmentVariable("ConnectionString"));
-      
 #if DEBUG
             builder.Logging.AddDebug();
 #endif
+
+            // Load appsettings.json from the MAUI application's assembly
+            // Ensure 'appsettings.json' is in your MyNextBook project and its Build Action is set to EmbeddedResource.
+            var mauiAppAssembly = Assembly.GetExecutingAssembly();
+            string resourceName = $"{mauiAppAssembly.GetName().Name}.appsettings.json"; // e.g., MyNextBook.appsettings.json
+
+            Stream resourceStream = mauiAppAssembly.GetManifestResourceStream(resourceName);
+
+            if (resourceStream == null)
+            {
+                // Fallback or more specific error handling if your appsettings.json might be named differently or missing.
+                // For example, you could try a default name if the assembly name logic fails.
+                // Or, if CommonCode should have its own fallback, that logic would be internal to it,
+                // but the explicit initialization is preferred.
+                throw new FileNotFoundException($"Embedded resource '{resourceName}' not found in assembly '{mauiAppAssembly.FullName}'. Ensure 'appsettings.json' is an EmbeddedResource in the MAUI project (MyNextBook).");
+            }
+
+            // Initialize the CommonCode singleton
+            // The stream will be disposed by the ConfigurationBuilder within the singleton's constructor
+            PublicClientSingleton.Initialize(resourceStream);
+
             var services = builder.Services;
 
             // Register services
@@ -104,16 +126,15 @@ namespace MyNextBook
             services.AddScoped<IOpenLibraryService, OpenLibraryService>();
             services.AddScoped<IGetSecrets, GetSecrets>();
 
-            // Register scoped services with their configuration
+            // Now that PublicClientSingleton is initialized, you can register its instance
+            // with the DI container if other services need to resolve it.
+            // Or, services can access it via PublicClientSingleton.Instance directly.
+            // Example for DI:
+            // services.AddSingleton(PublicClientSingleton.Instance);
 
-           
             var app = builder.Build();
-
-
 
             return app;
         }
-
-
     }
 }

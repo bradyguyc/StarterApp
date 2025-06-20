@@ -23,14 +23,14 @@
 		<SingleProject>true</SingleProject>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation> 
-		
+		<MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
+
 		<!-- Display name -->
 		<ApplicationTitle>MyNextBook</ApplicationTitle>
 
 		<!-- App Identifier -->
 		<ApplicationId>com.logicloop18.mynextbook</ApplicationId>
-
+	
 		<!-- Versions -->
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
 		<ApplicationVersion>1</ApplicationVersion>
@@ -45,10 +45,15 @@
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
 	</PropertyGroup>
+
 	<ItemGroup>
 		<ProjectReference Include="..\..\CommonCode\CommonCode\CommonCode.csproj" />
-		<ProjectReference Include="c:\r\OpenLibrary.NET\src\openlibrarynet.csproj" />
-		
+		<ProjectReference Include="..\..\OpenLibrary.NET\code generation\OpenLibraryNET.Diagnostics\OpenLibraryNET.Diagnostics.csproj" />
+		<ProjectReference Include="..\..\OpenLibrary.NET\code generation\OpenLibraryNET.GeneratorAttributes\OpenLibraryNET.GeneratorAttributes.csproj" />
+		<ProjectReference Include="..\..\OpenLibrary.NET\code generation\OpenLibraryNET.SourceGenerators\OpenLibraryNET.SourceGenerators.csproj" />
+		<ProjectReference Include="..\..\OpenLibrary.NET\src\OpenLibraryNET.csproj" />
+
+
 	</ItemGroup>
 	<PropertyGroup Condition="'$(TargetFramework)'=='net10.0-ios'">
 		<ProvisioningType>manual</ProvisioningType>
@@ -57,19 +62,19 @@
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net10.0-android|AnyCPU'">
 		<ApplicationId>com.logicloop18.mynextbook</ApplicationId>
-	
-		<AndroidEnableAssemblyCompression>true</AndroidEnableAssemblyCompression>
-		<AndroidUseSharedRuntime>false</AndroidUseSharedRuntime>
-		<EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
-		<TrimMode>link</TrimMode>
+
+		<AndroidEnableAssemblyCompression>false</AndroidEnableAssemblyCompression>
+		<AndroidUseSharedRuntime>true</AndroidUseSharedRuntime>
+		<EmbedAssembliesIntoApk>false</EmbedAssembliesIntoApk>
+		<TrimMode>SdkOnly</TrimMode>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net10.0-ios|AnyCPU'">
 		<ApplicationId>com.logicloop18.mynextbook</ApplicationId>
 		<RuntimeIdentifier>iossimulator-x64</RuntimeIdentifier>
 	</PropertyGroup>
-	
-	
+
+
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net10.0-maccatalyst|AnyCPU'">
 		<ApplicationId>com.logicloop18.mynextbook</ApplicationId>
 	</PropertyGroup>
@@ -116,26 +121,26 @@
 
 
 	<ItemGroup>
-	  <AndroidResource Remove="maui-starterapp-common-code\**" />
-	  <Compile Remove="maui-starterapp-common-code\**" />
-	  <EmbeddedResource Remove="maui-starterapp-common-code\**" />
-	  <MauiCss Remove="maui-starterapp-common-code\**" />
-	  <MauiXaml Remove="maui-starterapp-common-code\**" />
-	  <None Remove="maui-starterapp-common-code\**" />
+		<AndroidResource Remove="maui-starterapp-common-code\**" />
+		<Compile Remove="maui-starterapp-common-code\**" />
+		<EmbeddedResource Remove="maui-starterapp-common-code\**" />
+		<MauiCss Remove="maui-starterapp-common-code\**" />
+		<MauiXaml Remove="maui-starterapp-common-code\**" />
+		<None Remove="maui-starterapp-common-code\**" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <AndroidResource Remove="Platforms\Android\Resources\values\colors.xml" />
-	  <AndroidResource Remove="Platforms\Android\Resources\values\styles.xml" />
+		<AndroidResource Remove="Platforms\Android\Resources\values\colors.xml" />
+		<AndroidResource Remove="Platforms\Android\Resources\values\styles.xml" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiFont Remove="C:\Users\brady\.nuget\packages\syncfusion.maui.core\29.2.7\buildTransitive\..\buildTransitive\Resources\Fonts\MauiMaterialAssets.ttf" />
-	  <MauiFont Remove="Resources\Fonts\MauiMaterialAssets.ttf" />
+		<MauiFont Remove="C:\Users\brady\.nuget\packages\syncfusion.maui.core\29.2.7\buildTransitive\..\buildTransitive\Resources\Fonts\MauiMaterialAssets.ttf" />
+		<MauiFont Remove="Resources\Fonts\MauiMaterialAssets.ttf" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Remove="Resources\Fonts\MauiMaterialAssets.ttf" />
+		<None Remove="Resources\Fonts\MauiMaterialAssets.ttf" />
 	</ItemGroup>
 
 
@@ -152,8 +157,8 @@
 	<ItemGroup>
 		<PackageReference Include="Azure.Data.AppConfiguration" Version="1.6.1" />
 		<PackageReference Include="Azure.Identity" Version="1.14.0" />
-		<PackageReference Include="CommunityToolkit.Maui" Version="11.2.0" />
-		<PackageReference Include="CommunityToolkit.Maui.Markup" Version="6.0.0" />
+		<PackageReference Include="CommunityToolkit.Maui" Version="12.0.0" />
+		<PackageReference Include="CommunityToolkit.Maui.Markup" Version="6.0.1" />
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
 		<PackageReference Include="CsvHelper" Version="33.1.0" />
 		<PackageReference Include="DevExpress.Maui.Controls" Version="24.2.7" />
@@ -163,7 +168,7 @@
 		<PackageReference Include="DevExpress.Maui.DataGrid" Version="24.2.7" />
 
 		<PackageReference Include="DevExpress.Maui.Editors" Version="24.2.7" />
-	
+
 		<PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="8.2.0" />
 
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
@@ -182,25 +187,26 @@
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0-preview.5.25277.114" />
 
 		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.0-preview.4.25263.4" />
-
-		<PackageReference Include="Sentry.Maui" Version="5.11.0-alpha.1" />
-		<PackageReference Include="Syncfusion.Maui.Core" Version="29.2.9" />
-		<PackageReference Include="Syncfusion.Maui.Popup" Version="29.2.9" />
-		<PackageReference Include="Syncfusion.Maui.ProgressBar" Version="29.2.9" />
+		<PackageReference Include="Syncfusion.Maui.Core" Version="29.2.10" />
+		<PackageReference Include="Syncfusion.Maui.Popup" Version="29.2.10" />
+		<PackageReference Include="Syncfusion.Maui.ProgressBar" Version="29.2.10" />
 
 	</ItemGroup>
 
-	
+
 
 
 
 
 	<ItemGroup>
 		<MauiXaml Update="DataTemplates\SeriesTemplates.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Resources\Styles\ControlTemplates.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
 		<MauiXaml Update="Views\ImportCSV.xaml">
-		  <Generator>MSBuild:Compile</Generator>
+			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
 		<MauiXaml Update="Views\SettingsPage.xaml">
 			<Generator>MSBuild:Compile</Generator>
@@ -215,14 +221,14 @@
 		</None>
 	</ItemGroup>
 	<ItemGroup Condition="'$(TargetFramework)' == 'net10.0-android'">
-	  <PackageReference Include="Xamarin.AndroidX.Lifecycle.Common.Java8">
-		  <Version>2.8.7.4</Version>
+		<PackageReference Include="Xamarin.AndroidX.Lifecycle.Common.Java8">
+			<Version>2.8.7.4</Version>
 
-	  </PackageReference>
-	  <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData">
-		  <Version>2.8.7.4</Version>
+		</PackageReference>
+		<PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData">
+			<Version>2.8.7.4</Version>
 
-	  </PackageReference>
+		</PackageReference>
 	</ItemGroup>
 
 </Project>
