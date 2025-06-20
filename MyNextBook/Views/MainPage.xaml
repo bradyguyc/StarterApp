@@ -4,10 +4,9 @@
     x:Class="MyNextBook.MainPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:sharedcontrols="clr-namespace:CommonCode.CustomControls;assembly=CommonCode"
-    
     xmlns:dx="http://schemas.devexpress.com/maui"
     xmlns:dx1="clr-namespace:DevExpress.Maui.Core;assembly=DevExpress.Maui.Core"
+    xmlns:sharedcontrols="clr-namespace:CommonCode.CustomControls;assembly=CommonCode"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:viewmodels="clr-namespace:MyNextBook.ViewModels"
     Title="MyNextBook"
@@ -24,21 +23,20 @@
     <ContentPage.Behaviors>
         <toolkit:EventToCommandBehavior Command="{Binding AppearingCommand}" EventName="Loaded" />
     </ContentPage.Behaviors>
-    <Grid>
+    <Grid RowDefinitions="40,*,40">
         <sharedcontrols:ErrorPopupView
-            Grid.Row="0"
+            Grid.Row="1"
             Grid.Column="0"
-         
             ControlTemplate="{StaticResource ErrorPopupStandard}"
             ErrorCode="{Binding PopupDetails.ErrorCode}"
             ErrorMessage="{Binding PopupDetails.ErrorMessage}"
             ErrorReason="{Binding PopupDetails.ErrorReason}"
             HeightRequest="500"
-            IsVisible="{Binding PopupDetails.IsOpen}"
             ShowErrorPopup="{Binding PopupDetails.IsOpen, Mode=TwoWay}"
             WidthRequest="300"
             ZIndex="3" />
         <Grid
+            Grid.Row="1"
             Margin="0,0"
             BackgroundColor="{dx:ThemeColor PrimaryContainer}"
             IsVisible="{Binding ShowWelcome}"
@@ -88,6 +86,7 @@
         </Grid>
 
         <dx:DXCollectionView
+            Grid.Row="1"
             Margin="0,0,0,0"
             IsVisible="{Binding ShowWelcome, Converter={StaticResource InvertedBoolConverter}}"
             ItemTemplate="{StaticResource seriesListItem}"
