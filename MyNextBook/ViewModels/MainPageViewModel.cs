@@ -61,19 +61,16 @@ namespace MyNextBook.ViewModels
             await MainThread.InvokeOnMainThreadAsync(async () =>
             {
 
-                IntroText = await CommonCode.Helpers.FileHelpers.ReadTextFile("introtext.txt");
-
+            
                 var cachedUserAccount =
                     await PublicClientSingleton.Instance.MSALClientHelper.FetchSignedInUserFromCache();
                 IsSignedIn = cachedUserAccount != null;
             });
             if (IsSignedIn == false)
             {
-                //await UpdateClaims();
-                ShowWelcome = true;
-                ShowSeries = false;
-                //Application.Current.Windows[0].Page = new MySeriesPage();
-
+                await Shell.Current.GoToAsync("WelcomeScreen");
+             
+           
 
             }
             else
@@ -87,12 +84,7 @@ namespace MyNextBook.ViewModels
                     await Shell.Current.GoToAsync("SettingsPage");
 
                 }
-                else
-                {  
-                  
-                    ShowWelcome = false;
-                    ShowSeries = true;
-                }
+              
             }
             //SignIn();
 
@@ -101,10 +93,14 @@ namespace MyNextBook.ViewModels
         [RelayCommand]
         async Task Appearing()
         {
+            var cachedUserAccount =
+                   await PublicClientSingleton.Instance.MSALClientHelper.FetchSignedInUserFromCache();
+            IsSignedIn = cachedUserAccount != null;
+
             if (!IsSignedIn)
             {
-                ShowSeries = false;
-                ShowWelcome = true;
+                await Shell.Current.GoToAsync("WelcomeScreen");
+
             }
             bool credentialAvailable = await StaticHelpers.OLAreCredentialsSetAsync();
             if (IsSignedIn && credentialAvailable)
@@ -127,67 +123,58 @@ namespace MyNextBook.ViewModels
 
         }
         [RelayCommand]
-        public Task SignIn()
+        public async Task SignIn()
         {
-
-            IAccount? cachedUserAccount = null;
             SignInEnabled = false;
-            cachedUserAccount = PublicClientSingleton.Instance.MSALClientHelper.FetchSignedInUserFromCache().Result;
-
-            return MainThread.InvokeOnMainThreadAsync(async () =>
+            try
             {
-                if (cachedUserAccount == null)
+                string token = null;
+                try
                 {
-                    string? token = null;
-                    try
-                    {
-                        token =  await PublicClientSingleton.Instance.AcquireTokenSilentAsync();
-                        IsSignedIn = true;
-                    }
-                    catch (Exception ex)
-                    {
-                        PopupDetails.IsOpen = true;
-                        SignInEnabled = true;
+                    // This method handles both silent and interactive flows.
+                    token = await PublicClientSingleton.Instance.AcquireTokenSilentAsync();
+                }
+                catch (Exception ex)
+                {
+                    PopupDetails.IsOpen = true;
+                    PopupDetails.ErrorMessage = ex.Message;
+                    PopupDetails.ErrorCode = "ERR-001";
+                    IsSignedIn = false;
+                    return;
+                }
 
-                        PopupDetails.ErrorMessage = ex.Message;
-                        PopupDetails.ErrorCode = "ERR-001";
-                        return;
-                    }
-                    if ((token == null) && (PopupDetails.IsOpen == false))
+                if (!string.IsNullOrEmpty(token))
+                {
+                    IsSignedIn = true;
+                }
+                else
+                {
+                    IsSignedIn = false;
+                    if (!PopupDetails.IsOpen)
                     {
-                        SignInEnabled = true;
                         PopupDetails.IsOpen = true;
                         PopupDetails.ErrorCode = "ERR-002 ";
                     }
+                }
+
+                if (IsSignedIn)
+                {
+                    bool credentialAvailable = await StaticHelpers.OLAreCredentialsSetAsync();
+                    if (credentialAvailable)
+                    {
+                        ShowWelcome = false;
+                        ShowSeries = true;
+                    }
                     else
                     {
-                        cachedUserAccount = PublicClientSingleton.Instance.MSALClientHelper.FetchSignedInUserFromCache().Result;
-                        if (cachedUserAccount != null)
-                        {
-                            IsSignedIn = true;
-
-                            //await UpdateClaims();
-                        }
-                        else SignInEnabled = true;
+                        await Shell.Current.GoToAsync("SettingsPage");
                     }
                 }
-                bool credentialAvailable = await StaticHelpers.OLAreCredentialsSetAsync();
-                if ((IsSignedIn == true) && (credentialAvailable))
-                {
-                    //await UpdateClaims();
-                    ShowWelcome = false;
-                    //Application.Current.Windows[0].Page = new MySeriesPage();
-                }
-                else if (IsSignedIn == true && !credentialAvailable)
-                {
-                    //Application.Current.Windows[0].Page = new MySeriesPage();
-                    await Shell.Current.GoToAsync("SettingsPage");
-
-                }
-
-            });
-
-
+            }
+            finally
+            {
+                SignInEnabled = true;
+            }
         }
         partial void OnIsSignedInChanged(bool value)
         {

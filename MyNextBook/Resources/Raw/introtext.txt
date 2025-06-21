@@ -9,4 +9,9 @@ In order to utilize this app you will need an openlibrary.org account. You can c
 
 Create a login to the MyNextBook app.  Then go to settings and enter in your openlibrary.org credentials.  Those credentials will be securely stored by the app in order to connect to your openlibrary.org account. 
   
+MyNextBook enhances your experience with openlibrary.org by providing a series feature that allows you to track your progress reading through a book series and automatically updating your series list of books when new books drop through community edits.
 
+In order to utilize this app you will need an openlibrary.org account. You can create an account by visiting openlibrary.org and signing up. Once you have an account, you can set your openlibrary.org credentials in settings.
+
+Create a login to the MyNextBook app.  Then go to settings and enter in your openlibrary.org credentials.  Those credentials will be securely stored by the app in order to connect to your openlibrary.org account. 
+  
