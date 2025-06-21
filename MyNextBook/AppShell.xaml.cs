@@ -13,6 +13,9 @@ namespace MyNextBook
             Routing.RegisterRoute("SettingsPage", typeof(SettingsPage));
             Routing.RegisterRoute("MainPage/SettingsPage", typeof(SettingsPage));
             Routing.RegisterRoute("ImportCSV", typeof(ImportCSV));
+            Routing.RegisterRoute("WelcomeScreen", typeof(WelcomeScreen));
+            Routing.RegisterRoute("MainPage/WelcomeScreen", typeof(WelcomeScreen));
+            Routing.RegisterRoute("SettingsPage/ImportCSV", typeof(ImportCSV));
         }
         
         protected override void OnNavigated(ShellNavigatedEventArgs args)
