@@ -171,6 +171,8 @@
 
 		<PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="8.2.0" />
 
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0-preview.5.25277.114" />
+
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 
 		<PackageReference Include="OnScreenSizeMarkup.Maui" Version="3.0.18" />
@@ -221,6 +223,9 @@
 	<ItemGroup>
 		<None Update="Resources\Styles\ControlTemplates.xaml">
 			<Generator>MSBuild:Compile</Generator>
+		</None>
+		<None Update="Views\WelcomeScreen.xaml">
+		  <Generator>MSBuild:Compile</Generator>
 		</None>
 	</ItemGroup>
 	<ItemGroup Condition="'$(TargetFramework)' == 'net10.0-android'">
