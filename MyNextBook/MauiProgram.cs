@@ -33,6 +33,9 @@ namespace MyNextBook
     {
         public const string synFusionKey = "Mzc3NjM3MkAzMjM5MmUzMDJlMzAzYjMyMzkzYks2UjQ4YzlyazBnZXB4RS9VMjlJOGFnYTNCTGNNSmhOYzZ0VVdTU0lRYVk9";
 
+        // Add static Services property
+        public static IServiceProvider Services { get; private set; }
+
         public static MauiApp CreateMauiApp()
         {
             SetThemeColor.SetAppThemeColor();
@@ -125,7 +128,7 @@ namespace MyNextBook
             services.AddTransient<SettingsViewModel>();
             services.AddTransient<WelcomeScreen>();
             services.AddTransient<WelcomeScreenViewModel>();
-            services.AddScoped<IOpenLibraryService, OpenLibraryService>();
+            services.AddSingleton<IOpenLibraryService, OpenLibraryService>();
             services.AddScoped<IGetSecrets, GetSecrets>();
 
             // Now that PublicClientSingleton is initialized, you can register its instance
@@ -135,6 +138,9 @@ namespace MyNextBook
             // services.AddSingleton(PublicClientSingleton.Instance);
 
             var app = builder.Build();
+
+            // Set the static Services property
+            Services = app.Services;
 
             return app;
         }

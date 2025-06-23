@@ -22,6 +22,7 @@
             ErrorMessage="{Binding PopupDetails.ErrorMessage}"
             ErrorReason="{Binding PopupDetails.ErrorReason}"
             HeightRequest="500"
+            IsVisible="{Binding PopupDetails.IsOpen}"
             ShowErrorPopup="{Binding PopupDetails.IsOpen, Mode=TwoWay}"
             WidthRequest="300"
             ZIndex="3" />

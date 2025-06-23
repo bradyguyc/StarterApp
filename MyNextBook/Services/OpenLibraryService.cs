@@ -59,7 +59,7 @@ namespace MyNextBook.Services
 
             _logger = logger;
         }
-        async Task InitOpenLibraryService()
+       public  async Task InitOpenLibraryService()
         {
             try
             {
@@ -80,8 +80,14 @@ namespace MyNextBook.Services
                         .ConfigureAwait(false);
                     OLPassword = await SecureStorage.Default.GetAsync(Constants.OpenLibraryPasswordKey)
                         .ConfigureAwait(false);
+
+                    if (string.IsNullOrWhiteSpace(OLLoginId) || string.IsNullOrWhiteSpace(OLPassword))
+                    {
+                        throw new Exception("Username and/or Password not set");
+                    }
+                    
                     Debug.WriteLine($"username:{OLLoginId} password: {OLPassword}");
-                    EnsureLoggedIn();
+              
                 }
             }
             catch (Exception ex)

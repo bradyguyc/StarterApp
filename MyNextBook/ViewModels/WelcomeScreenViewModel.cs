@@ -29,6 +29,8 @@ namespace MyNextBook.ViewModels
 
         private async Task InitializeAsync()
         {
+            PopupDetails = new ShowPopUpDetails();       
+            PopupDetails.IsOpen = false;
             IntroText = await CommonCode.Helpers.FileHelpers.ReadTextFile("introtext.txt");
             if (string.IsNullOrWhiteSpace(IntroText))
             {

@@ -1,20 +1,27 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
+
+using CommonCode.Models;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Maui.Storage;
-using System.Linq;
+
 using DevExpress.Maui.Core;
-using System.Reflection;
-using CommonCode.Models;
+
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Storage;
+
 using MyNextBook.Helpers;
 using MyNextBook.Services;
 
 namespace MyNextBook.ViewModels
 {
+    [QueryProperty(nameof(ErrorIndicator), "ErrorIndicator")]
     public partial class SettingsViewModel : ObservableObject
     {
-
+        string ErrorIndicator;
         [ObservableProperty] private bool isCustomColorTheme = false;
 
         [ObservableProperty] private List<string> themeColorsList;
@@ -36,13 +43,21 @@ namespace MyNextBook.ViewModels
         public SettingsViewModel(IOpenLibraryService olService)
         {
             _OLService = olService;
+            PopupDetails = new ShowPopUpDetails();
+            PopupDetails.IsOpen = false;
             LoadSettings();
+            if (ErrorIndicator == "ERR-SetUse")
+            {
+                PopupDetails.IsOpen = true;
+                PopupDetails.ErrorCode = "";
+                OnPropertyChanged(nameof(PopupDetails));
+            }
         }
 
         [RelayCommand]
         async Task TestOLCredentials()
         {
-            try
+
             {
                 PopupDetails = new ShowPopUpDetails();
 
@@ -68,18 +83,6 @@ namespace MyNextBook.ViewModels
                     OnPropertyChanged(nameof(PopupDetails));
 
                 }
-            }
-            catch (Exception ex)
-            {
-                PopupDetails = new ShowPopUpDetails
-                {
-                    IsOpen = true,
-                    ErrorMessage = ex.Message,
-                    ErrorCode = "ERR-003"
-                };
-
-                OnPropertyChanged(nameof(PopupDetails));
-
 
             }
         }

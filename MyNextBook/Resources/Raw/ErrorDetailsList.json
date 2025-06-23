@@ -32,9 +32,9 @@
   {
     "ErrorCode": "INFO-001",
     "Type": "Info",
-    "ErrorTitle": "OpenLibrary credentials are valid",
-    "WhatThisMeans": "The app is able to connect to openlibrary.org and retrieve your data.",
-    "WhatYouCanDo": "",
+    "ErrorTitle": "OpenLibrary username or password not set",
+    "WhatThisMeans": "The app is unable to connect to openlibrary.org and retrieve your data. ",
+    "WhatYouCanDo": "Goto the settings page and set your username and password",
     "HelpLink": "http://helpsite.com/error3"
   },
 

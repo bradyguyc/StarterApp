@@ -16,6 +16,7 @@ using CommunityToolkit.Mvvm.Input;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
+using Microsoft.Extensions.DependencyInjection;
 
 using MyNextBook.Helpers;
 using MyNextBook.Models;
@@ -23,6 +24,7 @@ using MyNextBook.Services;
 using MyNextBook.Views;
 
 using OpenLibraryNET.Data;
+using System.Diagnostics;
 
 namespace MyNextBook.ViewModels
 {
@@ -56,7 +58,7 @@ namespace MyNextBook.ViewModels
         private async Task InitializeAsync()
         {
             //todo: I don't like loading error dictionary here.  Seems like it should be done in constructor. But had performance and timing issues.
-            await ErrorDictionary.LoadErrorsFromFile();
+          await ErrorDictionary.LoadErrorsFromFile();
             //todo double check that this needs to run on main thread.  I think it does.
             await MainThread.InvokeOnMainThreadAsync(async () =>
             {
@@ -81,9 +83,13 @@ namespace MyNextBook.ViewModels
                 if (!credentialAvailable)
                 {
                     //Application.Current.Windows[0].Page = new MySeriesPage();
-                    await Shell.Current.GoToAsync("SettingsPage");
+                    await Shell.Current.GoToAsync("SettingsPage?ErrorIndicator=ERR-SetUser");
 
                 }
+                else
+                {
+                   await  EnsureSeriesAreLoaded();
+                }   
               
             }
             //SignIn();
@@ -106,7 +112,7 @@ namespace MyNextBook.ViewModels
             if (IsSignedIn && credentialAvailable)
             {
                 ShowSeries = true;
-                EnsureSeriesAreLoaded();
+                await EnsureSeriesAreLoaded();
             }
             else
             {
@@ -117,7 +123,7 @@ namespace MyNextBook.ViewModels
             }
         }
         [RelayCommand]
-        async void GoToSettingsPage()
+        async Task GoToSettingsPage()
         {
             await Shell.Current.GoToAsync("SettingsPage");
 
@@ -133,6 +139,18 @@ namespace MyNextBook.ViewModels
                 {
                     // This method handles both silent and interactive flows.
                     token = await PublicClientSingleton.Instance.AcquireTokenSilentAsync();
+                    IsSignedIn = true;
+                    OLService = MauiProgram.Services.GetService<IOpenLibraryService>();
+                    await EnsureSeriesAreLoaded();
+
+                }
+                catch (Exception ex) when (ex.Message.Contains("Username and/or Password not set")) {
+
+                    PopupDetails.IsOpen = true;
+                    PopupDetails.ErrorMessage = ex.Message;
+                    PopupDetails.ErrorCode = "ERR-001";
+                    IsSignedIn = false;
+                    return;
                 }
                 catch (Exception ex)
                 {
@@ -176,19 +194,17 @@ namespace MyNextBook.ViewModels
                 SignInEnabled = true;
             }
         }
-        partial void OnIsSignedInChanged(bool value)
-        {
-            if (value)
-            {
-                OLService = DependencyService.Get<IOpenLibraryService>();
-                EnsureSeriesAreLoaded();
-            }
-        }
+
+        
         private async Task EnsureSeriesAreLoaded()
         {
             try
             {
-                ShowSyncingToast();
+                await ShowSyncingToast();
+                if (OLService == null)
+                    OLService = MauiProgram.Services.GetService<IOpenLibraryService>();
+
+
                 ItemsSeries = await OLService.GetSeries();
             }
             catch (Exception ex)
@@ -201,14 +217,20 @@ namespace MyNextBook.ViewModels
 
         }
         public async Task ShowSyncingToast()
-        {
-            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-            string text = "Syncing with OpenLibrary";
-            ToastDuration duration = ToastDuration.Short;
-            double fontSize = 14;
+        { try
+            {
+                CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+                string text = "Syncing with OpenLibrary";
+                ToastDuration duration = ToastDuration.Short;
+                double fontSize = 14;
 
-            var toast = Toast.Make(text, duration, fontSize);
-            await toast.Show(cancellationTokenSource.Token);
+                var toast = Toast.Make(text, duration, fontSize);
+                await toast.Show(cancellationTokenSource.Token);
+            } catch (Exception ex)
+            {
+                _logger.LogError("error:" + ex.Message);
+                Debug.WriteLine("error:" + ex.Message);
+            }
         }
 
 
