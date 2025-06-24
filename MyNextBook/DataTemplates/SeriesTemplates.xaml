@@ -62,7 +62,7 @@
                                 FontSize="12"
                                 HorizontalOptions="End"
                                 Style="{DynamicResource SecondaryText}"
-                                Text="{Binding displayOrder}"
+                                Text="{Binding DisplayOrder}"
                                 VerticalOptions="End" />
                         </Border>
                     </Grid>

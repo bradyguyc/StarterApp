@@ -19,6 +19,7 @@ using OpenLibraryNET;
 using OpenLibraryNET.Data;
 using OpenLibraryNET.Loader;
 using OpenLibraryNET.OLData;
+using OpenLibraryNET.Utility;
 
 using Polly;
 using Polly.CircuitBreaker;
@@ -31,7 +32,6 @@ namespace MyNextBook.Services
         Task<bool> Login();
         Task<ObservableCollection<Series>> GetSeries();
         void SetUsernamePassword(string username, string password);
-
     }
 
     public class OpenLibraryService : IOpenLibraryService
@@ -51,15 +51,13 @@ namespace MyNextBook.Services
             OLPassword = password;
         }
 
-
         public OpenLibraryService(ILogger<OpenLibraryService> logger)
         {
-      
             InitOpenLibraryService();
-
             _logger = logger;
         }
-       public  async Task InitOpenLibraryService()
+
+        public async Task InitOpenLibraryService()
         {
             try
             {
@@ -80,15 +78,8 @@ namespace MyNextBook.Services
                         .ConfigureAwait(false);
                     OLPassword = await SecureStorage.Default.GetAsync(Constants.OpenLibraryPasswordKey)
                         .ConfigureAwait(false);
-
-                    if (string.IsNullOrWhiteSpace(OLLoginId) || string.IsNullOrWhiteSpace(OLPassword))
-                    {
-                        throw new Exception("Username and/or Password not set");
-                    }
-                    
-                    Debug.WriteLine($"username:{OLLoginId} password: {OLPassword}");
-              
                 }
+#endif
             }
             catch (Exception ex)
             {
@@ -96,8 +87,9 @@ namespace MyNextBook.Services
                 _logger.LogError(ex, "Failed to initialize OpenLibraryService");
                 throw new Exception("Failed to initialize OpenLibraryService", ex);
             }
-#endif
+
         }
+        /*
         public static class MyResilienceKeys
         {
             public static readonly ResiliencePropertyKey<TimeSpan> SleepDuration = new("SleepDuration");
@@ -143,59 +135,44 @@ namespace MyNextBook.Services
             return options;
         }
 
+        */// Initializes the OpenLibraryService with resilience options.
 
-        private async Task<bool> EnsureLoggedIn()
-        {
-            if (OLClient == null) InitOpenLibraryService();
-            if (OLClient.LoggedIn == false)
-            {
-                try
-                {
-                    if (string.IsNullOrEmpty(OLLoginId) || string.IsNullOrEmpty(OLPassword))
-                    {
-                        throw new Exception("Username or password is not set. Please set them before logging in.");
-                    }
-                    return await Login();
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception("login failed", ex);
-                }
-            }
-
-            return true;
-        }
 
         public async Task<bool> Login()
         {
             try
             {
+                if (OLClient.LoggedIn == true)
+                {
+                    return true; // Already logged in
+                }
+                if (string.IsNullOrEmpty(OLLoginId) || string.IsNullOrEmpty(OLPassword))
+                {
+                    throw new Exception("INFO-001 Username or password is not set. Please set them before logging in.");
+                }
 
                 await OLClient.LoginAsync(OLLoginId, OLPassword).ConfigureAwait(false);
                 if (OLClient.LoggedIn == true)
                 {
-
                     return true;
                 }
                 else
                 {
-                    throw new Exception("Login failed. Please check your username and password.");
+                    throw new Exception("ERR-003 Login failed. Please check your username and password.");
                 }
             }
             catch (Exception ex)
             {
                 ErrorHandler.AddError(ex);
-                throw new Exception("Login failed. Please check your username and password.", ex);
+                throw new Exception("ERR-000 Login failed. Please check your username and password. And your network connectivity.", ex);
             }
         }
 
-
-
         public async Task<ObservableCollection<Series>> GetSeries()
         {
-            if (!await EnsureLoggedIn()) throw new Exception("Openlibrary failed login");
             try
             {
+                Login();
                 await OLGetBookStatus();
                 ObservableCollection<Series> bookSeries = new ObservableCollection<Series>();
                 OLListData[]? userLists = await OLListLoader
@@ -204,58 +181,56 @@ namespace MyNextBook.Services
                 {
                     foreach (var list in userLists)
                     {
-                        Series s = new Series
+                        if (list.ID != null)
                         {
-                            SeriesData = list,
-
-                            seeds = await OLClient.List.GetListSeedsAsync(OLClient.Username, list.ID),
-
-                        };
-                        OLEditionData[] ed = await OLClient.List.GetListEditionsAsync(OLClient.Username, list.ID).ConfigureAwait(false);
-                        foreach (var e in ed)
-                        {
-
-                            if (e != null)
+                            Series s = new Series
                             {
-                                s.Editions.Add(e);
-                            }
-                        }
-
-                        foreach (OLSeedData seed in s.seeds)
-                        {
-                            if (seed.Type == "work")
+                                SeriesData = list,
+                                seeds = await OLClient.List.GetListSeedsAsync(OLClient.Username, list.ID),
+                            };
+                            OLEditionData[] ed = await OLClient.List.GetListEditionsAsync(OLClient.Username, list.ID).ConfigureAwait(false);
+                            if (ed != null)
                             {
-
-                                OLWorkData work = await OLWorkLoader.GetDataAsync(OLClient.BackingClient, seed.ID);
-                                OlWorkDataExt w = new OlWorkDataExt();
-                                if (work != null)
+                                foreach (var e in ed)
                                 {
-                                    CopyProperties(work, w);
-                                    s.Works.Add(w); // Add the extended version if you want
-                                }
-                                foreach (var authorKey in work.AuthorKeys)
-                                {
-                                    OLAuthorData? author = await OLAuthorLoader.GetDataAsync(OLClient.BackingClient, authorKey);
-                                    if (author != null && !authorsList.Contains(author))
+                                    if (e != null)
                                     {
-                                        authorsList.Add(author);
+                                        s.Editions.Add(e);
                                     }
                                 }
-
                             }
-                            if (seed.Type == "edition")
-                            {
-                                // Task<(bool, OLEditionData?)> 
-                                OLEditionData edition = await OLEditionLoader.GetDataByOLIDAsync(OLClient.BackingClient, seed.ID);
 
-                                if (edition != null)
+                            foreach (OLSeedData seed in s.seeds)
+                            {
+                                if (seed.Type == "work")
                                 {
-                                    s.Editions.Add(edition);
+                                    OLWorkData work = await OLWorkLoader.GetDataAsync(OLClient.BackingClient, seed.ID);
+                                    OlWorkDataExt w = new OlWorkDataExt();
+                                    if (work != null)
+                                    {
+                                        CopyProperties(work, w);
+                                        s.Works.Add(w); // Add the extended version if you want
+                                    }
+                                    foreach (var authorKey in work.AuthorKeys)
+                                    {
+                                        OLAuthorData? author = await OLAuthorLoader.GetDataAsync(OLClient.BackingClient, authorKey);
+                                        if (author != null && !authorsList.Contains(author))
+                                        {
+                                            authorsList.Add(author);
+                                        }
+                                    }
+                                }
+                                if (seed.Type == "edition")
+                                {
+                                    OLEditionData edition = await OLEditionLoader.GetDataByOLIDAsync(OLClient.BackingClient, seed.ID);
+                                    if (edition != null)
+                                    {
+                                        s.Editions.Add(edition);
+                                    }
                                 }
                             }
+                            bookSeries.Add(s);
                         }
-                        //s.StateUpdate();
-                        bookSeries.Add(s);
                     }
                     return bookSeries;
                 }
@@ -267,30 +242,112 @@ namespace MyNextBook.Services
                 _logger.LogError(ex, "Failed to retrieve user lists from OpenLibrary");
                 throw new Exception("Failed to retrieve user lists from OpenLibrary", ex);
             }
-
-
         }
 
         public async Task OLGetBookStatus()
         {
             try
             {
-
                 currentlyReading = await OLClient.MyBooks.GetCurrentlyReadingAsync(OLClient.Username,
                     new KeyValuePair<string, string>("limit", "500"));
                 alreadyRead = await OLClient.MyBooks.GetAlreadyReadAsync(OLClient.Username,
                     new KeyValuePair<string, string>("limit", "500"));
                 wantToRead = await OLClient.MyBooks.GetWantToReadAsync(OLClient.Username,
                     new KeyValuePair<string, string>("limit", "500"));
-
             }
-
-
             catch (Exception ex)
             {
                 throw new Exception(ex.Message, ex);
             }
         }
+
+        public async Task<OLWorkData?> SearchForWorks(
+            string booktitle,
+            string author,
+            string publishedDate,
+            string ISBN_10,
+            string ISBN_13,
+            string OLID)
+        {
+            // 1. Search by OLID
+            if (!string.IsNullOrWhiteSpace(OLID))
+            {
+                var results = await OLSearchLoader.GetSearchResultsAsync(
+                    OLClient.BackingClient,
+                    "",
+                    new KeyValuePair<string, string>("olid", OLID)
+                );
+                if (results != null && results.Length > 0)
+                    return results[0];
+            }
+
+            // 2. Search by ISBN_13
+            if (!string.IsNullOrWhiteSpace(ISBN_13))
+            {
+                var results = await OLSearchLoader.GetSearchResultsAsync(
+                    OLClient.BackingClient,
+                    "",
+                    new KeyValuePair<string, string>("isbn", ISBN_13)
+                );
+                if (results != null && results.Length > 0)
+                    return results[0];
+            }
+
+            // 3. Search by ISBN_10
+            if (!string.IsNullOrWhiteSpace(ISBN_10))
+            {
+                var results = await OLSearchLoader.GetSearchResultsAsync(
+                    OLClient.BackingClient,
+                    "",
+                    new KeyValuePair<string, string>("isbn", ISBN_10)
+                );
+                if (results != null && results.Length > 0)
+                    return results[0];
+            }
+
+            // 4. Search by title and author (and optionally publishedDate)
+            if (!string.IsNullOrWhiteSpace(booktitle) && !string.IsNullOrWhiteSpace(author))
+            {
+                var parameters = new List<KeyValuePair<string, string>>
+                {
+                    new KeyValuePair<string, string>("title", booktitle),
+                    new KeyValuePair<string, string>("author", author)
+                };
+                if (!string.IsNullOrWhiteSpace(publishedDate))
+                    parameters.Add(new KeyValuePair<string, string>("publish_year", publishedDate));
+
+                var results = await OLSearchLoader.GetSearchResultsAsync(
+                    OLClient.BackingClient,
+                    "",
+                    parameters.ToArray()
+                );
+                if (results != null && results.Length > 0)
+                    return results[0];
+            }
+
+            // 5. Search by title only (and optionally publishedDate)
+            if (!string.IsNullOrWhiteSpace(booktitle))
+            {
+                var parameters = new List<KeyValuePair<string, string>>
+                {
+                    new KeyValuePair<string, string>("title", booktitle)
+                };
+                if (!string.IsNullOrWhiteSpace(publishedDate))
+                    parameters.Add(new KeyValuePair<string, string>("publish_year", publishedDate));
+
+                var results = await OLSearchLoader.GetSearchResultsAsync(
+                    OLClient.BackingClient,
+                    "",
+                    parameters.ToArray()
+                );
+                if (results != null && results.Length > 0)
+                    return results[0];
+            }
+
+            // No match found
+            return null;
+        }
+
         // Utility method to copy all public properties from OLWorkData to OlWorkDataExt using reflection
         public static void CopyProperties<TBase, TDerived>(TBase source, TDerived destination)
             where TBase : class
@@ -310,6 +367,5 @@ namespace MyNextBook.Services
                 }
             }
         }
-
     }
 }

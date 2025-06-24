@@ -126,7 +126,7 @@ namespace MyNextBook.ViewModels
 
 
                         OnPropertyChanged("iCSVData");
-                        ShowImport = true;
+                        ShowImporting = true;
                     } catch (Exception ex)
                     {
                         PopupDetails = new ShowPopUpDetails
@@ -165,7 +165,7 @@ namespace MyNextBook.ViewModels
 
         #region Import Step 2
         [RelayCommand]
-        private async Task PerformImportInsert(Object param)
+        private async Task GetDetails(Object param)
         {
             try
             {
@@ -177,35 +177,23 @@ namespace MyNextBook.ViewModels
 
                 //BooksFilledIn = 0;
                 int booksNotFound = 0;
-                //FillInStatusText = "Filling in missing data for " + iCSVData.BooksFound + " books.";
-              /*
+
                 await Task.Run(async () =>
                 {
-                    if (FillInData)
+
+                    IsBusy = true;
+                    // Example: Loop through each row in the DataTable (assuming iCSVData.csvData is a DataTable)
+                    if (iCSVData.csvData != null)
                     {
-                        GoogleBookSearch googleMatch = new GoogleBookSearch();
-                        FilledInStats stats;
-                        IsBusy = true;
-                        foreach (Series s in iCSVData.csvData)
+                        foreach (System.Data.DataRow row in iCSVData.csvData.Rows)
                         {
-                            s.id = Guid.NewGuid().ToString();
-                            s.Books.ForEach(
-                                book =>
-                                {
-                                     book.sysMynbID = Guid.NewGuid();
-                                });
-                            stats = await googleMatch.PerformGoogleRefresh(s, true);
-                            //booksNotFound += stats.BooksNotFound;
-                            //BooksFilledIn += s.Books.Count;
-                            ImportProgress = (decimal)s.Books.Count / (decimal)iCSVData.BooksFound;
-                            //FillInStatusText = BooksFilledIn + " of " + iCSVData.BooksFound + " filled in.  Books not found: " + booksNotFound;
-                            BookProcesingList.Add(new ImportSeriesResults { BooksMatched = s.Books.Count - stats.BooksNotFound, BooksNotFound = stats.BooksNotFound, SeriesName = s.Name });
+                            // Access data by column name or index, e.g.:
+                            var value = row["ColumnName"]; // or row[0]
+                            // TODO: Process each row as needed
                         }
-                         //await MySeriesPageViewModel.currentData.OLHClient.UpdateBooksWithOLDataAsync(MySeriesPageViewModel.currentData.series);
-                        IsBusy = false;
                     }
+
                 });
-              */
             }
             catch (Exception ex)
             {

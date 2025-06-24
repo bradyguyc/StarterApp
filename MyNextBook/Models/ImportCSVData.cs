@@ -27,7 +27,7 @@ public partial class ImportCSVData : ObservableObject
     public string errorMessage { get; set; }
 
     private int seriesNameColumnIndex = 0; // This class field seems unused by the method being updated.
-    [ObservableProperty] private DataTable csvData;
+    [ObservableProperty] public DataTable csvData;
 
     public ImportCSVData()
     {
