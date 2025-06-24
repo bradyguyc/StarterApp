@@ -23,7 +23,8 @@ namespace MyNextBook.Models
                 {
                     int coverId = CoverIDs[0];
                     string size = "M";
-                    return $"https://covers.openlibrary.org/b/id/{coverId}-{size}.jpg";
+                    string url= $"https://covers.openlibrary.org/b/id/{coverId}-{size}.jpg";
+                    return url;
                 }
                 else
                 {
@@ -53,8 +54,8 @@ namespace MyNextBook.Models
     }
     public partial class Series : ObservableObject
     {
-        [ObservableProperty]
-        private OLListData seriesData;
+     
+        [ObservableProperty] private OLListData seriesData;
 
         [ObservableProperty]
         private ObservableCollection<OLEditionData> editions = new();
@@ -64,7 +65,7 @@ namespace MyNextBook.Models
 
         public OLSeedData[] seeds;
 
-
+        [ObservableProperty] int displayOrder = 0;
         public int BookCount => (editions?.Count ?? 0) + (works?.Count ?? 0);
         [ObservableProperty] private int userBooksRead = 2;
 
@@ -88,9 +89,15 @@ namespace MyNextBook.Models
         {
             get
             {
-                if (works != null && works.Count > 0 && !string.IsNullOrEmpty(works[0].ID))
+                if (works != null && works.Count > 0)
                 {
-                    return works[0].OpenImageUrl;
+                    foreach (var work in works)
+                    {
+                        if (!string.IsNullOrWhiteSpace(work?.OpenImageUrl))
+                        {
+                            return work.OpenImageUrl;
+                        }
+                    }
                 }
                 return string.Empty;
             }

@@ -127,7 +127,7 @@
         <Button
             Grid.Row="2"
             Grid.Column="0"
-            Command="{Binding AddToLibraryCommand}"
+            Command="{Binding GetDetailsCommand}"
             HeightRequest="40"
             IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
             IsVisible="{Binding ShowImporting}"

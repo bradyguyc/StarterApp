@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 using CommonCode.Helpers;
 using CommonCode.Models;
@@ -14,9 +16,9 @@ using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
-using Microsoft.Extensions.DependencyInjection;
 
 using MyNextBook.Helpers;
 using MyNextBook.Models;
@@ -24,7 +26,7 @@ using MyNextBook.Services;
 using MyNextBook.Views;
 
 using OpenLibraryNET.Data;
-using System.Diagnostics;
+
 
 namespace MyNextBook.ViewModels
 {
@@ -37,99 +39,95 @@ namespace MyNextBook.ViewModels
         [ObservableProperty] private bool? signInEnabled = true;
         [ObservableProperty] private bool? showWelcome = false;
         [ObservableProperty] private bool? showSeries = false;
+        [ObservableProperty] private bool? isRefreshing = false;
+        bool ProcessingAppearing = false;
         IOpenLibraryService OLService;
         private readonly ILogger<MainPageViewModel> _logger;
 
         [ObservableProperty] private bool isSignedIn;
-
+     
         public MainPageViewModel(ILogger<MainPageViewModel> logger)
         {
-          
+
             _logger = logger;
             //App.Current.UserAppTheme = AppTheme.Dark;
             PopupDetails = new ShowPopUpDetails();
             PopupDetails.IsOpen = false;
-            InitializeAsync();
-     
+          
+            //SignInToAppAndOLAsync(); 
+
         }
 
 
 
-        private async Task InitializeAsync()
+        private async Task SignInToAppAndOLAsync()
         {
             //todo: I don't like loading error dictionary here.  Seems like it should be done in constructor. But had performance and timing issues.
-          await ErrorDictionary.LoadErrorsFromFile();
+            //await ErrorDictionary.LoadErrorsFromFile();
             //todo double check that this needs to run on main thread.  I think it does.
-            await MainThread.InvokeOnMainThreadAsync(async () =>
-            {
+           // await MainThread.InvokeOnMainThreadAsync(async () =>
+            //{
+                IsSignedIn = await SignIn();
 
-            
-                var cachedUserAccount =
-                    await PublicClientSingleton.Instance.MSALClientHelper.FetchSignedInUserFromCache();
-                IsSignedIn = cachedUserAccount != null;
-            });
+
+            //});
             if (IsSignedIn == false)
             {
                 await Shell.Current.GoToAsync("WelcomeScreen");
-             
-           
 
             }
-            else
+            if (await SignInOL())
             {
-                
-                bool credentialAvailable = await StaticHelpers.OLAreCredentialsSetAsync();
-
-                if (!credentialAvailable)
-                {
-                    //Application.Current.Windows[0].Page = new MySeriesPage();
-                    await Shell.Current.GoToAsync("SettingsPage?ErrorIndicator=ERR-SetUser");
-
-                }
-                else
-                {
-                   await  EnsureSeriesAreLoaded();
-                }   
-              
+                await Refresh();
             }
-            //SignIn();
+
+
 
         }
 
         [RelayCommand]
         async Task Appearing()
         {
-            var cachedUserAccount =
-                   await PublicClientSingleton.Instance.MSALClientHelper.FetchSignedInUserFromCache();
-            IsSignedIn = cachedUserAccount != null;
-
-            if (!IsSignedIn)
+            if (!ProcessingAppearing)
             {
-                await Shell.Current.GoToAsync("WelcomeScreen");
-
-            }
-            bool credentialAvailable = await StaticHelpers.OLAreCredentialsSetAsync();
-            if (IsSignedIn && credentialAvailable)
-            {
-                ShowSeries = true;
-                await EnsureSeriesAreLoaded();
-            }
-            else
-            {
-                ShowWelcome = true;
-                PopupDetails.IsOpen = true;
-                PopupDetails.ErrorCode = "ERR-005";
-                return;
+                ProcessingAppearing = true;
+                await SignInToAppAndOLAsync();
+                ProcessingAppearing = false;
             }
         }
+        /*
         [RelayCommand]
         async Task GoToSettingsPage()
         {
             await Shell.Current.GoToAsync("SettingsPage");
 
         }
+        */
+        async Task<bool> SignInOL()
+        {
+            bool credentialAvailable = await StaticHelpers.OLAreCredentialsSetAsync();
+            if (credentialAvailable) { 
+
+                if (false == await OLService.Login())
+                {
+                    PopupDetails.IsOpen = true;
+                    PopupDetails.ErrorMessage = "Could not sign in to OpenLibrary. Please check your credentials and/or network.";
+                    PopupDetails.ErrorCode = "ERR-002";
+
+                    return false;
+                }
+                return true;
+            }
+            else
+            {
+                await Shell.Current.GoToAsync("SettingsPage");
+            }
+            return false;    
+        }
+
+
         [RelayCommand]
-        public async Task SignIn()
+        public async Task<bool> SignIn()
         {
             SignInEnabled = false;
             try
@@ -140,17 +138,21 @@ namespace MyNextBook.ViewModels
                     // This method handles both silent and interactive flows.
                     token = await PublicClientSingleton.Instance.AcquireTokenSilentAsync();
                     IsSignedIn = true;
-                    OLService = MauiProgram.Services.GetService<IOpenLibraryService>();
-                    await EnsureSeriesAreLoaded();
 
+                    if (OLService == null)
+                    {
+                        OLService = MauiProgram.Services.GetService<IOpenLibraryService>();
+                    }
+                    return true;
                 }
-                catch (Exception ex) when (ex.Message.Contains("Username and/or Password not set")) {
+                catch (Exception ex) when (ex.Message.Contains("Username and/or Password not set"))
+                {
 
                     PopupDetails.IsOpen = true;
                     PopupDetails.ErrorMessage = ex.Message;
                     PopupDetails.ErrorCode = "ERR-001";
                     IsSignedIn = false;
-                    return;
+                    return false;
                 }
                 catch (Exception ex)
                 {
@@ -158,45 +160,17 @@ namespace MyNextBook.ViewModels
                     PopupDetails.ErrorMessage = ex.Message;
                     PopupDetails.ErrorCode = "ERR-001";
                     IsSignedIn = false;
-                    return;
+                    return false;
                 }
 
-                if (!string.IsNullOrEmpty(token))
-                {
-                    IsSignedIn = true;
-                }
-                else
-                {
-                    IsSignedIn = false;
-                    if (!PopupDetails.IsOpen)
-                    {
-                        PopupDetails.IsOpen = true;
-                        PopupDetails.ErrorCode = "ERR-002 ";
-                    }
-                }
 
-                if (IsSignedIn)
-                {
-                    bool credentialAvailable = await StaticHelpers.OLAreCredentialsSetAsync();
-                    if (credentialAvailable)
-                    {
-                        ShowWelcome = false;
-                        ShowSeries = true;
-                    }
-                    else
-                    {
-                        await Shell.Current.GoToAsync("SettingsPage");
-                    }
-                }
             }
             finally
             {
                 SignInEnabled = true;
             }
         }
-
-        
-        private async Task EnsureSeriesAreLoaded()
+        [RelayCommand] async Task Refresh()
         {
             try
             {
@@ -206,6 +180,7 @@ namespace MyNextBook.ViewModels
 
 
                 ItemsSeries = await OLService.GetSeries();
+
             }
             catch (Exception ex)
             {
@@ -217,7 +192,8 @@ namespace MyNextBook.ViewModels
 
         }
         public async Task ShowSyncingToast()
-        { try
+        {
+            try
             {
                 CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
                 string text = "Syncing with OpenLibrary";
@@ -226,7 +202,8 @@ namespace MyNextBook.ViewModels
 
                 var toast = Toast.Make(text, duration, fontSize);
                 await toast.Show(cancellationTokenSource.Token);
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 _logger.LogError("error:" + ex.Message);
                 Debug.WriteLine("error:" + ex.Message);

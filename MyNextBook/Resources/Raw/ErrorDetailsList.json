@@ -25,7 +25,7 @@
     "ErrorCode": "ERR-003",
     "ErrorTitle": "OpenLibrary Credentials Invalid",
     "Type": "Error",
-    "WhatThisMeans": "Validd openlibrary credentials are required in order to use this app.",
+    "WhatThisMeans": "Valid openlibrary credentials are required in order to use this app.",
     "WhatYouCanDo": "Double check your username and password in settings, check them at openlibrary.org",
     "HelpLink": "http://helpsite.com/error2"
   },
