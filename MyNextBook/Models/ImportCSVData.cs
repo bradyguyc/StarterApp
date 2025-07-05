@@ -28,7 +28,7 @@ public partial class ImportCSVData : ObservableObject
 
     private int seriesNameColumnIndex = 0; // This class field seems unused by the method being updated.
     [ObservableProperty] public DataTable csvData;
-
+    public Dictionary<string, string> columnHeaderMap = new Dictionary<string, string>();
     public ImportCSVData()
     {
         csvData = new DataTable();
@@ -159,9 +159,9 @@ public partial class ImportCSVData : ObservableObject
                     CsvData.TableName = "BooksToImport";
                     // Add additional columns at the end
 
-                    this.CsvData.Columns.Add("OLWork", typeof(string));
-                    this.CsvData.Columns.Add("OLEdition", typeof(string));
-                    this.CsvData.Columns.Add("OLStatus", typeof(string));
+                    //this.CsvData.Columns.Add("OLWork", typeof(string));
+                    //this.CsvData.Columns.Add("OLEdition", typeof(string));
+                    //this.CsvData.Columns.Add("OLStatus", typeof(string));
                 
                    // this.CsvData.Columns["OLReady"].SetOrdinal(1); // Make "OLReady" the first column
                     this.BooksFound = rowCount;
@@ -202,44 +202,6 @@ public partial class ImportCSVData : ObservableObject
             throw new Exception(this.errorMessage, ex);
         }
     
-    }
-    public async Task<bool> MatchImportedDataToOL()
-    {
-        for (int i = 0; i < this.CsvData.Rows.Count; i++)
-        {
-            DataRow row = this.CsvData.Rows[i];
-            string seriesName = row["Series.Name"]?.ToString()?.Trim();
-            string bookTitle = row["Title"]?.ToString()?.Trim();
-            string authorName = row["Author.Name"]?.ToString()?.Trim();
-            if (string.IsNullOrWhiteSpace(seriesName) || string.IsNullOrWhiteSpace(bookTitle) || string.IsNullOrWhiteSpace(authorName))
-            {
-                return true; // Skip rows with missing required fields
-            }
-            try
-            {
-                // Attempt to find the series in Open Library
-                /*
-                var seriesResult = await OpenLibraryNET.Data.Series.GetSeriesByNameAsync(seriesName);
-                if (seriesResult != null && seriesResult.Works != null && seriesResult.Works.Any())
-               {
-                    row["OLWork"] = seriesResult.Works.FirstOrDefault()?.Key;
-                    row["OLEdition"] = seriesResult.Key;
-                    row["OLStatus"] = "Found";
-                }
-                else
-                {
-                    row["OLStatus"] = "Not Found";
-             */
-                return true;
-            }
-            catch (Exception ex)
-            {
-                ErrorHandler.AddError(ex);
-                row["OLStatus"] = "Error";
-                throw new Exception("", ex);
-            }
-        }
-        return true;
     }
    
 }

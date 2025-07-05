@@ -57,7 +57,7 @@ namespace MyNextBook.ViewModels
         [RelayCommand]
         async Task TestOLCredentials()
         {
-
+            try
             {
                 PopupDetails = new ShowPopUpDetails();
 
@@ -84,6 +84,13 @@ namespace MyNextBook.ViewModels
 
                 }
 
+            } catch (Exception ex)
+            {
+                PopupDetails.IsOpen = true;
+
+                PopupDetails.ErrorCode = "OL-003";
+                PopupDetails.ErrorMessage = $"Could not sign in to OpenLibrary. Please check your credentials and/or network.\n{ex.Message}";
+                OnPropertyChanged(nameof(PopupDetails));
             }
         }
 
@@ -176,7 +183,7 @@ namespace MyNextBook.ViewModels
         [RelayCommand]
         async Task GotoImport()
         {
-            await Shell.Current.GoToAsync("ImportCSV");
+            await Shell.Current.GoToAsync("SettingsPage/ImportCSV");
 
         }
 

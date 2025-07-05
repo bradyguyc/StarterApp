@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <RunConfiguration>
+    <EnvironmentVariables>
+      <!-- Replace with your actual values -->
+      <AZURE_OPENAI_DEPLOYMENT_NAME>gpt-4o</AZURE_OPENAI_DEPLOYMENT_NAME>
+      <AZURE_OPENAI_ENDPOINT>https://ais-prototypes.openai.azure.com/</AZURE_OPENAI_ENDPOINT>
+      <AZURE_OPENAI_API_KEY>***REMOVED***</AZURE_OPENAI_API_KEY>
+      <GOOGLE_API_KEY>***REMOVED***</GOOGLE_API_KEY>
+      <GOOGLE_SEARCH_ENGINE_ID>55c232dc2a6154c50</GOOGLE_SEARCH_ENGINE_ID>
+    </EnvironmentVariables>
+  </RunConfiguration>
+</RunSettings>

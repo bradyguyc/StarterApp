@@ -28,6 +28,10 @@
 	</array>
 	<key>XSAppIconAssets</key>
 	<string>Assets.xcassets/appicon.appiconset</string>
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
@@ -52,6 +56,18 @@
 				<true/>
 				<key>NSRequiresCertificateTransparency</key>
 				<false/>
+				<key>com.apple.security.assets.movies.read-only</key>
+				<true/>
+				<key>com.apple.security.assets.music.read-only</key>
+				<true/>
+				<key>com.apple.security.assets.pictures.read-only</key>
+				<true/>
+				<key>com.apple.security.files.downloads.read-only</key>
+				<true/>
+				<key>com.apple.security.files.user-selected.read-only</key>
+				<true/>
+				<key>com.apple.security.personal-information.photos-library</key>
+				<true/>
 			</dict>
 		</dict>
 	</dict>

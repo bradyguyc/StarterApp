@@ -15,24 +15,31 @@ using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using Microsoft.Extensions.Configuration;
 //using Sentry.Maui;
 using Syncfusion.Maui.Core.Hosting;
+
 using CommonCode.Helpers;
 using CommonCode.MSALClient; // Required for PublicClientSingleton
+
 #if ANDROID
 using MyNextBook.Platforms.Android;
 #endif 
 using MyNextBook.Services;
 using MyNextBook.Views;
 using MyNextBook.ViewModels;
+
 using OpenLibraryNET;
+
 using static System.Net.WebRequestMethods;
+
 using System.Reflection;
+
+using ImportSeries;
 
 namespace MyNextBook
 {
     public static class MauiProgram
     {
-        public const string synFusionKey = "Mzc3NjM3MkAzMjM5MmUzMDJlMzAzYjMyMzkzYks2UjQ4YzlyazBnZXB4RS9VMjlJOGFnYTNCTGNNSmhOYzZ0VVdTU0lRYVk9";
-
+        //public const string synFusionKey = "Mzc3NjM3MkAzMjM5MmUzMDJlMzAzYjMyMzkzYks2UjQ4YzlyazBnZXB4RS9VMjlJOGFnYTNCTGNNSmhOYzZ0VVdTU0lRYVk9";
+        public const string synFusionKey = "MzkzMTI2OUAzMzMwMmUzMDJlMzAzYjMzMzAzYmlpTCthR3AweEhRMmhOMW95cmM1ajMvd0huRC9KT0ZIak1HVnFrby9ONUE9";
         // Add static Services property
         public static IServiceProvider Services { get; private set; }
 
@@ -59,6 +66,7 @@ namespace MyNextBook
                 .UseDevExpressCollectionView()
                 .UseDevExpressControls()
                 .UseDevExpressDataGrid()
+                .UseDevExpressGauges()
                 .UseMauiCommunityToolkit()
                 .ConfigureSyncfusionCore()
               /*
@@ -136,6 +144,19 @@ namespace MyNextBook
             // Or, services can access it via PublicClientSingleton.Instance directly.
             // Example for DI:
             // services.AddSingleton(PublicClientSingleton.Instance);
+            //var assembly = Assembly.GetExecutingAssembly();
+            //using var stream = assembly.GetManifestResourceStream("mynextbook.appsettings.json"); // Ensure this matches your assembly name and file path
+
+            Stream resourceStream2 = mauiAppAssembly.GetManifestResourceStream(resourceName);
+
+            var config = new ConfigurationBuilder()
+                        .AddJsonStream(resourceStream2)
+                        .Build();
+
+            builder.Configuration.AddConfiguration(config);
+
+            // Initialize the static AppConfig
+            AppConfig.Initialize(builder.Configuration);
 
             var app = builder.Build();
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -63,7 +64,7 @@ namespace MyNextBook.ViewModels
         private async Task SignInToAppAndOLAsync()
         {
             //todo: I don't like loading error dictionary here.  Seems like it should be done in constructor. But had performance and timing issues.
-            //await ErrorDictionary.LoadErrorsFromFile();
+            await ErrorDictionary.LoadErrorsFromFile(); // this is here in case an error happens before everything is loaded and logged in.
             //todo double check that this needs to run on main thread.  I think it does.
            // await MainThread.InvokeOnMainThreadAsync(async () =>
             //{
@@ -104,25 +105,34 @@ namespace MyNextBook.ViewModels
         }
         */
         async Task<bool> SignInOL()
-        {
-            bool credentialAvailable = await StaticHelpers.OLAreCredentialsSetAsync();
-            if (credentialAvailable) { 
-
-                if (false == await OLService.Login())
-                {
-                    PopupDetails.IsOpen = true;
-                    PopupDetails.ErrorMessage = "Could not sign in to OpenLibrary. Please check your credentials and/or network.";
-                    PopupDetails.ErrorCode = "ERR-002";
-
-                    return false;
-                }
-                return true;
-            }
-            else
+        {try
             {
-                await Shell.Current.GoToAsync("SettingsPage");
+                bool credentialAvailable = await StaticHelpers.OLAreCredentialsSetAsync();
+                if (credentialAvailable)
+                {
+
+                    if (false == await OLService.Login())
+                    {
+                        PopupDetails.IsOpen = true;
+                        PopupDetails.ErrorMessage = "Could not sign in to OpenLibrary. Please check your credentials and/or network.";
+                        PopupDetails.ErrorCode = "ERR-002";
+
+                        return false;
+                    }
+                    return true;
+                }
+                else
+                {
+                    await Shell.Current.GoToAsync("SettingsPage");
+                }
+                return false;
+            } catch (Exception ex)
+            {
+                PopupDetails.IsOpen = true;
+                PopupDetails.ErrorMessage = $"Could not sign in to OpenLibrary. Please check your credentials and/or network.\n{ex.Message}";
+                PopupDetails.ErrorCode = "OL-003";
+                return false;
             }
-            return false;    
         }
 
 

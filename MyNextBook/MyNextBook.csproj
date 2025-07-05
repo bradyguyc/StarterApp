@@ -52,6 +52,7 @@
 		<ProjectReference Include="..\..\OpenLibrary.NET\code generation\OpenLibraryNET.GeneratorAttributes\OpenLibraryNET.GeneratorAttributes.csproj" />
 		<ProjectReference Include="..\..\OpenLibrary.NET\code generation\OpenLibraryNET.SourceGenerators\OpenLibraryNET.SourceGenerators.csproj" />
 		<ProjectReference Include="..\..\OpenLibrary.NET\src\OpenLibraryNET.csproj" />
+		<ProjectReference Include="..\ImportSeries\ImportSeries.csproj" />
 
 
 	</ItemGroup>
@@ -135,6 +136,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Models\ImportCSVData.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<MauiFont Remove="C:\Users\brady\.nuget\packages\syncfusion.maui.core\29.2.7\buildTransitive\..\buildTransitive\Resources\Fonts\MauiMaterialAssets.ttf" />
 		<MauiFont Remove="Resources\Fonts\MauiMaterialAssets.ttf" />
 	</ItemGroup>
@@ -156,18 +161,20 @@
 
 	<ItemGroup>
 		<PackageReference Include="Azure.Data.AppConfiguration" Version="1.6.1" />
-		<PackageReference Include="Azure.Identity" Version="1.14.0" />
+		<PackageReference Include="Azure.Identity" Version="1.14.1" />
 		<PackageReference Include="CommunityToolkit.Maui" Version="12.0.0" />
 		<PackageReference Include="CommunityToolkit.Maui.Markup" Version="6.0.1" />
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
 		<PackageReference Include="CsvHelper" Version="33.1.0" />
-		<PackageReference Include="DevExpress.Maui.Controls" Version="24.2.7" />
+		<PackageReference Include="DevExpress.Maui.Controls" Version="24.2.8" />
 
-		<PackageReference Include="DevExpress.Maui.Core" Version="24.2.7" />
+		<PackageReference Include="DevExpress.Maui.Core" Version="24.2.8" />
 
-		<PackageReference Include="DevExpress.Maui.DataGrid" Version="24.2.7" />
+		<PackageReference Include="DevExpress.Maui.DataGrid" Version="24.2.8" />
 
-		<PackageReference Include="DevExpress.Maui.Editors" Version="24.2.7" />
+		<PackageReference Include="DevExpress.Maui.Editors" Version="24.2.8" />
+
+		<PackageReference Include="DevExpress.Maui.Gauges" Version="24.2.8" />
 
 		<PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="8.2.0" />
 
@@ -181,17 +188,17 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.0-preview.5.25277.114" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0-preview.5.25277.114" />
 
-		<PackageReference Include="Microsoft.Identity.Client" Version="4.73.0-preview" />
-		<PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.73.0-preview" />
+		<PackageReference Include="Microsoft.Identity.Client" Version="4.73.1" />
+		<PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.73.1" />
 
 
 
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0-preview.5.25277.114" />
 
 		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.0-preview.4.25263.4" />
-		<PackageReference Include="Syncfusion.Maui.Core" Version="29.2.10" />
-		<PackageReference Include="Syncfusion.Maui.Popup" Version="29.2.10" />
-		<PackageReference Include="Syncfusion.Maui.ProgressBar" Version="29.2.10" />
+		<PackageReference Include="Syncfusion.Maui.Core" Version="30.1.37" />
+		<PackageReference Include="Syncfusion.Maui.Popup" Version="30.1.37" />
+		<PackageReference Include="Syncfusion.Maui.ProgressBar" Version="30.1.37" />
 
 	</ItemGroup>
 
@@ -230,11 +237,11 @@
 	</ItemGroup>
 	<ItemGroup Condition="'$(TargetFramework)' == 'net10.0-android'">
 		<PackageReference Include="Xamarin.AndroidX.Lifecycle.Common.Java8">
-			<Version>2.8.7.4</Version>
+			<Version>2.9.1</Version>
 
 		</PackageReference>
 		<PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData">
-			<Version>2.8.7.4</Version>
+			<Version>2.9.1</Version>
 
 		</PackageReference>
 	</ItemGroup>

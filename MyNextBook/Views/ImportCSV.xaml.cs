@@ -5,6 +5,7 @@ using DevExpress.Maui.Core;
 using DevExpress.Maui.DataGrid;
 
 using MyNextBook.Models;
+using MyNextBook.ViewModels;
 
 namespace MyNextBook.Views;
 
@@ -12,17 +13,26 @@ public partial class ImportCSV : ContentPage
 {
     List<string> validHeaderNames = new List<string>
     {
-        "Series.Name", "Book.Title", "Book.ISBN_10", "Book.Notes", "Book.Tags", "Book.ISBN_13", "Book.OLID,None"
+        "Series.Name", "Book.Title","Book.Title", "Book.ISBN_10", "Book.Notes", "Book.Tags", "Book.ISBN_13", "Book.OLID","None"
     };
 
-    private Dictionary<int, string> columnHeaderMap = new Dictionary<int, string>();
+    ImportCSVViewModel _vm;
 
-    public ImportCSV()
+    public ImportCSV(ImportCSVViewModel vm)
     {
+
         InitializeComponent();
-
+        BindingContext = vm;
+        _vm = vm;
     }
-
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        if (BindingContext is ImportCSVViewModel vm && vm.AppearingCommand.CanExecute(null))
+        {
+            vm.AppearingCommand.Execute(null);
+        }
+    }
     private void DataGridView_OnAutoGeneratingColumn(object? sender, AutoGeneratingColumnEventArgs e)
     {
         DataGridView dgv = sender as DataGridView;
@@ -38,26 +48,26 @@ public partial class ImportCSV : ContentPage
                     var label = new Label
                     {
                         Text = e.Column.FieldName,
-
+                        VerticalTextAlignment = TextAlignment.Center,
                         HorizontalTextAlignment = TextAlignment.Center,
-                        WidthRequest = 200,
+                        WidthRequest = 220,
+                        HeightRequest=30,
                         FontAttributes = FontAttributes.Bold
                     };
-
 
                     var label1 = new Label
                     {
                         Text = "Mapped to:",
-
+                        VerticalTextAlignment = TextAlignment.Center,
                         HorizontalTextAlignment = TextAlignment.Center,
                         WidthRequest = 200,
+                        HeightRequest = 30,
                         FontAttributes = FontAttributes.Bold
                     };
 
                     var layout = new VerticalStackLayout();
-
                     layout.BackgroundColor = ThemeManager.Theme.Scheme.PrimaryContainer;
-                    layout.Margin = new Thickness(1, 1, 1, 1);
+                    layout.Margin = new Thickness(0, 0, 0, 0);
                     layout.Children.Add(label);
                     layout.Children.Add(label1);
 
@@ -71,16 +81,10 @@ public partial class ImportCSV : ContentPage
             e.Column.IsReadOnly = true;
             e.Column.Width = 200;
 
+            int columnIndex = e.Column.Column;
+            string fieldName = e.Column.FieldName;
 
 
-            if (!columnHeaderMap.ContainsKey(e.Column.Column))
-            {
-                columnHeaderMap.Add(e.Column.Column, e.Column.FieldName);
-            }
-            else
-            {
-                columnHeaderMap[e.Column.Column] = e.Column.FieldName;
-            }
 
             if (e.Column.HeaderContentTemplate == null)
             {
@@ -88,33 +92,46 @@ public partial class ImportCSV : ContentPage
                 {
                     var label = new Label
                     {
-                        Text = e.Column.FieldName,
-
+                        Text = fieldName,
+                        VerticalTextAlignment = TextAlignment.Center,
                         HorizontalTextAlignment = TextAlignment.Center,
                         WidthRequest = 200,
+                        HeightRequest = 30,
                         FontAttributes = FontAttributes.Bold
                     };
-
-
 
                     var picker = new Picker
                     {
                         ItemsSource = validHeaderNames,
-                        SelectedIndex = validHeaderNames.IndexOf(e.Column.FieldName),
+                        VerticalTextAlignment = TextAlignment.Center,
+                        HorizontalTextAlignment = TextAlignment.Center,
+
+                        SelectedIndex = validHeaderNames.IndexOf(fieldName),
                         WidthRequest = 200,
+                        HeightRequest = 30,
                         BackgroundColor = ThemeManager.Theme.Scheme.TertiaryContainer
+                    };
+
+                    /*
+                    // Event handler for Picker selection change
+                    picker.SelectedIndexChanged += (object s, EventArgs args) =>
+                    {
+
+                        var p = (Picker)s;
+                        _vm.iCSVData.columnHeaderMap[p.SelectedItem.ToString()] = label.Text;
 
 
                     };
-
+                    */
                     var layout = new VerticalStackLayout();
-
                     layout.BackgroundColor = ThemeManager.Theme.Scheme.PrimaryContainer;
                     layout.Margin = new Thickness(0, 0, 0, 0);
                     layout.Children.Add(label);
-                    layout.Children.Add(picker);
+                    //layout.Children.Add(picker);
+
                     return layout;
                 });
+                _vm.iCSVData.columnHeaderMap[fieldName] = fieldName;
                 e.Column.HeaderContentTemplate = dt;
             }
         }

@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="CsvHelper" Version="33.1.0" />
+    <PackageReference Include="Microsoft.SemanticKernel" Version="1.59.0" />
+    <PackageReference Include="Microsoft.SemanticKernel.Plugins.OpenApi" Version="1.59.0" />
+    <PackageReference Include="Microsoft.SemanticKernel.Plugins.Web" Version="1.58.0-alpha" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\OpenLibrary.NET\code generation\OpenLibraryNET.Diagnostics\OpenLibraryNET.Diagnostics.csproj" />
+    <ProjectReference Include="..\..\OpenLibrary.NET\code generation\OpenLibraryNET.GeneratorAttributes\OpenLibraryNET.GeneratorAttributes.csproj" />
+    <ProjectReference Include="..\..\OpenLibrary.NET\code generation\OpenLibraryNET.SourceGenerators\OpenLibraryNET.SourceGenerators.csproj" />
+    <ProjectReference Include="..\..\OpenLibrary.NET\src\OpenLibraryNET.csproj" />
+  </ItemGroup>
+
+</Project>

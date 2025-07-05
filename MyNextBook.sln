@@ -17,6 +17,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenLibraryNET.RemoveGenera
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommonCode", "..\CommonCode\CommonCode\CommonCode.csproj", "{9F8F46CB-4FC5-34EC-F90F-DEC2D35AE86C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImportSeries", "ImportSeries\ImportSeries.csproj", "{F9862CEC-2AE7-4046-8967-7E53B418282B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImportSeries.Tests", "ImportSeries.Tests\ImportSeries.Tests.csproj", "{5093F3AE-FBA9-B5A0-F4A3-4C6DCD558728}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +87,22 @@ Global
 		{9F8F46CB-4FC5-34EC-F90F-DEC2D35AE86C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9F8F46CB-4FC5-34EC-F90F-DEC2D35AE86C}.Release|PhysicalDevice.ActiveCfg = Release|Any CPU
 		{9F8F46CB-4FC5-34EC-F90F-DEC2D35AE86C}.Release|PhysicalDevice.Build.0 = Release|Any CPU
+		{F9862CEC-2AE7-4046-8967-7E53B418282B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9862CEC-2AE7-4046-8967-7E53B418282B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9862CEC-2AE7-4046-8967-7E53B418282B}.Debug|PhysicalDevice.ActiveCfg = Debug|Any CPU
+		{F9862CEC-2AE7-4046-8967-7E53B418282B}.Debug|PhysicalDevice.Build.0 = Debug|Any CPU
+		{F9862CEC-2AE7-4046-8967-7E53B418282B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9862CEC-2AE7-4046-8967-7E53B418282B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F9862CEC-2AE7-4046-8967-7E53B418282B}.Release|PhysicalDevice.ActiveCfg = Release|Any CPU
+		{F9862CEC-2AE7-4046-8967-7E53B418282B}.Release|PhysicalDevice.Build.0 = Release|Any CPU
+		{5093F3AE-FBA9-B5A0-F4A3-4C6DCD558728}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5093F3AE-FBA9-B5A0-F4A3-4C6DCD558728}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5093F3AE-FBA9-B5A0-F4A3-4C6DCD558728}.Debug|PhysicalDevice.ActiveCfg = Debug|Any CPU
+		{5093F3AE-FBA9-B5A0-F4A3-4C6DCD558728}.Debug|PhysicalDevice.Build.0 = Debug|Any CPU
+		{5093F3AE-FBA9-B5A0-F4A3-4C6DCD558728}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5093F3AE-FBA9-B5A0-F4A3-4C6DCD558728}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5093F3AE-FBA9-B5A0-F4A3-4C6DCD558728}.Release|PhysicalDevice.ActiveCfg = Release|Any CPU
+		{5093F3AE-FBA9-B5A0-F4A3-4C6DCD558728}.Release|PhysicalDevice.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

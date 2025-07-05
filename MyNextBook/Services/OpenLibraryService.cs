@@ -32,6 +32,13 @@ namespace MyNextBook.Services
         Task<bool> Login();
         Task<ObservableCollection<Series>> GetSeries();
         void SetUsernamePassword(string username, string password);
+        Task<OLWorkData?> SearchForWorks(
+           string booktitle,
+           string author,
+           string publishedDate,
+           string ISBN_10,
+           string ISBN_13,
+           string OLID);
     }
 
     public class OpenLibraryService : IOpenLibraryService
@@ -164,7 +171,7 @@ namespace MyNextBook.Services
             catch (Exception ex)
             {
                 ErrorHandler.AddError(ex);
-                throw new Exception("ERR-000 Login failed. Please check your username and password. And your network connectivity.", ex);
+                throw new Exception($"ERR-000 Login failed. Please check your username and password. And your network connectivity.\n{ex.Message}", ex);
             }
         }
 
