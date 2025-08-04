@@ -4,14 +4,14 @@ using System.Collections.ObjectModel;
 using System.Text;
 
 using CommunityToolkit.Mvvm.ComponentModel;
-using MyNextBook.Services;
+
 using OpenLibraryNET;
 using OpenLibraryNET.Data;
 using OpenLibraryNET.OLData;
 using ImportSeries;
 using ImportSeries.Services;
 
-namespace MyNextBook.Models
+namespace ImportSeries.Models
 {
     public record OlWorkDataExt : OLWorkData 
     {

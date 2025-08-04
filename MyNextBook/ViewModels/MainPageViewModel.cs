@@ -17,23 +17,27 @@ using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
+using ImportSeries.Services;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
 
 using MyNextBook.Helpers;
-using MyNextBook.Models;
 using MyNextBook.Services;
 using MyNextBook.Views;
 
 using OpenLibraryNET.Data;
+
+// Use alias to distinguish between the two Series types
+using ImportSeriesSeries = ImportSeries.Models.Series;
 
 
 namespace MyNextBook.ViewModels
 {
     public partial class MainPageViewModel : ObservableObject
     {
-        [ObservableProperty] ObservableCollection<Series> itemsSeries;
+        [ObservableProperty] ObservableCollection<ImportSeries.Models.Series> itemsSeries;
         [ObservableProperty] ShowPopUpDetails popupDetails;
         [ObservableProperty] private List<string> idTokenClaims = new();
         [ObservableProperty] private string introText = string.Empty;

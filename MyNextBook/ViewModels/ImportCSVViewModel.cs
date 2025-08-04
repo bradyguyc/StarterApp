@@ -15,6 +15,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
 using ImportSeries;
 using ImportSeries.Models;
+using ImportSeries.Services;
 
 using DevExpress.Maui.DataGrid;
 
@@ -117,7 +118,6 @@ namespace MyNextBook.ViewModels
                 // Initialize non-nullable fields to avoid CS8618
 
                 FileToImport = string.Empty;
-                Task.Delay(100);
                 return Task.CompletedTask;
             }
             catch (Exception ex)
@@ -163,7 +163,7 @@ namespace MyNextBook.ViewModels
                 if (result != null)
                 {
                     IsBusy = true;
-                    Task.Delay(100);
+                    
                     // Yield control to allow the UI to update and show the ActivityIndicator
                     await Task.Yield();
 
@@ -183,7 +183,6 @@ namespace MyNextBook.ViewModels
                         if (gridView != null && gridView.ItemsSource != null)
                         {
                             gridView.GroupBy("Series.Name");
-                          
                         }
                         ShowImporting = true;
                         //ImportText = await CommonCode.Helpers.FileHelpers.ReadTextFile("introtext.txt");
@@ -195,7 +194,7 @@ namespace MyNextBook.ViewModels
                         {
                             IsOpen = true,
                             ErrorMessage = ex.Message,
-                            ErrorCode = "ERR-003"
+                            ErrorCode = "ERR-000"
                         };
                         ShowInitial = true;
                         ErrorHandler.AddError(ex);
@@ -206,7 +205,6 @@ namespace MyNextBook.ViewModels
                         // Ensure IsBusy is set to false regardless of success or failure
                         ShowInitial = true;
                         IsBusy = false;
-                        Task.Delay(100);
                     }
                     //Debug.WriteLine("Sereis:" + iCSVData.SeriesFound + " books:" + iCSVData.BooksFound);
                 }
@@ -255,59 +253,50 @@ namespace MyNextBook.ViewModels
 
                 // AllBooks = new ObservableCollection<Book>(iCSVData.csvData.SelectMany(series => series.Books));
                 ShowImport = false;
-
                 ShowImporting = true;
 
                 //BooksFilledIn = 0;
                 int booksNotFound = 0;
 
-
-
-                await Task.Run(async () =>
+                IsBusy = true;
+                // Example: Loop through each row in the DataTable (assuming iCSVData.csvData is a DataTable)
+                if (iCSVData.CsvData != null)
                 {
-
-                    IsBusy = true;
-                    // Example: Loop through each row in the DataTable (assuming iCSVData.csvData is a DataTable)
-                    if (iCSVData.CsvData != null)
+                    //bool fillSuccessfully = await iCSVData.FillInSeriesDataViaAI(this.iCSVData);
+                    /*
+                    if (!fillSuccessfully)
                     {
-                        //bool fillSuccessfully = await iCSVData.FillInSeriesDataViaAI(this.iCSVData);
-                        /*
-                        if (!fillSuccessfully)
-                        {
-                            PopupDetails.IsOpen = true;
-                            PopupDetails.ErrorMessage = "Failed to fill in series data via AI.";
-                            PopupDetails.ErrorCode = "ERR-004";
-                        }
-                        */
-                        // Access data by column name or index, e.g.:
-                        //var value = row["ColumnName"]; // or row[0]
-                        // TODO: Process each row as needed
-                       
-                        /*foreach (System.Data.DataRow row in iCSVData.CsvData.Rows)
-                        {
-                            // Map row columns to variables
-                            MapRowToVariables(row, out string seriesName, out string bookTitle, out string author, out string publishedDate, out string isbn10, out string isbn13, out string olid);
-
-                            // Now call SearchForWorks with mapped variables
-                            var results = await _openLibraryService.SearchForWorks(
-                                 bookTitle,
-                                 author,
-                                 publishedDate,
-                                 isbn10,
-                                 isbn13,
-                                 olid);
-
-
-                            if (results != null)
-                            {
-
-                            }
-                        }
-                        */
-
+                        PopupDetails.IsOpen = true;
+                        PopupDetails.ErrorMessage = "Failed to fill in series data via AI.";
+                        PopupDetails.ErrorCode = "ERR-004";
                     }
+                    */
+                    // Access data by column name or index, e.g.:
+                    //var value = row["ColumnName"]; // or row[0]
+                    // TODO: Process each row as needed
+                   
+                    /*foreach (System.Data.DataRow row in iCSVData.CsvData.Rows)
+                    {
+                        // Map row columns to variables
+                        MapRowToVariables(row, out string seriesName, out string bookTitle, out string author, out string publishedDate, out string isbn10, out string isbn13, out string olid);
 
-                });
+                        // Now call SearchForWorks with mapped variables
+                        var results = await _openLibraryService.SearchForWorks(
+                             bookTitle,
+                             author,
+                             publishedDate,
+                             isbn10,
+                             isbn13,
+                             olid);
+
+
+                        if (results != null)
+                        {
+
+                        }
+                    }
+                    */
+                }
             }
             catch (Exception ex)
             {
@@ -412,6 +401,5 @@ namespace MyNextBook.ViewModels
             return result;
         }
         */
-
     }
 }

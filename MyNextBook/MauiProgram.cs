@@ -33,6 +33,7 @@ using static System.Net.WebRequestMethods;
 using System.Reflection;
 
 using ImportSeries;
+using ImportSeries.Services;
 
 namespace MyNextBook
 {
@@ -136,7 +137,7 @@ namespace MyNextBook
             services.AddTransient<SettingsViewModel>();
             services.AddTransient<WelcomeScreen>();
             services.AddTransient<WelcomeScreenViewModel>();
-            services.AddSingleton<IOpenLibraryService, OpenLibraryService>();
+            Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddSingleton<IOpenLibraryService, OpenLibraryService>(services);
             services.AddScoped<IGetSecrets, GetSecrets>();
 
             // Now that PublicClientSingleton is initialized, you can register its instance

@@ -8,6 +8,9 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Plugins.Web.Google;
 using Microsoft.SemanticKernel.Plugins.Web;
+using Microsoft.SemanticKernel.Plugins.Web.Bing;
+using System.Diagnostics;
+
 
 namespace ImportSeries
 {
@@ -33,7 +36,7 @@ namespace ImportSeries
             _searchEngineId = searchEngineId;
         }
 
-        public async Task<string> FillViaAI(string jsonData)
+        public async Task<string> FillViaAI(string jsonData, string seriesName = null, string seriesBooks = null, List<string> uniqueAuthors = null)
         {
             try
             {
@@ -42,17 +45,27 @@ namespace ImportSeries
 
                 if (_provider.Equals("AzureOpenAI", StringComparison.OrdinalIgnoreCase))
                 {
+                    // Configure HttpClient with 10-minute timeout for Azure OpenAI
+                    var httpClient = new HttpClient();
+                    httpClient.Timeout = TimeSpan.FromMinutes(10);
+
                     builder.AddAzureOpenAIChatCompletion(
                         _deploymentName ?? throw new InvalidOperationException("Azure OpenAI Deployment Name not found"),
                         _endPoint ?? throw new InvalidOperationException("Azure OpenAI Endpoint not found"),
-                        _aiKey ?? throw new InvalidOperationException("Azure OpenAI API key not found")
+                        _aiKey ?? throw new InvalidOperationException("Azure OpenAI API key not found"),
+                        httpClient: httpClient
                     );
                 }
                 else
                 {
+                    // Configure HttpClient with 10-minute timeout for regular OpenAI
+                    var httpClient = new HttpClient();
+                    httpClient.Timeout = TimeSpan.FromMinutes(10);
+
                     builder.AddOpenAIChatCompletion(
                         _deploymentName, // For OpenAI, this is the model ID
-                        _aiKey ?? throw new InvalidOperationException("OpenAI API key not found")
+                        _aiKey ?? throw new InvalidOperationException("OpenAI API key not found"),
+                        httpClient: httpClient
                     );
                 }
 
@@ -61,78 +74,95 @@ namespace ImportSeries
                 // Add search providers
                 foreach (var provider in _searchProviders)
                 {
-                    if (provider.Equals("google", StringComparison.OrdinalIgnoreCase))
+                    if (provider.Trim().Equals("google", StringComparison.OrdinalIgnoreCase))
                     {
 #pragma warning disable SKEXP0050
-                        var textSearch = new GoogleTextSearch(
-                                searchEngineId: _searchEngineId ?? throw new InvalidOperationException("Google Search Engine ID not found"),
-                                apiKey: _searchAPIKey ?? throw new InvalidOperationException("Google API key not found"));
+                        var googleConnector = new GoogleConnector(
+                                apiKey: _searchAPIKey ?? throw new InvalidOperationException("Google API key not found"),
+                                searchEngineId: _searchEngineId ?? throw new InvalidOperationException("Google Search Engine ID not found"));
+                        var searchPlugin = new WebSearchEnginePlugin(googleConnector);
+                        kernel.Plugins.AddFromObject(searchPlugin, "Google");
 #pragma warning restore SKEXP0050
-                        var searchPlugin = textSearch.CreateWithSearch("GoogleSearch");
-                        kernel.Plugins.Add(searchPlugin);
                     }
-                    else if (provider.Equals("openlibrary", StringComparison.OrdinalIgnoreCase))
+                    else if (provider.Trim().Equals("bing", StringComparison.OrdinalIgnoreCase))
+                    {
+#pragma warning disable SKEXP0051
+#pragma warning disable SKEXP0050 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+                        var bingConnector = new BingConnector(_searchAPIKey ?? throw new InvalidOperationException("Bing API key not found"));
+                        var webSearchPlugin = new WebSearchEnginePlugin(bingConnector);
+                        kernel.Plugins.AddFromObject(webSearchPlugin, "Bing");
+#pragma warning restore SKEXP0050 
+#pragma warning restore SKEXP0051
+                    }
+                    else if (provider.Trim().Equals("openlibrary", StringComparison.OrdinalIgnoreCase))
                     {
                         var openLibraryPlugin = kernel.ImportPluginFromType<OpenLibraryPlugin>("OpenLibrary");
                     }
+                    else if (provider.Trim().Equals("wikipedia", StringComparison.OrdinalIgnoreCase))
+                    {
+#pragma warning disable SKEXP0052
+                        kernel.ImportPluginFromObject(new WikipediaPlugin(), "Wikipedia");
+#pragma warning restore SKEXP0052
+                    }
                 }
 
-                // Create the prompt for enhancing book/series data
-                string query = $@"
-You are an expert librarian and book data specialist. I will provide you with book series data in JSON format. 
-Please enhance this data by:
+                var hasGoogle = _searchProviders.Any(p => p.Trim().Equals("google", StringComparison.OrdinalIgnoreCase));
+                var hasBing = _searchProviders.Any(p => p.Trim().Equals("bing", StringComparison.OrdinalIgnoreCase));
+                var hasOpenLibrary = _searchProviders.Any(p => p.Trim().Equals("openlibrary", StringComparison.OrdinalIgnoreCase));
+                var hasWikipedia = _searchProviders.Any(p => p.Trim().Equals("wikipedia", StringComparison.OrdinalIgnoreCase));
 
-1. Adding missing publication information (publication dates, publishers, etc.)
-2. Standardizing author names and series information
-3. Adding ISBN numbers if missing
-4. Correcting any inconsistencies in the data
-5. Adding Open Library IDs (OLID) if you can find them, do not provide examples, only provide the information if you can find the accurate and correct id.
-6. Add missing books from the series using the same json format only providing data that you can find and is accurate, don't make data up or provide examples leave empty if you can't find the correct value.
-7. The notes that you provide at the end of the query indicating what you did include in a new field in the json called ImportNotes.
-8. Add series order, what order the book is in the series. 
-9. Add a field called ImportNotes with any notes you have about the data, this will be added to the json and will be used to determine if the data is accurate and complete.
-10. Add a field called ImportStatus with a value of 'Enhanced' if you enhanced the data or 'Failed' if you failed to enhance the data. Added if the book was added to the list, and RecommendDelete if you think the book does not belong in that series.
-11.  Do not add any notes at the end the entire response should be valid json.
+                var searchQueries = new List<string>();
+                if (hasGoogle) searchQueries.Add("{{Google.Search $jsonData}}");
+                if (hasBing) searchQueries.Add("{{Bing.Search $jsonData}}");
+                if (hasOpenLibrary) searchQueries.Add("{{OpenLibrary.SearchBooks $jsonData}}");
+                if (hasWikipedia && !string.IsNullOrEmpty(seriesName)) 
+                {
+                    // Use seriesName and authors instead of seriesBooks with named parameters
+                    var authorsString = uniqueAuthors != null && uniqueAuthors.Any() 
+                        ? string.Join(", ", uniqueAuthors) 
+                        : "";
+                    searchQueries.Add("{{Wikipedia.Search seriesName=$seriesName authors=$authorsString}}");
+                }
 
-Use book title, author, and series name to search for additional information.
-
-Here is the book series data:
-{jsonData}
-
-Please return the enhanced data in the  JSON format, maintaining the original structure but with additional/corrected information. 
-If you need to search for information about these books, please do so to provide accurate data.
-
-Enhanced JSON:";
-
-                var hasGoogle = _searchProviders.Any(p => p.Equals("google", StringComparison.OrdinalIgnoreCase));
-                var hasOpenLibrary = _searchProviders.Any(p => p.Equals("openlibrary", StringComparison.OrdinalIgnoreCase));
+                var searchPrefix = searchQueries.Any() ? string.Join(" ", searchQueries) + " " : "";
                 
-                var prompt = "{{$query}}";
-                if (hasGoogle && hasOpenLibrary)
-                {
-                    prompt = "{{GoogleSearch.Search $jsonData}} {{OpenLibrary.SearchBooks $jsonData}} {{$query}}";
-                }
-                else if (hasGoogle)
-                {
-                    prompt = "{{GoogleSearch.Search $jsonData}} {{$query}}";
-                }
-                else if (hasOpenLibrary)
-                {
-                    prompt = "{{OpenLibrary.SearchBooks $jsonData}} {{$query}}";
-                }
+                var prompt = searchPrefix + @"
+You are an expert librarian and book data specialist. I will provide the name of a book series and the book titles in the series. 
+
+1. Determine if there are any missing books in the series. If so provide the isbn_13 and isbn_10 for the missing books.
+2.  for books already in the json:
+    a. only update the seriesOrder 
+    b. update the isbn13 if it is missing or invalid where invalid would be a value that is not 13 digits long. 
+       Onnly provide the isbn13 if it is the correct isbn value that matches to the same book as the isbn10 if isbn10 is provided.  
+    c. If neither isbn10 or 13 is provided provide the best isbn10 and 13 edition values for the book that is the first published book in english.
+    d. if isbn infomration is updated or added in the ImportNotes fields add the text 'ISBNUpdated'
+3. add any missing books in the series with information for each field in the json that you can find, do not make  up information.
+4. Add an ImportNotes field summarizing your changes.
+5. Add an ImportStatus field with one of: 'Enhanced', 'Failed', 'Added', or 'RecommendDelete' for each book in the provided json.
+6. Do not include any notes outside the JSON.
+7. Return only valid JSON, preserving the original structure with your enhancements.
+
+Here are the books in the series {{$seriesName}}:
+{{$seriesBooks}}
+
+Return the enhanced JSON: {{$jsonData}}";
 
                 var arguments = new KernelArguments(new OpenAIPromptExecutionSettings
                 {
-                    MaxTokens = 4000,
+                    MaxTokens = 16384,
                     Temperature = 0.3,
                     TopP = 0.9
                 })
                 {
-                    { "query", query },
-                    { "jsonData", jsonData }
+                    { "jsonData", jsonData },
+                    { "seriesName", seriesName ?? "" },
+                    { "seriesBooks", seriesBooks ?? "" },
+                    { "authorsString", uniqueAuthors != null && uniqueAuthors.Any() ? string.Join(", ", uniqueAuthors) : "" }
                 };
-                // Execute the AI request
-           var response = await kernel.InvokePromptAsync(prompt, arguments);
+                
+                // Execute the AI request with the extended timeout
+                var response = await kernel.InvokePromptAsync(prompt, arguments);
+                Debug.WriteLine($"[Info]AI response received.\n{response.GetValue<string>()}");
 
                 return response.GetValue<string>() ?? string.Empty;
             }

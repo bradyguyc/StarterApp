@@ -140,23 +140,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<MauiFont Remove="C:\Users\brady\.nuget\packages\syncfusion.maui.core\29.2.7\buildTransitive\..\buildTransitive\Resources\Fonts\MauiMaterialAssets.ttf" />
-		<MauiFont Remove="Resources\Fonts\MauiMaterialAssets.ttf" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<None Remove="Resources\Fonts\MauiMaterialAssets.ttf" />
-	</ItemGroup>
-
-
-
-
-
-
-	<ItemGroup>
-		<EmbeddedResource Include="appsettings.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</EmbeddedResource>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -188,8 +172,8 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.0-preview.5.25277.114" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0-preview.5.25277.114" />
 
-		<PackageReference Include="Microsoft.Identity.Client" Version="4.73.1" />
-		<PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.73.1" />
+		<PackageReference Include="Microsoft.Identity.Client" Version="4.74.1" />
+		<PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.74.1" />
 
 
 

@@ -191,23 +191,13 @@
             Grid.RowSpan="1"
             Grid.Column="0"
             Grid.ColumnSpan="2"
-            Content="{Binding ImportProgressText}"
-            EndValue="100"
-            IsVisible="{Binding IsBusy}"
-            StartAngle="-180"
-            StartValue="0"
-            SweepAngle="360"
+    
             Value="{Binding ImportProgressValue}">
 
             <dx:RadialProgressBar.ContentTemplate>
                 <DataTemplate>
                     <dx:DXStackLayout Orientation="Vertical">
-                        <!--
-                        <dx:DXImage
-                            HeightRequest="50"
-                            Source="{Binding Icon}"
-                            TintColor="#8F79CA" />
-                        -->
+                     
                         <Label FontSize="Title" HorizontalOptions="Center">
                             <Label.FormattedText>
                                 <FormattedString>

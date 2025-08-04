@@ -6,14 +6,11 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading.RateLimiting;
 
-using CommonCode.MSALClient;
-
+using CommonCode.Helpers;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui.Storage;
 
-using MyNextBook.Helpers;
-using MyNextBook.Models;
+using ImportSeries.Models;
 
 using OpenLibraryNET;
 using OpenLibraryNET.Data;
@@ -25,20 +22,21 @@ using Polly;
 using Polly.CircuitBreaker;
 using Polly.Retry;
 
-namespace MyNextBook.Services
+namespace ImportSeries.Services
 {
     public interface IOpenLibraryService
     {
         Task<bool> Login();
         Task<ObservableCollection<Series>> GetSeries();
         void SetUsernamePassword(string username, string password);
-        Task<OLWorkData?> SearchForWorks(
+        Task<(OLWorkData?,string?)> SearchForWorks(
            string booktitle,
            string author,
            string publishedDate,
            string ISBN_10,
            string ISBN_13,
            string OLID);
+        Task<string?> SearchForEdition(string workOLID, string languageCode = "eng");
     }
 
     public class OpenLibraryService : IOpenLibraryService
@@ -60,8 +58,8 @@ namespace MyNextBook.Services
 
         public OpenLibraryService(ILogger<OpenLibraryService> logger)
         {
-            InitOpenLibraryService();
             _logger = logger;
+            InitOpenLibraryService();
         }
 
         public async Task InitOpenLibraryService()
@@ -80,13 +78,10 @@ namespace MyNextBook.Services
                 {
                     OLClient = new OpenLibraryClient(logBuilder: builder => builder.AddDebug());
                     OLClient.BackingClient.Timeout = TimeSpan.FromMinutes(1);
-#if ANDROID || IOS
-                    OLLoginId = await SecureStorage.Default.GetAsync(Constants.OpenLibraryUsernameKey)
-                        .ConfigureAwait(false);
-                    OLPassword = await SecureStorage.Default.GetAsync(Constants.OpenLibraryPasswordKey)
-                        .ConfigureAwait(false);
+                    
+                    // Note: SecureStorage is not available in test projects, credentials need to be set manually
+                    // For testing, use SetUsernamePassword method
                 }
-#endif
             }
             catch (Exception ex)
             {
@@ -94,56 +89,7 @@ namespace MyNextBook.Services
                 _logger.LogError(ex, "Failed to initialize OpenLibraryService");
                 throw new Exception("Failed to initialize OpenLibraryService", ex);
             }
-
         }
-        /*
-        public static class MyResilienceKeys
-        {
-            public static readonly ResiliencePropertyKey<TimeSpan> SleepDuration = new("SleepDuration");
-            public static readonly ResiliencePropertyKey<int> Key2 = new("my-key-2");
-        }
-
-        private Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions BuildResilienceOptions()
-        {
-            var options = new Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions
-            {
-                Retry = new HttpRetryStrategyOptions()
-                {
-
-                    BackoffType = DelayBackoffType.Exponential,
-                    UseJitter = true,
-                    MaxRetryAttempts = 4,
-                    DelayGenerator = async args =>
-                    {
-                        bool found = args.Context.Properties.TryGetValue(MyResilienceKeys.SleepDuration, out var delay);
-                        if (found) ErrorHandler.AddLog($"^^Delay Generator SleepDuration: {delay * 3}");
-                        delay = !found ? TimeSpan.FromSeconds(5) : delay * 3;
-                        return delay;
-                    },
-                    OnRetry = async (args) =>
-                    {
-                        if (args.Outcome.Result is HttpResponseMessage response)
-                        {
-                            HttpResponseMessage r = (HttpResponseMessage)args.Outcome.Result;
-                            ErrorHandler.AddLog($" {OLClient.BackingClient.ToString()} {OLClient.BackingClient.BaseAddress.ToString()}");
-                            ErrorHandler.AddLog($"^^Retrying... Attempt: {args.AttemptNumber}, Exception: {args.Outcome.Exception?.Message} \nurl: {r.RequestMessage.RequestUri}");
-                        }
-                        else
-                        {
-                            ErrorHandler.AddLog($"^^Retrying... Attempt: {args.AttemptNumber}, Exception: {args.Outcome.Exception?.Message}");
-                        }
-                        await Task.CompletedTask;
-                    }
-                }
-            };
-
-            // You can add more configuration to options if needed (e.g., Timeout, CircuitBreaker, etc.)
-
-            return options;
-        }
-
-        */// Initializes the OpenLibraryService with resilience options.
-
 
         public async Task<bool> Login()
         {
@@ -179,7 +125,7 @@ namespace MyNextBook.Services
         {
             try
             {
-                Login();
+                await Login();
                 await OLGetBookStatus();
                 ObservableCollection<Series> bookSeries = new ObservableCollection<Series>();
                 OLListData[]? userLists = await OLListLoader
@@ -267,8 +213,83 @@ namespace MyNextBook.Services
                 throw new Exception(ex.Message, ex);
             }
         }
+        public async Task<string?> SearchForEdition(string workOLID, string languageCode = "eng")
+        {
+            try
+            {
+                using var httpClient = new HttpClient();
+                var url = $"https://openlibrary.org/works/{workOLID}/editions.json";
+                var response = await httpClient.GetStringAsync(url);
+                
+                var editionsData = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(response);
+                var entries = editionsData.GetProperty("entries");
+                
+                var filteredEditions = new List<(System.Text.Json.JsonElement edition, DateTime publishDate)>();
+                
+                foreach (var entry in entries.EnumerateArray())
+                {
+                    // Check for language
+                    bool hasTargetLanguage = false;
+                    if (entry.TryGetProperty("languages", out var languages))
+                    {
+                        foreach (var lang in languages.EnumerateArray())
+                        {
+                            if (lang.TryGetProperty("key", out var key) && 
+                                key.GetString()?.Contains($"/languages/{languageCode}") == true)
+                            {
+                                hasTargetLanguage = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (!hasTargetLanguage) continue;
+                    
+                    // Get publish date
+                    if (entry.TryGetProperty("publish_date", out var publishDateProp))
+                    {
+                        var publishDateStr = publishDateProp.GetString();
+                        if (!string.IsNullOrWhiteSpace(publishDateStr))
+                        {
+                            var parsedDate = ParsePublishDate(publishDateStr);
+                            filteredEditions.Add((entry, parsedDate));
+                        }
+                    }
+                }
+                
+                // Return the OLID of the earliest edition
+                var earliest = filteredEditions.OrderBy(x => x.publishDate).FirstOrDefault();
+                if (earliest.edition.ValueKind != System.Text.Json.JsonValueKind.Undefined &&
+                    earliest.edition.TryGetProperty("key", out var keyProperty))
+                {
+                    var fullKey = keyProperty.GetString();
+                    // Extract OLID from the key (format: "/books/OL123456M")
+                    return fullKey?.Split('/').LastOrDefault();
+                }
+                
+                throw new Exception("No editions found for the specified work with the target language.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error searching for edition with OLID: {workOLID}", workOLID);
+                return null;
+            }
+        }
 
-        public async Task<OLWorkData?> SearchForWorks(
+        private DateTime ParsePublishDate(string publishDate)
+        {
+            // Try to parse various date formats
+            if (DateTime.TryParse(publishDate, out DateTime result))
+                return result;
+
+            // Try to extract year if it's just a year
+            if (int.TryParse(publishDate, out int year) && year > 1000 && year <= DateTime.Now.Year)
+                return new DateTime(year, 1, 1);
+
+            // Return max value if unparseable (will be sorted last)
+            return DateTime.MaxValue;
+        }
+        public async Task<(OLWorkData?,string?)> SearchForWorks(
             string booktitle,
             string author,
             string publishedDate,
@@ -285,7 +306,7 @@ namespace MyNextBook.Services
                     new KeyValuePair<string, string>("olid", OLID)
                 );
                 if (results != null && results.Length > 0)
-                    return results[0];
+                    return ( results[0],"OLID");
             }
 
             // 2. Search by ISBN_13
@@ -297,7 +318,7 @@ namespace MyNextBook.Services
                     new KeyValuePair<string, string>("isbn", ISBN_13)
                 );
                 if (results != null && results.Length > 0)
-                    return results[0];
+                    return (results[0],"ISBN13");
             }
 
             // 3. Search by ISBN_10
@@ -309,7 +330,7 @@ namespace MyNextBook.Services
                     new KeyValuePair<string, string>("isbn", ISBN_10)
                 );
                 if (results != null && results.Length > 0)
-                    return results[0];
+                    return (results[0],"ISBN10");
             }
 
             // 4. Search by title and author (and optionally publishedDate)
@@ -329,7 +350,7 @@ namespace MyNextBook.Services
                     parameters.ToArray()
                 );
                 if (results != null && results.Length > 0)
-                    return results[0];
+                    return (results[0],"Title/Author");
             }
 
             // 5. Search by title only (and optionally publishedDate)
@@ -348,11 +369,11 @@ namespace MyNextBook.Services
                     parameters.ToArray()
                 );
                 if (results != null && results.Length > 0)
-                    return results[0];
+                    return (results[0],"Title/PublishYear");
             }
 
             // No match found
-            return null;
+            throw new Exception("No matching work found for the provided criteria.");
         }
 
         // Utility method to copy all public properties from OLWorkData to OlWorkDataExt using reflection
