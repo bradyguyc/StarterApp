@@ -9,6 +9,8 @@ using System.Data;
 using System.Globalization;
 using CsvHelper;
 using CsvHelper.Configuration;
+using ImportSeries.Services;
+using Moq;
 
 namespace ImportSeries.Tests
 {
@@ -52,7 +54,8 @@ namespace ImportSeries.Tests
         public async Task Import_ValidCsvFile_ThrowsExceptionOnAiCall()
         {
             // Arrange
-            var importCsvData = new ImportCSVData();
+            var mockTransactionService = new Mock<IPendingTransactionService>();
+            var importCsvData = new ImportCSVData(mockTransactionService.Object);
             string dir = "c:\\data";
             string csvFilePath = Path.Combine(dir, "seriesTestFile2.csv");
 

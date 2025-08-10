@@ -16,7 +16,6 @@ using CommunityToolkit.Mvvm.Messaging.Messages;
 using ImportSeries;
 using ImportSeries.Models;
 using ImportSeries.Services;
-
 using DevExpress.Maui.DataGrid;
 
 using MyNextBook.Helpers;
@@ -32,8 +31,9 @@ namespace MyNextBook.ViewModels
     public partial class ImportCSVViewModel : ObservableObject
     {
         private readonly IOpenLibraryService? _openLibraryService;
+        private readonly IPendingTransactionService _transactionService;
 
-        public ImportCSVViewModel(IOpenLibraryService openLibraryService)
+        public ImportCSVViewModel(IOpenLibraryService openLibraryService, IPendingTransactionService transactionService)
         {
             try
             {
@@ -54,7 +54,8 @@ namespace MyNextBook.ViewModels
                     
                 });
 
-                iCSVData = new ImportCSVData();
+                _transactionService = transactionService;
+                iCSVData = new ImportCSVData(_transactionService);
                 _openLibraryService = openLibraryService;
                 PopupDetails = new ShowPopUpDetails
                 {
@@ -107,7 +108,7 @@ namespace MyNextBook.ViewModels
                 ShowImportText = false;
                 ImportProgressText = "Importing CSV";
                 ImportProgressValue = 0;
-                iCSVData = new ImportCSVData();
+                iCSVData = new ImportCSVData(_transactionService);
                 PopupDetails = new ShowPopUpDetails
                 {
                     IsOpen = false,

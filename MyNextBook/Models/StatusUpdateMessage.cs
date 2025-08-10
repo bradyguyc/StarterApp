@@ -1,0 +1,1 @@
+public record StatusUpdateMessage(ImportSeries.Models.OlWorkDataExt WorkData, string NewStatus);

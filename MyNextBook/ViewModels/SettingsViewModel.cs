@@ -10,7 +10,7 @@ using CommunityToolkit.Mvvm.Input;
 
 using DevExpress.Maui.Core;
 
-using ImportSeries.Services;
+using ImportSeries;
 
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Storage;
@@ -66,7 +66,7 @@ namespace MyNextBook.ViewModels
                 string OLUserName = await SecureStorage.Default.GetAsync(Constants.OpenLibraryUsernameKey);
                 string OLPassword = await SecureStorage.Default.GetAsync(Constants.OpenLibraryPasswordKey);
 
-
+                _OLService.SetUsernamePassword(OLUserName, OLPassword);
                 bool r = await _OLService.Login();
                 if (r == true)
                 {

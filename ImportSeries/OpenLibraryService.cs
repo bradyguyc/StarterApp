@@ -3,13 +3,17 @@ using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.RateLimiting;
 
-using Microsoft.Extensions.Http.Resilience;
-using Microsoft.Extensions.Logging;
 using ImportSeries.Helpers;
 using ImportSeries.Models;
+using ImportSeries.Services;
+using Microsoft.Extensions.Http.Resilience;
+using Microsoft.Extensions.Logging;
+
+using Newtonsoft.Json;
 
 using OpenLibraryNET;
 using OpenLibraryNET.Data;
@@ -21,13 +25,14 @@ using Polly;
 using Polly.CircuitBreaker;
 using Polly.Retry;
 
-namespace ImportSeries.Services
+namespace ImportSeries
 {
     public interface IOpenLibraryService
     {
         Task<bool> Login();
         Task<ObservableCollection<Series>> GetSeries();
         void SetUsernamePassword(string username, string password);
+        string OLGetBookStatus(string workKey);
         /*Task<OLWorkData?> SearchForWorks(
            string booktitle,
            string author,
@@ -37,12 +42,17 @@ namespace ImportSeries.Services
            string OLID);
         */
         Task<string?> SearchForEdition(string workOLID, string languageCode = "eng");
+        Task OLSetStatus(string ID, string status, DateTimeOffset? readDate = null);
+        Task ProcessPendingTransactionsAsync();
+
+
     }
 
     public class OpenLibraryService : IOpenLibraryService
     {
         private OpenLibraryClient OLClient;
         private readonly ILogger<OpenLibraryService> _logger;
+        private readonly IPendingTransactionService _transactionService;
 
         private string OLLoginId = string.Empty;
         private string OLPassword = string.Empty;
@@ -56,10 +66,11 @@ namespace ImportSeries.Services
             OLPassword = password;
         }
 
-        public OpenLibraryService(ILogger<OpenLibraryService> logger)
+        public OpenLibraryService(ILogger<OpenLibraryService> logger, IPendingTransactionService transactionService)
         {
             InitOpenLibraryService();
             _logger = logger;
+            _transactionService = transactionService;
         }
 
         public async Task InitOpenLibraryService()
@@ -174,12 +185,30 @@ namespace ImportSeries.Services
                 throw new Exception($"ERR-000 Login failed. Please check your username and password. And your network connectivity.\n{ex.Message}", ex);
             }
         }
-
+         public string OLGetBookStatus(string workKey)
+        {
+            if (currentlyReading?.ReadingLogEntries != null && 
+                currentlyReading.ReadingLogEntries.Any(entry => entry.Work?.Key == workKey))
+            {
+                return "Reading";
+            }
+            if (alreadyRead?.ReadingLogEntries != null && 
+                alreadyRead.ReadingLogEntries.Any(entry => entry.Work?.Key == workKey))
+            {
+                return "Read";
+            }
+            if (wantToRead?.ReadingLogEntries != null && 
+                wantToRead.ReadingLogEntries.Any(entry => entry.Work?.Key == workKey))
+            {
+                return "To Read";
+            }
+            return "To Read";
+        }
         public async Task<ObservableCollection<Series>> GetSeries()
         {
             try
             {
-                Login();
+                await Login();
                 await OLGetBookStatus();
                 ObservableCollection<Series> bookSeries = new ObservableCollection<Series>();
                 OLListData[]? userLists = await OLListLoader
@@ -190,7 +219,7 @@ namespace ImportSeries.Services
                     {
                         if (list.ID != null)
                         {
-                            Series s = new Series
+                            Series s = new Series(this)
                             {
                                 SeriesData = list,
                                 seeds = await OLClient.List.GetListSeedsAsync(OLClient.Username, list.ID),
@@ -202,6 +231,7 @@ namespace ImportSeries.Services
                                 {
                                     if (e != null)
                                     {
+
                                         s.Editions.Add(e);
                                     }
                                 }
@@ -211,12 +241,16 @@ namespace ImportSeries.Services
                             {
                                 if (seed.Type == "work")
                                 {
+                                    
                                     OLWorkData work = await OLWorkLoader.GetDataAsync(OLClient.BackingClient, seed.ID);
-                                    OlWorkDataExt w = new OlWorkDataExt();
                                     if (work != null)
                                     {
-                                        CopyProperties(work, w);
-                                        s.Works.Add(w); // Add the extended version if you want
+                                        // Create OlWorkDataExt instance and copy properties from OLWorkData
+                                        var workExt = new OlWorkDataExt();
+                                        CopyProperties(work, workExt);
+                                        workExt.Status = OLGetBookStatus(work.Key);
+                                        Debug.WriteLine($"Work: {workExt.Title}, Status: {workExt.Status}");
+                                        s.Works.Add(workExt);
                                     }
                                     foreach (var authorKey in work.AuthorKeys)
                                     {
@@ -236,6 +270,8 @@ namespace ImportSeries.Services
                                     }
                                 }
                             }
+                           
+                            s.UserBooksRead = s.Works.Count(w => OLGetBookStatus(w.Key) == "Read");
                             bookSeries.Add(s);
                         }
                     }
@@ -267,6 +303,7 @@ namespace ImportSeries.Services
                 throw new Exception(ex.Message, ex);
             }
         }
+
          public async Task<string?> SearchForEdition(string workOLID, string languageCode = "eng")
         {
             try
@@ -327,6 +364,202 @@ namespace ImportSeries.Services
             {
                 _logger.LogError(ex, "Error searching for edition with OLID: {workOLID}", workOLID);
                 return null;
+            }
+        }
+        
+        private async Task ExecuteUpdateBookshelfAsync(string action, string bookshelf_id, string workID)
+        {
+            var c = new MultipartFormDataContent
+            {
+                { new StringContent(action), "action" },
+                { new StringContent(bookshelf_id), "bookshelf_id" },
+                { new StringContent(workID), "work_id" },
+                { new StringContent("/people/" + OLClient.Username), "user-key" }
+            };
+            Uri posturi = new Uri($"https://openlibrary.org/works/{workID}/bookshelves.json");
+            var response = await OLClient.BackingClient.PostAsync(posturi, c);
+            response.EnsureSuccessStatusCode();
+        }
+
+        private async Task OLBookUpdateBookshelfData(string action, string bookshelf_id, string workID)
+        {
+            try
+            {
+                await ExecuteUpdateBookshelfAsync(action, bookshelf_id, workID);
+            }
+            catch (Exception ex)
+            {
+                ErrorHandler.AddError(ex);
+                _logger.LogWarning(ex, "Failed to update bookshelf for work {WorkID}. Queuing for later.", workID);
+
+                var payload = new UpdateBookshelfPayload { Action = action, BookshelfId = bookshelf_id, WorkId = workID };
+                var transaction = new PendingTransaction
+                {
+                    Type = TransactionType.UpdateBookshelf,
+                    Payload = JsonConvert.SerializeObject(payload)
+                };
+                await _transactionService.AddAsync(transaction);
+            }
+        }
+        /*
+        private async Task OLCheckLogedIn()
+        {
+            if (OLClient != null && !OLClient.LoggedIn)
+            {
+                await Login();
+            }
+
+            if (!OLClient.LoggedIn)
+            {
+                throw new Exception("Unable to log in to OpenLibrary");
+            }
+        }
+        */
+        private async Task ExecuteUpdateFinishedDateAsync(string workID, DateTimeOffset statusDate, string? eventId = null)
+        {
+            var url = $"https://openlibrary.org/works/{workID}/check-ins";
+            var payload = new
+            {
+                event_type = 3,
+                year = statusDate.Year,
+                month = statusDate.Month,
+                day = statusDate.Day,
+                event_id = eventId
+            };
+
+            var jsonPayload = JsonConvert.SerializeObject(payload);
+            var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+            content.Headers.ContentType.CharSet = string.Empty;
+
+            var request = new HttpRequestMessage(HttpMethod.Post, url) { Content = content };
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            request.Headers.Add("X-Requested-With", "XMLHttpRequest");
+
+            var response = await OLClient.BackingClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+        }
+
+        public async Task OLUpdateBookFinishedDate(string workID, DateTimeOffset statusDate, string? eventId = null)
+        {
+            try
+            {
+                await ExecuteUpdateFinishedDateAsync(workID, statusDate, eventId);
+            }
+            catch (Exception ex)
+            {
+                ErrorHandler.AddError(ex);
+                _logger.LogWarning(ex, "Failed to update finished date for work {WorkID}. Queuing for later.", workID);
+
+                var payload = new UpdateFinishedDatePayload { WorkId = workID, StatusDate = statusDate, EventId = eventId };
+                var transaction = new PendingTransaction
+                {
+                    Type = TransactionType.UpdateFinishedDate,
+                    Payload = JsonConvert.SerializeObject(payload)
+                };
+                await _transactionService.AddAsync(transaction);
+            }
+        }
+
+
+        public async Task OLSetStatus(string ID, string status,  DateTimeOffset? readDate = null)
+        {
+            //todo: should switch type to an enum same with status
+            try
+            {
+                //await OLCheckLogedIn();
+
+                string bookshelf_id;
+                switch (status)
+                {
+                    case "Reading":
+                        bookshelf_id = "2";
+                        break;
+
+                    case "Read":
+                        bookshelf_id = "3";
+                        break;
+
+                    default:
+                        bookshelf_id = "1";
+                        break;
+                }
+
+                await OLBookUpdateBookshelfData("add", bookshelf_id, ID).ConfigureAwait(false);
+
+                if (bookshelf_id == "3" && readDate != null)
+                {
+                    await OLUpdateBookFinishedDate(ID, readDate.Value).ConfigureAwait(false);
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                ErrorHandler.AddError(ex);
+                throw new Exception(ex.Message, ex);
+            }
+        }
+
+        public async Task ProcessPendingTransactionsAsync()
+        {
+            if (Connectivity.Current.NetworkAccess != NetworkAccess.Internet)
+            {
+                _logger.LogInformation("No internet connection. Skipping pending transaction processing.");
+                return;
+            }
+
+            try
+            {
+                if (!OLClient.LoggedIn) await Login();
+                if (!OLClient.LoggedIn)
+                {
+                    _logger.LogWarning("Cannot process pending transactions; OpenLibrary login failed.");
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during login while processing pending transactions.");
+                return;
+            }
+
+
+            var transactions = await _transactionService.GetAllAsync();
+            if (transactions.Count == 0) return;
+
+            _logger.LogInformation("Processing {Count} pending transactions.", transactions.Count);
+
+            foreach (var transaction in transactions.ToList())
+            {
+                bool success = false;
+                try
+                {
+                    switch (transaction.Type)
+                    {
+                        case TransactionType.UpdateBookshelf:
+                            var bookshelfPayload = JsonConvert.DeserializeObject<UpdateBookshelfPayload>(transaction.Payload);
+                            await ExecuteUpdateBookshelfAsync(bookshelfPayload.Action, bookshelfPayload.BookshelfId, bookshelfPayload.WorkId);
+                            success = true;
+                            break;
+                        case TransactionType.UpdateFinishedDate:
+                            var datePayload = JsonConvert.DeserializeObject<UpdateFinishedDatePayload>(transaction.Payload);
+                            await ExecuteUpdateFinishedDateAsync(datePayload.WorkId, datePayload.StatusDate, datePayload.EventId);
+                            success = true;
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to process transaction {TransactionId}. It will be retried later.", transaction.Id);
+                    transaction.RetryCount++;
+                    await _transactionService.UpdateAsync(transaction);
+                }
+
+                if (success)
+                {
+                    await _transactionService.RemoveAsync(transaction.Id);
+                    _logger.LogInformation("Successfully processed and removed transaction {TransactionId}.", transaction.Id);
+                }
             }
         }
 

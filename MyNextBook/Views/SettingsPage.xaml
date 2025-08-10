@@ -86,7 +86,7 @@
                         TextColor="{dx:ThemeColor OnSecondaryContainer}" />
 
                     <dxs:TextEdit
-                        HeightRequest="40"
+                        HeightRequest="50"
                         PlaceholderText="Username"
                         Text="{Binding OpenLibraryUsername, Mode=TwoWay}"
                         TextColor="{dx:ThemeColor OnSecondaryContainer}" />

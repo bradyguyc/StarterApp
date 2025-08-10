@@ -3,31 +3,35 @@
     x:Class="MyNextBook.DataTemplates.SeriesTemplates"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:converters="clr-namespace:MyNextBook.Converters"
     xmlns:dx="http://schemas.devexpress.com/maui"
     xmlns:fonts="clr-namespace:CommonCode.Helpers;assembly=CommonCode"
-    xmlns:models="clr-namespace:MyNextBook.Models">
+    xmlns:local="clr-namespace:MyNextBook.ViewModels"
+    xmlns:models="clr-namespace:ImportSeries.Models;assembly=ImportSeries">
+
+    <!--  Add the converter resource  -->
+    <converters:ItemCountToHeightConverter x:Key="ItemCountToHeightConverter" />
+
+    <!--  Your existing DataTemplates...  -->
 
     <DataTemplate x:Key="seriesListItem" x:DataType="models:Series">
 
         <Border
             Margin="5,0,5,5"
             BackgroundColor="{dx:ThemeColor SecondaryContainer}"
-            HorizontalOptions="FillAndExpand"
             Stroke="{dx:ThemeColor Outline}"
             StrokeShape="RoundRectangle 30"
             StrokeThickness="3">
 
-
-
             <Grid
                 ColumnDefinitions="90,*"
                 ColumnSpacing="16"
-                HorizontalOptions="FillAndExpand"
                 RowDefinitions="Auto,30,20">
 
                 <Border
                     Grid.RowSpan="3"
                     Grid.Column="0"
+                    Margin="5,5"
                     Padding="0"
                     Stroke="Transparent"
                     StrokeShape="RoundRectangle 10">
@@ -86,8 +90,6 @@
                     Text="{Binding authors}"
                     VerticalOptions="Start" />
 
-
-
                 <Label
                     Grid.Row="2"
                     Grid.Column="1"
@@ -103,16 +105,145 @@
                     </Label.FormattedText>
                 </Label>
 
-
-
-
             </Grid>
 
         </Border>
 
-
     </DataTemplate>
-    <DataTemplate x:Key="SeriesListItemSelected">
-        <Grid />
+
+    <DataTemplate x:Key="SeriesListItemSelected" x:DataType="models:Series">
+
+        <Border
+            Margin="5,0,5,5"
+            BackgroundColor="{dx:ThemeColor PrimaryContainer}"
+            Stroke="{dx:ThemeColor Primary}"
+            StrokeShape="RoundRectangle 30"
+            StrokeThickness="3">
+
+            <Grid
+                ColumnDefinitions="90,*"
+                ColumnSpacing="16"
+                RowDefinitions="Auto,30,20,*">
+
+                <Border
+                    Grid.RowSpan="3"
+                    Grid.Column="0"
+                    Margin="5,5"
+                    Padding="0"
+                    Stroke="Transparent"
+                    StrokeShape="RoundRectangle 10">
+                    <!--  IsClippedToBounds is generally true by default for Border with StrokeShape  -->
+
+                    <Grid ColumnDefinitions="*,40" RowDefinitions="*,40">
+                        <Image
+                            Grid.Row="0"
+                            Grid.RowSpan="2"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            Aspect="Fill"
+                            BackgroundColor="{dx:ThemeColor SecondaryContainer}"
+                            HeightRequest="120"
+                            Source="{Binding OpenImageUrl}" />
+                        <Border
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            BackgroundColor="{dx:ThemeColor SecondaryContainer}"
+                            HeightRequest="40"
+                            HorizontalOptions="End"
+                            Opacity="0.9"
+                            Stroke="Transparent"
+                            StrokeShape="RoundRectangle 50"
+                            VerticalOptions="End"
+                            WidthRequest="40">
+
+                            <Label
+                                Margin="-8,-8"
+                                BackgroundColor="{dx:ThemeColor SecondaryContainer}"
+                                FontAttributes="Bold"
+                                FontSize="12"
+                                HorizontalOptions="End"
+                                Style="{DynamicResource SecondaryText}"
+                                Text="{Binding DisplayOrder}"
+                                VerticalOptions="End" />
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <Label
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    HorizontalOptions="Start"
+                    MaxLines="2"
+                    Style="{StaticResource PrimaryText}"
+                    Text="{Binding SeriesData.Name}"
+                    VerticalOptions="Start" />
+
+                <Label
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    HorizontalOptions="Start"
+                    MaxLines="2"
+                    Style="{StaticResource SecondaryText}"
+                    Text="{Binding authors}"
+                    VerticalOptions="Start" />
+                <HorizontalStackLayout
+                    HorizontalOptions="End"
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    Margin="0,0,15,0">
+                    <Label HorizontalOptions="End" Style="{StaticResource SecondaryText}">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="{Binding UserBooksRead}" />
+                                <Span Text=" of " />
+                                <Span Text="{Binding BookCount}" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                    <ImageButton
+                        Grid.Column="1"
+                        Aspect="Center"
+                        BackgroundColor="{dx:ThemeColor SecondaryContainer}"
+                        Clicked="ImageButton_Clicked"
+                        HeightRequest="30"
+                        VerticalOptions="Center"
+                        WidthRequest="30">
+                        <ImageButton.Source>
+                            <FontImageSource
+                                FontFamily="MD"
+                                Glyph="{x:Static fonts:IconCodesMIR.Arrow_drop_up}"
+                                Size="30"
+                                Color="{dx:ThemeColor OnSecondaryContainer}" />
+                        </ImageButton.Source>
+                    </ImageButton>
+                </HorizontalStackLayout>
+
+                <CollectionView
+                    x:Name="WorksCollectionView"
+                    Grid.Row="3"
+                    Grid.ColumnSpan="2"
+                    HeightRequest="{Binding Works.Count, Converter={StaticResource ItemCountToHeightConverter}}"
+                    ItemsSource="{Binding Works}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:OlWorkDataExt">
+                            <Grid
+                                Padding="10,8,18,7"
+                                ColumnDefinitions=".3*,.7*"
+                                HeightRequest="90">
+                                <Label Text="{Binding Title}" VerticalOptions="Center" />
+                                <dx:ChoiceChipGroup
+                                    Grid.Column="2"
+                                    ChipTapCommand="{Binding UpdateStatusCommand}"
+                                    ChipTapCommandParameter="{Binding}"
+                                    ItemsSource="{Binding ChipStatusGroup}"
+                                    SelectedItem="{Binding Status, Mode=TwoWay}" />
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Grid>
+
+        </Border>
+
     </DataTemplate>
 </ResourceDictionary>

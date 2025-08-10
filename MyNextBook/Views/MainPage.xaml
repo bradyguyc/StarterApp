@@ -23,10 +23,11 @@
                 <ResourceDictionary Source="../DataTemplates/SeriesTemplates.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
-         
+
         </ResourceDictionary>
 
     </ContentPage.Resources>
+   
     <Grid RowDefinitions="40,*,65">
         <Button
             Grid.Row="2"
@@ -54,6 +55,7 @@
         <dx:DXCollectionView
             Grid.Row="1"
             Margin="0,0,0,0"
+         
             IsPullToRefreshEnabled="True"
             IsRefreshing="{Binding IsRefreshing, Mode=TwoWay}"
             ItemSpanCount="{dx:OnDisplaySize ExtraSmall='1',
@@ -63,8 +65,10 @@
                                              ExtraLarge='2'}"
             ItemTemplate="{StaticResource seriesListItem}"
             ItemsSource="{Binding ItemsSeries}"
+            SelectionMode="Single"
+            SelectedItemTemplate="{StaticResource SeriesListItemSelected}"
             PullToRefreshCommand="{Binding RefreshCommand}"
-            SelectedItem="{StaticResource SeriesListItemSelected}" />
+            SelectedItem="{Binding SelectedSeries}" />
 
 
     </Grid>

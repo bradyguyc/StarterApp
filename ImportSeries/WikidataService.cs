@@ -8,6 +8,7 @@ using VDS.RDF;
 using Newtonsoft.Json;
 using VDS.RDF.Query;
 using VDS.RDF.Writing;
+using ImportSeries.Models; // Add missing using statement
 
 // Define a class to hold book information results
 namespace ImportSeries.Services
@@ -62,7 +63,7 @@ namespace ImportSeries.Services
             {
                 // Wikidata SPARQL endpoint
                 SparqlRemoteEndpoint endpoint = new SparqlRemoteEndpoint(new Uri("https://query.wikidata.org/sparql"));
-                endpoint.UserAgent = "MyNextBook/1.0 (https://github.com/dracan/MyNextBook; dracan@users.noreply.github.com)";
+                endpoint.UserAgent = "MyNextBook/1.0 (https://github.com/bradyguy/MyNextBook; bradyguy@users.noreply.github.com)";//todo: validate this line
                 SparqlResultSet results = endpoint.QueryWithResultSet(query);
 
                 List<BookInfo> books = new List<BookInfo>();
@@ -84,12 +85,106 @@ namespace ImportSeries.Services
                     books.Add(book);
                 }
 
-                return DbpediaQueryService.SortBooksBySequence(books);
+                return SortBooksBySequence(books);
             }
             catch (Exception ex)
             {
                 Console.Error.WriteLine($"Error querying Wikidata for series '{seriesName}': {ex.Message}");
                 return new List<BookInfo>();
+            }
+        }
+        public static List<BookInfo> SortBooksBySequence(List<BookInfo> books)
+        {
+            try
+            {
+                if (books == null || books.Count == 0)
+                    return new List<BookInfo>();
+
+                var uniqueBooks = books
+                    .Where(b => !string.IsNullOrEmpty(b.Title))
+                    .GroupBy(b => b.Title!, StringComparer.OrdinalIgnoreCase)
+                    .Select(g => g.First())
+                    .ToList();
+
+                if (uniqueBooks.Count == 0)
+                    return new List<BookInfo>();
+
+                var bookDict = uniqueBooks.ToDictionary(b => b.Title!, b => b, StringComparer.OrdinalIgnoreCase);
+                var sortedBooks = new List<BookInfo>();
+                var processedTitles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                // Find all books that are the start of a chain (no previous work in the set)
+                var startingPoints = uniqueBooks
+                    .Where(b => string.IsNullOrEmpty(b.PreviousWork) && !string.IsNullOrWhiteSpace(b.SubsequentWork))
+                    .ToList();
+
+                // Process all chains that have a clear starting point
+                foreach (var startNode in startingPoints)
+                {
+                    if (processedTitles.Contains(startNode.Title!))
+                    {
+                        continue;
+                    }
+
+                    var currentNode = startNode;
+                    var visitedInPath = new HashSet<string>(StringComparer.OrdinalIgnoreCase); // For cycle detection in the current chain
+
+                    while (currentNode != null && !processedTitles.Contains(currentNode.Title!))
+                    {
+                        if (!visitedInPath.Add(currentNode.Title!)) // Cycle detected
+                        {
+                            break;
+                        }
+
+                        sortedBooks.Add(currentNode);
+                        processedTitles.Add(currentNode.Title!);
+
+                        if (string.IsNullOrEmpty(currentNode.SubsequentWork))
+                        {
+                            currentNode = null;
+                        }
+                        else currentNode = uniqueBooks
+                            .FirstOrDefault(b => string.Equals(b.Title.Replace(" ", "_"), currentNode.SubsequentWork, StringComparison.OrdinalIgnoreCase));
+                    }
+                }
+
+                // Process remaining books, which might be in cycles or separate sub-chains
+                var remainingBooks = uniqueBooks.Where(b => !processedTitles.Contains(b.Title!)).ToList();
+                while (remainingBooks.Any())
+                {
+                    var startOfChunk = remainingBooks.First();
+                    var currentNode = startOfChunk;
+                    var visitedInPath = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                    while (currentNode != null && !processedTitles.Contains(currentNode.Title!))
+                    {
+                        if (!visitedInPath.Add(currentNode.Title!)) // Cycle detected
+                        {
+                            break;
+                        }
+
+                        sortedBooks.Add(currentNode);
+                        processedTitles.Add(currentNode.Title!);
+
+                        if (string.IsNullOrEmpty(currentNode.SubsequentWork) || !bookDict.TryGetValue(currentNode.SubsequentWork, out currentNode))
+                        {
+                            currentNode = null;
+                        }
+                    }
+                    remainingBooks = uniqueBooks.Where(b => !processedTitles.Contains(b.Title!)).ToList();
+                }
+
+                return sortedBooks;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error sorting books by sequence: {ex.Message}");
+                // Return a safe fallback - deduplicated books sorted by title
+                return books?.Where(b => !string.IsNullOrEmpty(b.Title))
+                            .GroupBy(b => b.Title!, StringComparer.OrdinalIgnoreCase)
+                            .Select(g => g.First())
+                            .OrderBy(b => b.Title)
+                            .ToList() ?? new List<BookInfo>();
             }
         }
     }

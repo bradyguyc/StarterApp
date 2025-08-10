@@ -28,12 +28,11 @@ using MyNextBook.ViewModels;
 
 using OpenLibraryNET;
 
-using static System.Net.WebRequestMethods;
-
 using System.Reflection;
 
 using ImportSeries;
 using ImportSeries.Services;
+using SkiaSharp.Views.Maui.Controls.Hosting;
 
 namespace MyNextBook
 {
@@ -54,6 +53,7 @@ namespace MyNextBook
             using var stream = assembly.GetManifestResourceStream("MyNextBook.appsettings.json");
             builder.Configuration.AddJsonStream(stream);
 
+#pragma warning disable CA1416 // Validate platform compatibility
             builder
                 .ConfigureMauiHandlers(handlers =>
                 {
@@ -62,6 +62,7 @@ namespace MyNextBook
 #endif
                 })
                 .UseMauiApp<App>()
+                .UseSkiaSharp   ()
                 .UseDevExpress(useLocalization: false)
                 .UseDevExpressEditors()
                 .UseDevExpressCollectionView()
@@ -90,7 +91,7 @@ namespace MyNextBook
                     //options.AttachScreenshot = true;
 
                     // Other Sentry options can be set here.
-                    //options.ExperimentalMetrics = new ExperimentalMetricsOptions { EnableCodeLocations = true };
+                    //options.ExperimentalMetrics = new ExperimentalMetricsOptions { EnableCode Locations = true };
 
                 })
               */
@@ -100,6 +101,7 @@ namespace MyNextBook
                     fonts.AddFont("MaterialIcons-Regular.ttf", "MD");
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
+#pragma warning restore CA1416 // Validate platform compatibility
 
 #if DEBUG
             builder.Logging.AddDebug();
@@ -138,7 +140,8 @@ namespace MyNextBook
             services.AddTransient<WelcomeScreen>();
             services.AddTransient<WelcomeScreenViewModel>();
             Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddSingleton<IOpenLibraryService, OpenLibraryService>(services);
-            services.AddScoped<IGetSecrets, GetSecrets>();
+            services.AddSingleton<IGetSecrets, GetSecrets>();
+            Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddSingleton<IPendingTransactionService, PendingTransactionService>(services);
 
             // Now that PublicClientSingleton is initialized, you can register its instance
             // with the DI container if other services need to resolve it.

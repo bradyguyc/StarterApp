@@ -9,7 +9,6 @@ using OpenLibraryNET;
 using OpenLibraryNET.Data;
 using OpenLibraryNET.OLData;
 using ImportSeries;
-using ImportSeries.Services;
 
 namespace MyNextBook.Models
 {

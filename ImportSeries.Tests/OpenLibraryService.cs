@@ -136,7 +136,7 @@ namespace ImportSeries.Services
                     {
                         if (list.ID != null)
                         {
-                            Series s = new Series
+                            Series s = new Series()
                             {
                                 SeriesData = list,
                                 seeds = await OLClient.List.GetListSeedsAsync(OLClient.Username, list.ID),

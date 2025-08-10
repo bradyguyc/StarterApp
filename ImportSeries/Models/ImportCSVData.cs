@@ -18,7 +18,6 @@ using CommunityToolkit.Mvvm.Messaging;
 using CsvHelper;
 using CsvHelper.Configuration;
 
-using ImportSeries;
 using ImportSeries.Services;
 
 using Microsoft.Extensions.Logging;
@@ -42,12 +41,14 @@ public partial class ImportCSVData : ObservableObject
     public int BooksFound { get; set; } = 0;
     public string errorMessage { get; set; }
 
+    private readonly IPendingTransactionService _transactionService;
     private int seriesNameColumnIndex = 0; // This class field seems unused by the method being updated.
     [ObservableProperty] public DataTable csvData;
     public Dictionary<string, string> columnHeaderMap = new Dictionary<string, string>();
 
-    public ImportCSVData()
+    public ImportCSVData(IPendingTransactionService transactionService)
     {
+        _transactionService = transactionService;
         csvData = new DataTable();
         errorMessage = "";
     }
@@ -75,7 +76,7 @@ public partial class ImportCSVData : ObservableObject
             // Update the code to ensure the AddConsole method is available
             using var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
             var logger = loggerFactory.CreateLogger<OpenLibraryService>();
-            OpenLibraryService ols = new OpenLibraryService(logger);
+            OpenLibraryService ols = new OpenLibraryService(logger, _transactionService);
 
             WeakReferenceMessenger.Default.Send(new ImportProgressMessage($"Searching OpenLibrary for {totalBooks} books", 0));
             Debug.WriteLine($"[Info] OpenLibrary Search for {totalBooks}");
@@ -540,69 +541,6 @@ public partial class ImportCSVData : ObservableObject
         dataTable.Rows.Add(newRow);
     }
 
-    private void AddNewRowFromDbpediaData(DataTable dataTable, BookInfo bookInfo, string seriesName)
-    {
-        var newRow = dataTable.NewRow();
-
-        // Add DBPedia-specific columns if they don't exist
-        if (!dataTable.Columns.Contains("DBPedia.Title"))
-            dataTable.Columns.Add("DBPedia.Title", typeof(string));
-        if (!dataTable.Columns.Contains("DBPedia.Author"))
-            dataTable.Columns.Add("DBPedia.Author", typeof(string));
-        if (!dataTable.Columns.Contains("DBPedia.Publisher"))
-            dataTable.Columns.Add("DBPedia.Publisher", typeof(string));
-        if (!dataTable.Columns.Contains("DBPedia.ReleaseDate"))
-            dataTable.Columns.Add("DBPedia.ReleaseDate", typeof(string));
-        if (!dataTable.Columns.Contains("DBPedia.SeriesOrder"))
-            dataTable.Columns.Add("DBPedia.SeriesOrder", typeof(string));
-        if (!dataTable.Columns.Contains("DBPedia.PreviousWork"))
-            dataTable.Columns.Add("DBPedia.PreviousWork", typeof(string));
-        if (!dataTable.Columns.Contains("DBPedia.SubsequentWork"))
-            dataTable.Columns.Add("DBPedia.SubsequentWork", typeof(string));
-
-        // Set basic book information
-        newRow["Series.Name"] = seriesName;
-        newRow["DBPedia.Title"] = string.IsNullOrWhiteSpace(bookInfo.Title) ? DBNull.Value : bookInfo.Title;
-        newRow["Book.Title"] = string.IsNullOrWhiteSpace(bookInfo.Title) ? DBNull.Value : bookInfo.Title;
-        newRow["Book.Author"] = string.IsNullOrWhiteSpace(bookInfo.Author) ? DBNull.Value : bookInfo.Author;
-        
-        // Set ISBN information
-        if (!string.IsNullOrWhiteSpace(bookInfo.ISBN))
-        {
-            // Try to determine if it's ISBN-10 or ISBN-13 based on length
-            string cleanIsbn = CleanIsbn(bookInfo.ISBN);
-            if (cleanIsbn.Length == 10)
-            {
-                newRow["Book.ISBN_10"] = cleanIsbn;
-            }
-            else if (cleanIsbn.Length == 13)
-            {
-                newRow["Book.ISBN_13"] = cleanIsbn;
-            }
-        }
-        
-        if (!string.IsNullOrWhiteSpace(bookInfo.ISBN13))
-        {
-            newRow["Book.ISBN_13"] = CleanIsbn(bookInfo.ISBN13);
-        }
-
-        // Set DBPedia-specific data
-        newRow["DBPedia.Title"] = string.IsNullOrWhiteSpace(bookInfo.Title) ? DBNull.Value : bookInfo.Title;
-        newRow["DBPedia.Author"] = string.IsNullOrWhiteSpace(bookInfo.Author) ? DBNull.Value : bookInfo.Author;
-        newRow["DBPedia.Publisher"] = string.IsNullOrWhiteSpace(bookInfo.Publisher) ? DBNull.Value : bookInfo.Publisher;
-        newRow["DBPedia.ReleaseDate"] = string.IsNullOrWhiteSpace(bookInfo.ReleaseDate) ? DBNull.Value : bookInfo.ReleaseDate;
-        newRow["DBPedia.SeriesOrder"] = string.IsNullOrWhiteSpace(bookInfo.SeriesOrder) ? DBNull.Value : bookInfo.SeriesOrder;
-        newRow["DBPedia.PreviousWork"] = string.IsNullOrWhiteSpace(bookInfo.PreviousWork) ? DBNull.Value : bookInfo.PreviousWork;
-        newRow["DBPedia.SubsequentWork"] = string.IsNullOrWhiteSpace(bookInfo.SubsequentWork) ? DBNull.Value : bookInfo.SubsequentWork;
-
-        // Set import metadata
-        newRow["ImportStatus"] = "Added";
-        newRow["ImportNotes"] = "DBPediaAdded";
-        newRow["OLReady"] = false;
-
-        dataTable.Rows.Add(newRow);
-    }
-
 
 
     private IEnumerable<KeyValuePair<string, List<DataRow>>> GetSeriesGroups(DataTable dataTable)
@@ -687,89 +625,14 @@ public partial class ImportCSVData : ObservableObject
         }
         return importedSuccessfully;
     }
-    async Task<bool> FillInViaDBPedia(DataTable dataTable)
-    {
-        var seriesGroups = GetSeriesGroups(dataTable).ToList();
-        if (!seriesGroups.Any()) return true;
 
-        var isbnLookup = BuildIsbnLookup(dataTable);
-        int totalSeries = seriesGroups.Count;
-        int seriesProcessed = 0;
-
-        WeakReferenceMessenger.Default.Send(new ImportProgressMessage($"Searching DBPedia for {totalSeries} series", 0));
-        Debug.WriteLine($"[Info] DBPedia Search for {totalSeries} series");
-
-        Stopwatch stopwatch = new Stopwatch();
-
-        // Process each series group one at a time
-        foreach (var seriesGroup in seriesGroups)
-        {
-            stopwatch.Restart();
-            seriesProcessed++;
-            double progress = (double)seriesProcessed / totalSeries;
-
-            var seriesName = seriesGroup.Key;
-            
-            // Send progress updates every series or at completion
-            WeakReferenceMessenger.Default.Send(new ImportProgressMessage($"Processing series {seriesProcessed} of {totalSeries}: {seriesName}", progress));
-
-            try
-            {
-                List<BookInfo> booksInSeries = DbpediaQueryService.GetBooksInSeries(seriesName);
-                
-                Debug.WriteLine($"[Info] DBPedia found {booksInSeries.Count} books for series: {seriesName}");
-
-                // Process each book from DBPedia
-                foreach (var bookInfo in booksInSeries)
-                {
-                    // Clean up ISBNs - ensure proper format
-                    string cleanIsbn = CleanIsbn(bookInfo.ISBN);
-                    string cleanIsbn13 = CleanIsbn(bookInfo.ISBN13);
-
-                    // Find a matching book in the current series by title
-                    var existingBook = seriesGroup.Value.FirstOrDefault(row =>
-                        (row["Book.Title"]?.ToString() ?? row["Title"]?.ToString())?.Equals(bookInfo.Title, StringComparison.OrdinalIgnoreCase) == true);
-
-                    var matchingRows = new HashSet<DataRow>();
-                    if (existingBook != null)
-                    {
-                        matchingRows.Add(existingBook);
-                    }
-
-                    foreach (var row in matchingRows)
-                    {
-                        // Update row with DBPedia information
-                        UpdateRowWithDbpediaData(row, bookInfo, dataTable);
-                        Debug.WriteLine($"[Info] Updated row with DBPedia data for book: {bookInfo.Title}");
-                    }
-
-                    // If no matches found, create a new row with DBPedia data
-                    if (!matchingRows.Any())
-                    {
-                        AddNewRowFromDbpediaData(dataTable, bookInfo, seriesName);
-                        Debug.WriteLine($"[Info] Added new row from DBPedia for book: {bookInfo.Title} (ISBN: {cleanIsbn}, ISBN13: {cleanIsbn13})");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"[Info] Error processing series '{seriesName}' with DBPedia: {ex.Message}");
-            }
-
-            stopwatch.Stop();
-            //Debug.WriteLine($"[Info] Processed series: {seriesName} : {stopwatch.ElapsedMilliseconds} ms : DBPedia books found: {booksInSeries?.Count ?? 0}");
-        }
-
-        WeakReferenceMessenger.Default.Send(new ImportProgressMessage("DBPedia search complete.", 1.0));
-        return true;
-    }
 
     async Task<bool> FillInViaWikidata(DataTable dataTable)
     {
         var seriesGroups = GetSeriesGroups(dataTable).ToList();
         if (!seriesGroups.Any()) return true;
 
-        var isbnLookup = BuildIsbnLookup(dataTable);
+        //var isbnLookup = BuildIsbnLookup(dataTable);
         int totalSeries = seriesGroups.Count;
         int seriesProcessed = 0;
 
@@ -799,7 +662,7 @@ public partial class ImportCSVData : ObservableObject
                 // Update SeriesOrder based on the order returned from Wikidata
                 for (int i = 0; i < booksInSeries.Count; i++)
                 {
-                    booksInSeries[i].SeriesOrder = (i + 1).ToString();
+                    booksInSeries[i].BookOrder = (i + 1).ToString();
                 }
 
                 // Process each book from Wikidata
@@ -874,83 +737,9 @@ public partial class ImportCSVData : ObservableObject
         return digitsOnly; // Return what we have if it doesn't fit standard lengths
     }
 
-    private Dictionary<string, List<DataRow>> BuildIsbnLookup(DataTable dataTable)
-    {
-        var lookup = new Dictionary<string, List<DataRow>>();
 
-        foreach (DataRow row in dataTable.Rows)
-        {
-            string rowIsbn10 = GetColumnValue(row, "Book.ISBN_10", "ISBN_10", "ISBN10");
-            string rowIsbn13 = GetColumnValue(row, "Book.ISBN_13", "ISBN_13", "ISBN13");
 
-            string cleanRowIsbn10 = CleanIsbn(rowIsbn10);
-            string cleanRowIsbn13 = CleanIsbn(rowIsbn13);
 
-            if (!string.IsNullOrEmpty(cleanRowIsbn10))
-            {
-                if (!lookup.ContainsKey(cleanRowIsbn10))
-                {
-                    lookup[cleanRowIsbn10] = new List<DataRow>();
-                }
-                lookup[cleanRowIsbn10].Add(row);
-            }
-
-            if (!string.IsNullOrEmpty(cleanRowIsbn13))
-            {
-                if (!lookup.ContainsKey(cleanRowIsbn13))
-                {
-                    lookup[cleanRowIsbn13] = new List<DataRow>();
-                }
-                lookup[cleanRowIsbn13].Add(row);
-            }
-        }
-
-        return lookup;
-    }
-
-    private void UpdateRowWithDbpediaData(DataRow row, BookInfo bookInfo, DataTable dataTable)
-    {
-        try
-        {
-            // Add DBPedia-specific columns if they don't exist
-            if (!dataTable.Columns.Contains("DBPedia.Title"))
-                dataTable.Columns.Add("DBPedia.Title", typeof(string));
-            if (!dataTable.Columns.Contains("DBPedia.Author"))
-                dataTable.Columns.Add("DBPedia.Author", typeof(string));
-            if (!dataTable.Columns.Contains("DBPedia.Publisher"))
-                dataTable.Columns.Add("DBPedia.Publisher", typeof(string));
-            if (!dataTable.Columns.Contains("DBPedia.ReleaseDate"))
-                dataTable.Columns.Add("DBPedia.ReleaseDate", typeof(string));
-            if (!dataTable.Columns.Contains("DBPedia.SeriesOrder"))
-                dataTable.Columns.Add("DBPedia.SeriesOrder", typeof(string));
-            if (!dataTable.Columns.Contains("DBPedia.PreviousWork"))
-                dataTable.Columns.Add("DBPedia.PreviousWork", typeof(string));
-            if (!dataTable.Columns.Contains("DBPedia.SubsequentWork"))
-                dataTable.Columns.Add("DBPedia.SubsequentWork", typeof(string));
-
-            // Update row with DBPedia data
-            row["DBPedia.Title"] = string.IsNullOrWhiteSpace(bookInfo.Title) ? DBNull.Value : bookInfo.Title;
-            //row["DBPedia.Author"] = string.IsNullOrWhiteSpace(bookInfo.Author) ? DBNull.Value : bookInfo.Author;
-            //row["DBPedia.Publisher"] = string.IsNullOrWhiteSpace(bookInfo.Publisher) ? DBNull.Value : bookInfo.Publisher;
-            //row["DBPedia.ReleaseDate"] = string.IsNullOrWhiteSpace(bookInfo.ReleaseDate) ? DBNull.Value : bookInfo.ReleaseDate;
-            row["DBPedia.SeriesOrder"] = string.IsNullOrWhiteSpace(bookInfo.SeriesOrder) ? DBNull.Value : bookInfo.SeriesOrder;
-            row["DBPedia.PreviousWork"] = string.IsNullOrWhiteSpace(bookInfo.PreviousWork) ? DBNull.Value : bookInfo.PreviousWork;
-            row["DBPedia.SubsequentWork"] = string.IsNullOrWhiteSpace(bookInfo.SubsequentWork) ? DBNull.Value : bookInfo.SubsequentWork;
-
-            // Mark that this row was enhanced with DBPedia data
-            string currentImportNotes = row["ImportNotes"]?.ToString() ?? "";
-            if (!currentImportNotes.Contains("DBPediaEnhanced"))
-            {
-                row["ImportNotes"] = string.IsNullOrWhiteSpace(currentImportNotes)
-                    ? "DBPediaEnhanced"
-                    : currentImportNotes + "; DBPediaEnhanced";
-            }
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"[Error] Failed to update row with DBPedia data for book '{bookInfo?.Title}': {ex.Message}");
-        }
-    }
 
     private void AddNewRowFromWikidataData(DataTable dataTable, BookInfo bookInfo, string seriesName)
     {
@@ -979,7 +768,7 @@ public partial class ImportCSVData : ObservableObject
             newRow["Wikidata.Title"] = string.IsNullOrWhiteSpace(bookInfo.Title) ? DBNull.Value : bookInfo.Title;
             newRow["Book.Title"] = string.IsNullOrWhiteSpace(bookInfo.Title) ? DBNull.Value : bookInfo.Title;
             newRow["Book.Author"] = string.IsNullOrWhiteSpace(bookInfo.Author) ? DBNull.Value : bookInfo.Author;
-            newRow["Series.BookOrder"] = string.IsNullOrWhiteSpace(bookInfo.SeriesOrder) ? DBNull.Value : bookInfo.SeriesOrder;
+            newRow["Series.BookOrder"] = string.IsNullOrWhiteSpace(bookInfo.BookOrder) ? DBNull.Value : bookInfo.BookOrder;
             newRow["Book.ISBN"] = string.IsNullOrWhiteSpace(bookInfo.ISBN) ? DBNull.Value : bookInfo.ISBN;
             newRow["Book.ISBN13"] = string.IsNullOrWhiteSpace(bookInfo.ISBN13) ? DBNull.Value : bookInfo.ISBN13;
 
@@ -1008,7 +797,7 @@ public partial class ImportCSVData : ObservableObject
             newRow["Wikidata.Author"] = string.IsNullOrWhiteSpace(bookInfo.Author) ? DBNull.Value : bookInfo.Author;
             newRow["Wikidata.Publisher"] = string.IsNullOrWhiteSpace(bookInfo.Publisher) ? DBNull.Value : bookInfo.Publisher;
             newRow["Wikidata.ReleaseDate"] = string.IsNullOrWhiteSpace(bookInfo.ReleaseDate) ? DBNull.Value : bookInfo.ReleaseDate;
-            newRow["Wikidata.SeriesOrder"] = string.IsNullOrWhiteSpace(bookInfo.SeriesOrder) ? DBNull.Value : bookInfo.SeriesOrder;
+            newRow["Wikidata.BookOrder"] = string.IsNullOrWhiteSpace(bookInfo.BookOrder) ? DBNull.Value : bookInfo.BookOrder;
             newRow["Wikidata.PreviousWork"] = string.IsNullOrWhiteSpace(bookInfo.PreviousWork) ? DBNull.Value : bookInfo.PreviousWork;
             newRow["Wikidata.SubsequentWork"] = string.IsNullOrWhiteSpace(bookInfo.SubsequentWork) ? DBNull.Value : bookInfo.SubsequentWork;
 
@@ -1038,19 +827,19 @@ public partial class ImportCSVData : ObservableObject
                 dataTable.Columns.Add("Wikidata.Publisher", typeof(string));
             if (!dataTable.Columns.Contains("Wikidata.ReleaseDate"))
                 dataTable.Columns.Add("Wikidata.ReleaseDate", typeof(string));
-            if (!dataTable.Columns.Contains("Wikidata.SeriesOrder"))
-                dataTable.Columns.Add("Wikidata.SeriesOrder", typeof(string));
+            if (!dataTable.Columns.Contains("Wikidata.BookOrder"))
+                dataTable.Columns.Add("Wikidata.BookOrder", typeof(string));
             if (!dataTable.Columns.Contains("Wikidata.PreviousWork"))
                 dataTable.Columns.Add("Wikidata.PreviousWork", typeof(string));
             if (!dataTable.Columns.Contains("Wikidata.SubsequentWork"))
                 dataTable.Columns.Add("Wikidata.SubsequentWork", typeof(string));
 
             // Update row with DBPedia data
-            //row["Wikidata.Title"] = string.IsNullOrWhiteSpace(bookInfo.Title) ? DBNull.Value : bookInfo.Title;
-            //row["Wikidata.Author"] = string.IsNullOrWhiteSpace(bookInfo.Author) ? DBNull.Value : bookInfo.Author;
-            //row["Wikidata.Publisher"] = string.IsNullOrWhiteSpace(bookInfo.Publisher) ? DBNull.Value : bookInfo.Publisher;
-            //row["Wikidata.ReleaseDate"] = string.IsNullOrWhiteSpace(bookInfo.ReleaseDate) ? DBNull.Value : bookInfo.ReleaseDate;
-            row["Wikidata.SeriesOrder"] = string.IsNullOrWhiteSpace(bookInfo.SeriesOrder) ? DBNull.Value : bookInfo.SeriesOrder;
+            row["Wikidata.Title"] = string.IsNullOrWhiteSpace(bookInfo.Title) ? DBNull.Value : bookInfo.Title;
+            row["Wikidata.Author"] = string.IsNullOrWhiteSpace(bookInfo.Author) ? DBNull.Value : bookInfo.Author;
+            row["Wikidata.Publisher"] = string.IsNullOrWhiteSpace(bookInfo.Publisher) ? DBNull.Value : bookInfo.Publisher;
+            row["Wikidata.ReleaseDate"] = string.IsNullOrWhiteSpace(bookInfo.ReleaseDate) ? DBNull.Value : bookInfo.ReleaseDate;
+            row["Wikidata.BookOrder"] = string.IsNullOrWhiteSpace(bookInfo.BookOrder) ? DBNull.Value : bookInfo.BookOrder;
             row["Wikidata.PreviousWork"] = string.IsNullOrWhiteSpace(bookInfo.PreviousWork) ? DBNull.Value : bookInfo.PreviousWork;
             row["Wikidata.SubsequentWork"] = string.IsNullOrWhiteSpace(bookInfo.SubsequentWork) ? DBNull.Value : bookInfo.SubsequentWork;
 
