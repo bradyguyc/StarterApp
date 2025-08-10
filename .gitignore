@@ -381,3 +381,4 @@ local.settings.json
 
 # User secrets
 secrets.json
+/MyNextBook/appsettings.json
