@@ -383,3 +383,5 @@ local.settings.json
 secrets.json
 /MyNextBook/appsettings.json
 /ImportSeries.Tests/test.example.runsettings
+/ImportSeries.Tests/test.runsettings
+/MyNextBook/appsettings.example.json
