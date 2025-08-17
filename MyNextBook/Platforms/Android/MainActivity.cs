@@ -14,7 +14,8 @@ namespace MyNextBook
     {
         protected override void OnCreate(Bundle savedInstanceState)
         {
-            base.SetTheme(Resource.Style.MainTheme);
+            // Switch from splash theme to the MAUI main theme before calling base.OnCreate
+            //base.SetTheme(Resource.Style.MainTheme);
             base.OnCreate(savedInstanceState);
             // configure platform specific params
             PlatformConfig.Instance.RedirectUri = $"msal{PublicClientSingleton.Instance.MSALClientHelper.AzureAdConfig.ClientId}://auth";

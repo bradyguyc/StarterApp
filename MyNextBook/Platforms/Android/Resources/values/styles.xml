@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<style name="MainTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-		<!-- Customize your theme here -->
-		<!-- Example: -->
+	<!-- Keep a custom theme if you need it, but prefer inheriting from MAUI's main theme -->
+	<style name="MainTheme" parent="Theme.MaterialComponents.Light.NoActionBar.Bridge">
+		<!-- Optional customizations -->
 		<item name="colorPrimary">#3b92c4</item>
 		<item name="colorPrimaryVariant">#323943</item>
 		<item name="colorOnPrimary">#FFFFFF</item>

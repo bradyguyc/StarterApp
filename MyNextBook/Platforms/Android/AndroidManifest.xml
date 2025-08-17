@@ -1,15 +1,16 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.INTERNET" />
-    <application android:allowBackup="true" android:icon="@mipmap/appicon" android:supportsRtl="true">
-        <activity android:name="microsoft.identity.client.BrowserTabActivity" android:exported="false">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="msala8fee4bc-0b38-4680-a820-af7a5844f5c5" android:host="auth" />
-            </intent-filter>
-        </activity>
-    </application>
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+	<uses-permission android:name="android.permission.INTERNET" />
+	<!-- Use the MAUI splash theme at the application level; the activity will switch to Maui.MainTheme in OnCreate -->
+	<application android:allowBackup="true" android:icon="@mipmap/appicon" android:supportsRtl="true" android:theme="@style/Maui.SplashTheme">
+		<activity android:name="microsoft.identity.client.BrowserTabActivity" android:exported="false">
+			<intent-filter>
+				<action android:name="android.intent.action.VIEW" />
+				<category android:name="android.intent.category.DEFAULT" />
+				<category android:name="android.intent.category.BROWSABLE" />
+				<data android:scheme="msala8fee4bc-0b38-4680-a820-af7a5844f5c5" android:host="auth" />
+			</intent-filter>
+		</activity>
+	</application>
 </manifest>

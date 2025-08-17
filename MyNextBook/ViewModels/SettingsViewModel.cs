@@ -185,7 +185,8 @@ namespace MyNextBook.ViewModels
         [RelayCommand]
         async Task GotoImport()
         {
-            await Shell.Current.GoToAsync("SettingsPage/ImportCSV");
+            // Use absolute Shell route to navigate to ImportCSV from anywhere
+            await Shell.Current.GoToAsync("/SettingsPage/ImportCSV");
 
         }
 

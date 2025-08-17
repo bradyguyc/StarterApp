@@ -21,11 +21,11 @@ using CommonCode.MSALClient; // Required for PublicClientSingleton
 
 #if ANDROID
 using MyNextBook.Platforms.Android;
+using Microsoft.Maui.Controls; // for Shell
 #endif 
 using MyNextBook.Services;
 using MyNextBook.Views;
 using MyNextBook.ViewModels;
-
 using OpenLibraryNET;
 
 using System.Reflection;
@@ -75,6 +75,7 @@ namespace MyNextBook
                 .ConfigureMauiHandlers(handlers =>
                 {
 #if ANDROID
+                    // Register the Android compatibility renderer for Shell (not AppShell)
                     handlers.AddHandler(typeof(AppShell), typeof(CustomShellRenderer));
 #endif
                 })
@@ -119,13 +120,13 @@ namespace MyNextBook
             // Register services
             services.AddSingleton<MainPage>();
             services.AddSingleton<MainPageViewModel>();
-            services.AddSingleton<ImportCSV>();
-            services.AddSingleton<ImportCSVViewModel>();
+            services.AddScoped<ImportCSV>();
+            services.AddScoped<ImportCSVViewModel>();
 
-            services.AddTransient<SettingsPage>();
-            services.AddTransient<SettingsViewModel>();
-            services.AddTransient<WelcomeScreen>();
-            services.AddTransient<WelcomeScreenViewModel>();
+            services.AddScoped<SettingsPage>();
+            services.AddScoped<SettingsViewModel>();
+            services.AddSingleton<WelcomeScreen>();
+            services.AddSingleton<WelcomeScreenViewModel>();
             Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddSingleton<IOpenLibraryService, OpenLibraryService>(services);
             services.AddSingleton<IGetSecrets, GetSecrets>();
             Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddSingleton<IPendingTransactionService, PendingTransactionService>(services);

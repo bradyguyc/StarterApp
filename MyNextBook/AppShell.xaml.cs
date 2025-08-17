@@ -10,10 +10,9 @@ namespace MyNextBook
         {
             InitializeComponent();
             BindingContext = new AppShellViewModel();
-            Routing.RegisterRoute("SettingsPage", typeof(SettingsPage));
+
+            // With explicit ShellContent routes, use absolute routes based on tab content
             Routing.RegisterRoute("MainPage/SettingsPage", typeof(SettingsPage));
-       
-            Routing.RegisterRoute("WelcomeScreen", typeof(WelcomeScreen));
             Routing.RegisterRoute("MainPage/WelcomeScreen", typeof(WelcomeScreen));
             Routing.RegisterRoute("SettingsPage/ImportCSV", typeof(ImportCSV));
         }

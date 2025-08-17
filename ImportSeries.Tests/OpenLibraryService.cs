@@ -11,6 +11,7 @@ using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
 
 using ImportSeries.Models;
+using ImportSeries.Services;
 
 using OpenLibraryNET;
 using OpenLibraryNET.Data;
@@ -24,20 +25,7 @@ using Polly.Retry;
 
 namespace ImportSeries.Services
 {
-    public interface IOpenLibraryService
-    {
-        Task<bool> Login();
-        Task<ObservableCollection<Series>> GetSeries();
-        void SetUsernamePassword(string username, string password);
-        Task<(OLWorkData?,string?)> SearchForWorks(
-           string booktitle,
-           string author,
-           string publishedDate,
-           string ISBN_10,
-           string ISBN_13,
-           string OLID);
-        Task<string?> SearchForEdition(string workOLID, string languageCode = "eng");
-    }
+    // Remove the duplicate interface definition - use the one from ImportSeries
 
     public class OpenLibraryService : IOpenLibraryService
     {
@@ -121,6 +109,26 @@ namespace ImportSeries.Services
             }
         }
 
+        public string OLGetBookStatus(string workKey)
+        {
+            if (currentlyReading?.ReadingLogEntries != null && 
+                currentlyReading.ReadingLogEntries.Any(entry => entry.Work?.Key == workKey))
+            {
+                return "Reading";
+            }
+            if (alreadyRead?.ReadingLogEntries != null && 
+                alreadyRead.ReadingLogEntries.Any(entry => entry.Work?.Key == workKey))
+            {
+                return "Read";
+            }
+            if (wantToRead?.ReadingLogEntries != null && 
+                wantToRead.ReadingLogEntries.Any(entry => entry.Work?.Key == workKey))
+            {
+                return "To Read";
+            }
+            return "To Read";
+        }
+
         public async Task<ObservableCollection<Series>> GetSeries()
         {
             try
@@ -136,7 +144,7 @@ namespace ImportSeries.Services
                     {
                         if (list.ID != null)
                         {
-                            Series s = new Series()
+                            Series s = new Series(this)
                             {
                                 SeriesData = list,
                                 seeds = await OLClient.List.GetListSeedsAsync(OLClient.Username, list.ID),
@@ -289,6 +297,20 @@ namespace ImportSeries.Services
             // Return max value if unparseable (will be sorted last)
             return DateTime.MaxValue;
         }
+
+        // Add missing methods from IOpenLibraryService
+        public async Task OLSetStatus(string ID, string status, DateTimeOffset? readDate = null)
+        {
+            // Mock implementation for testing
+            await Task.CompletedTask;
+        }
+
+        public async Task ProcessPendingTransactionsAsync()
+        {
+            // Mock implementation for testing
+            await Task.CompletedTask;
+        }
+
         public async Task<(OLWorkData?,string?)> SearchForWorks(
             string booktitle,
             string author,

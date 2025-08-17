@@ -48,8 +48,10 @@ namespace MyNextBook.ViewModels
                     // Ensure the message is for progress updates and handle it on the UI thread
                     MainThread.BeginInvokeOnMainThread(() =>
                     {
+                        Debug.WriteLine($"Progress: {m.Value} - {m.Text}");
                         ImportProgressValue = m.Value;
                         ImportProgressText = m.Text;
+                        Task.Delay(300).Wait();
                     });
                     
                 });
@@ -81,7 +83,7 @@ namespace MyNextBook.ViewModels
         #region Standard Properties
         [ObservableProperty] private bool isBusy = false;
         [ObservableProperty] private ShowPopUpDetails popUpDetails;
-        #endregion
+        [ObservableProperty] private bool isMenuPopupOpen = false;
 
         [ObservableProperty] private string importInstructions = Constants.ImportInstructions;
         [ObservableProperty] private string importProgressText;
@@ -92,9 +94,11 @@ namespace MyNextBook.ViewModels
         [ObservableProperty] private bool showImporting = false;
         [ObservableProperty] private string importText = string.Empty;
         [ObservableProperty] private bool showImport = false;
+        [ObservableProperty] private bool showImportProgress = false;
         [ObservableProperty] private ShowPopUpDetails? popupDetails;
         [ObservableProperty] private ObservableCollection<ImportSeriesResults> bookProcesingList = new ObservableCollection<ImportSeriesResults>();
         public ImportCSVData? iCSVData { get; set; }
+        #endregion
         [RelayCommand]
         Task Appearing()
         {
@@ -107,6 +111,7 @@ namespace MyNextBook.ViewModels
                 ShowImport = false;
                 ShowImportText = false;
                 ImportProgressText = "Importing CSV";
+                ShowImportProgress = false;
                 ImportProgressValue = 0;
                 iCSVData = new ImportCSVData(_transactionService);
                 PopupDetails = new ShowPopUpDetails
@@ -130,7 +135,27 @@ namespace MyNextBook.ViewModels
                 return Task.CompletedTask;
             }
         }
-      
+        [RelayCommand] Task ShowMenu()
+        {
+            IsMenuPopupOpen = true;
+            return Task.CompletedTask;
+        }
+        [RelayCommand] Task ShowHelp()
+        {
+            try
+            {
+                ShowImportText = !ShowImportText;
+                return Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                PopupDetails.IsOpen = true;
+                PopupDetails.ErrorMessage = ex.Message;
+                PopupDetails.ErrorCode = "ERR-000";
+                ErrorHandler.AddLog(ex.Message);
+                return Task.CompletedTask;
+            }
+        }
         #region import csv file
         [RelayCommand]
         private async Task CancelImport(Object param)
@@ -138,7 +163,25 @@ namespace MyNextBook.ViewModels
             ShowImport = false;
             ShowImporting = false;
             ShowInitial = true;
-            await Shell.Current.GoToAsync($"..\\..");
+
+            try
+            {
+                // Prefer not to navigate past root; use PopToRoot when possible
+                if (Shell.Current?.Navigation?.NavigationStack?.Count > 1)
+                {
+                    await Shell.Current.Navigation.PopToRootAsync(true);
+                }
+                else
+                {
+                    // Absolute route to MainPage tab/content
+                    await Shell.Current.GoToAsync("///MainPage", true);
+                }
+            }
+            catch
+            {
+                // Fallback to absolute navigation without crashing
+                await Shell.Current.GoToAsync("///MainPage", true);
+            }
         }
 
         #region Import Step 1
@@ -172,6 +215,7 @@ namespace MyNextBook.ViewModels
 
                     try
                     { 
+                        ShowImportProgress = true;
                         using var stream = await result.OpenReadAsync();
                         await iCSVData.Import(stream);
                         
@@ -186,6 +230,8 @@ namespace MyNextBook.ViewModels
                             gridView.GroupBy("Series.Name");
                         }
                         ShowImporting = true;
+                        ShowInitial = false;
+                        ShowImportProgress = false;
                         //ImportText = await CommonCode.Helpers.FileHelpers.ReadTextFile("introtext.txt");
                         //ShowImportText = true;
                     }
@@ -198,13 +244,14 @@ namespace MyNextBook.ViewModels
                             ErrorCode = "ERR-000"
                         };
                         ShowInitial = true;
+                        ShowImportProgress = false;
                         ErrorHandler.AddError(ex);
                         OnPropertyChanged(nameof(PopupDetails));
                     }
                     finally
                     {
                         // Ensure IsBusy is set to false regardless of success or failure
-                        ShowInitial = true;
+                        ShowInitial = false;
                         IsBusy = false;
                     }
                     //Debug.WriteLine("Sereis:" + iCSVData.SeriesFound + " books:" + iCSVData.BooksFound);
@@ -309,7 +356,7 @@ namespace MyNextBook.ViewModels
 
         #region Import Step 3
         [RelayCommand]
-        private void AddToLibrary()
+        private async Task AddToLibrary()
         {
             /*
             foreach (var book in AllBooks)
@@ -342,22 +389,73 @@ namespace MyNextBook.ViewModels
                 MySeriesPageViewModel.currentData.series.Add(newSeries);
             }
             */
-            Shell.Current.GoToAsync("../..");
+            // Navigate safely back to the root/main page
+            try
+            {
+                if (Shell.Current?.Navigation?.NavigationStack?.Count > 1)
+                {
+                    await Shell.Current.Navigation.PopToRootAsync(true);
+                }
+                else
+                {
+                    await Shell.Current.GoToAsync("///MainPage", true);
+                }
+            }
+            catch
+            {
+                await Shell.Current.GoToAsync("///MainPage", true);
+            }
         }
         #endregion
         #endregion
 
 
         [RelayCommand]
-        void Back()
+        private async Task Back()
         {
             ShowImport = false;
             ShowImporting = false;
             ShowInitial = true;
-            Shell.Current.GoToAsync("../..");
 
+            try
+            {
+                // Pop a page if possible, otherwise go to the main tab
+                if (Shell.Current?.Navigation?.NavigationStack?.Count > 1)
+                {
+                    await Shell.Current.Navigation.PopAsync(true);
+                }
+                else
+                {
+                    await Shell.Current.GoToAsync("///MainPage", true);
+                }
+            }
+            catch
+            {
+                await Shell.Current.GoToAsync("///MainPage", true);
+            }
         }
-
+        [RelayCommand] Task ImportReady()
+        {
+            try
+            {
+                ShowImport = true;
+                ShowImporting = false;
+                ShowInitial = false;
+                ShowImportText = false;
+                ImportProgressText = "Importing CSV";
+                ShowImportProgress = false;
+                ImportProgressValue = 0;
+                return Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                PopupDetails.IsOpen = true;
+                PopupDetails.ErrorMessage = ex.Message;
+                PopupDetails.ErrorCode = "ERR-000";
+                ErrorHandler.AddLog(ex.Message);
+                return Task.CompletedTask;
+            }
+        }
         // 3. Usage in row
         //
         //

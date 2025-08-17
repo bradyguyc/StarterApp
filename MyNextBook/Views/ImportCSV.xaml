@@ -10,7 +10,7 @@
     xmlns:dxcv="clr-namespace:DevExpress.Maui.CollectionView;assembly=DevExpress.Maui.CollectionView"
     xmlns:dxe="clr-namespace:DevExpress.Maui.Editors;assembly=DevExpress.Maui.Editors"
     xmlns:dxs="http://schemas.devexpress.com/maui"
-    xmlns:fonts="clr-namespace:MyNextBook.Helpers"
+    xmlns:fonts="clr-namespace:CommonCode.Helpers;assembly=CommonCode"
     xmlns:local="clr-namespace:MyNextBook.ViewModels"
     xmlns:markups="clr-namespace:OnScreenSizeMarkup.Maui;assembly=OnScreenSizeMarkup.Maui"
     xmlns:models="clr-namespace:MyNextBook.Models"
@@ -21,10 +21,15 @@
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:viewmodels="clr-namespace:MyNextBook.ViewModels"
     xmlns:views="clr-namespace:MyNextBook.Views"
+    x:Name="ImportPage"
     Title="Import Series"
     x:DataType="viewmodels:ImportCSVViewModel"
     BackgroundColor="{dx:ThemeColor SecondaryContainer}">
 
+    <Shell.BackButtonBehavior>
+        <!--  Handle back via Shell back button  -->
+        <BackButtonBehavior Command="{Binding BackCommand}" IsEnabled="True" />
+    </Shell.BackButtonBehavior>
 
 
     <ContentPage.Resources>
@@ -39,7 +44,6 @@
         </Style>
 
         <Style TargetType="CheckBox">
-
             <Setter Property="BackgroundColor" Value="{dx:ThemeColor TertiaryContainer}" />
         </Style>
 
@@ -50,65 +54,54 @@
     <!--#region Import Get File-->
     <Grid
         BackgroundColor="{dx:ThemeColor SecondaryContainer}"
-        ColumnDefinitions="*,*"
-        RowDefinitions="*,60,60">
-        <Label
-            Grid.Row="0"
-            Grid.RowSpan="2"
-            Grid.Column="0"
-            Grid.ColumnSpan="3"
-            Margin="15,20,15,0"
-            FontSize="Medium"
-            HorizontalOptions="Center"
-            IsVisible="{Binding ShowInitial}"
-            MaxLines="8"
-            Text="{Binding ImportInstructions}"
-            ZIndex="8" />
-        <!--
+        ColumnDefinitions="*,100"
+        RowDefinitions="*,75">
+        <dx:DXPopup
+            x:Name="menuPopup"
+            CornerRadius="0"
+            IsOpen="{Binding IsMenuPopupOpen, Mode=TwoWay}"
+            Placement="Left"
+            PlacementTarget="{x:Reference menuButton}">
+            <dx:DXPopup.Content>
+                <StackLayout Padding="0" BackgroundColor="{dx:ThemeColor Surface}">
 
-        <popup:SfPopup
-            x:Name="popupLayout"
-            Grid.Row="1"
-            Grid.Column="0"
-            Grid.ColumnSpan="2"
-            AcceptButtonText="OK"
-            AppearanceMode="OneButton"
-            BackgroundColor="{dx:ThemeColor SecondaryContainer}"
-            BindingContext="{Binding Source={RelativeSource TemplatedParent}}"
-            HeightRequest="1"
-            IsOpen="{Binding ShowImportText, Mode=TwoWay}"
-            WidthRequest="1"
-            ZIndex="2">
-            <popup:SfPopup.PopupStyle>
-                <popup:PopupStyle
-                    BlurIntensity="Light"
-                    BlurRadius="15"
-                    CornerRadius="20"
-                    FooterBackground="{dx:ThemeColor SecondaryContainer}"
-                    HasShadow="True"
-                    MessageBackground="{dx:ThemeColor SecondaryContainer}"
-                    MessageFontAttribute="Bold"
-                    MessageFontFamily="OpenSansRegular"
-                    MessageFontSize="18"
-                    MessageTextAlignment="Center"
-                    StrokeThickness="10" />
-            </popup:SfPopup.PopupStyle>
+                    <dx:DXButton
+                        BackgroundColor="{dx:ThemeColor Secondary}"
+                        BorderColor="{dx:ThemeColor Outline}"
+                        BorderThickness="1"
+                        Command="{Binding ImportReadyItemsCommand}"
+                        Content="Import Ready Items"
+                        CornerRadius="4"
+                        FontSize="14"
+                        HorizontalOptions="Fill"
+                        TextColor="{dx:ThemeColor OnSecondary}"
+                        VerticalOptions="Center" />
+                    <dx:DXButton
+                        BackgroundColor="{dx:ThemeColor Secondary}"
+                        BorderColor="#0078D7"
+                        BorderThickness="1"
+                        Command="{Binding SaveAndReturnLaterCommand}"
+                        Content="Save &amp; Return Later"
+                        CornerRadius="4"
+                        FontSize="14"
+                        HorizontalOptions="Fill"
+                        TextColor="{dx:ThemeColor OnSecondary}"
+                        VerticalOptions="Center" />
+                    <dx:DXButton
+                        BackgroundColor="{dx:ThemeColor Secondary}"
+                        BorderColor="#0078D7"
+                        BorderThickness="1"
+                        Command="{Binding CancelMenuCommand}"
+                        Content="Cancel"
+                        CornerRadius="4"
+                        FontSize="14"
+                        HorizontalOptions="Fill"
+                        TextColor="{dx:ThemeColor OnSecondary}"
+                        VerticalOptions="Center" />
+                </StackLayout>
+            </dx:DXPopup.Content>
+        </dx:DXPopup>
 
-            <popup:SfPopup.ContentTemplate>
-                <DataTemplate>
-                    <ScrollView Margin="0,0,0,0" BackgroundColor="{dx:ThemeColor SecondaryContainer}">
-                        <Label
-                            Grid.Row="0"
-                            Margin="1,0,0,1"
-                            BackgroundColor="{dx:ThemeColor SecondaryContainer}"
-                            FontSize="Small"
-                            LineBreakMode="WordWrap"
-                            Text="{Binding ShowImportText, Mode=TwoWay}"
-                            TextColor="{dx:ThemeColor OnTertiaryContainer}" />
-                    </ScrollView>
-                </DataTemplate>
-            </popup:SfPopup.ContentTemplate>
-        </popup:SfPopup>-->
         <!--#region ErrorPopUp-->
         <sharedcontrols:ErrorPopupView
             Grid.Row="1"
@@ -129,7 +122,7 @@
             Grid.Row="0"
             Grid.RowSpan="1"
             Grid.Column="0"
-            Grid.ColumnSpan="2"
+            Grid.ColumnSpan="3"
             AllowVirtualHorizontalScrolling="True"
             AutoGeneratingColumn="DataGridView_OnAutoGeneratingColumn"
             BackgroundColor="{dx:ThemeColor PrimaryContainer}"
@@ -149,81 +142,103 @@
                 <dxs:ColumnHeaderAppearance Padding="0,0,0,0" BackgroundColor="{dx:ThemeColor PrimaryContainer}" />
             </dxs:DataGridView.ColumnHeaderAppearance>
         </dxs:DataGridView>
+        <HorizontalStackLayout
+            Grid.Row="1"
+            Grid.Column="0"
+            Margin="5,2">
+            <Button
+                Command="{Binding PerformImportCommand}"
+                CommandParameter="{x:Reference gridControl}"
+                FontSize="Small"
+                HeightRequest="40"
+                IsEnabled="True"
+                IsVisible="{Binding ShowInitial}"
+                Text="Select File"
+                WidthRequest="150" />
+            <Button
+                Margin="5,0"
+                Command="{Binding CancelImportCommand}"
+                HeightRequest="40"
+                IsVisible="{Binding ShowInitial}"
+                Text="Cancel"
+                WidthRequest="150" />
+        </HorizontalStackLayout>
+        <HorizontalStackLayout Grid.Row="1" Grid.Column="1">
+            <ImageButton
+                x:Name="helpButton"
+                Aspect="Center"
+                BackgroundColor="{dx:ThemeColor SecondaryContainer}"
+                Command="{Binding ShowHelpCommand}"
+                HeightRequest="45"
+                VerticalOptions="Center"
+                WidthRequest="45">
+                <ImageButton.Source>
+                    <FontImageSource
+                        FontFamily="MD"
+                        Glyph="{x:Static fonts:IconCodesMIR.Help}"
+                        Size="30"
+                        Color="{dx:ThemeColor OnSecondaryContainer}" />
+                </ImageButton.Source>
+            </ImageButton>
+            <ImageButton
+                x:Name="menuButton"
+                Aspect="Center"
+                BackgroundColor="{dx:ThemeColor SecondaryContainer}"
+                Command="{Binding ShowMenuCommand}"
+                HeightRequest="45"
+                IsVisible="{Binding ShowImporting}"
+                VerticalOptions="Center"
+                WidthRequest="45">
+                <ImageButton.Source>
+                    <FontImageSource
+                        FontFamily="MD"
+                        Glyph="{x:Static fonts:IconCodesMIR.Menu}"
+                        Size="30"
+                        Color="{dx:ThemeColor OnSecondaryContainer}" />
+                </ImageButton.Source>
+            </ImageButton>
+        </HorizontalStackLayout>
+        <VerticalStackLayout
+            Grid.Row="1"
+            Grid.Column="0"
+            IsVisible="{Binding ShowImport}">
+            <Label Text="{Binding iCSVData.SeriesFound, StringFormat='{0} series to import ,'}" />
+            <Label Text="{Binding iCSVData.SeriesThatAreReadyToImport, StringFormat=' {0} ready.'}" />
 
-        <Button
-            Grid.Row="2"
-            Grid.Column="0"
-            Command="{Binding PerformImportCommand}"
-            CommandParameter="{x:Reference gridControl}"
-            HeightRequest="40"
-            IsEnabled="True"
-            IsVisible="{Binding ShowInitial}"
-            Text="Select File"
-            WidthRequest="150" />
-        <Button
-            Grid.Row="2"
-            Grid.Column="1"
-            Command="{Binding CancelImportCommand}"
-            HeightRequest="40"
-            IsVisible="{Binding ShowInitial}"
-            Text="Cancel"
-            WidthRequest="150" />
-        <Button
-            Grid.Row="2"
-            Grid.Column="0"
-            Command="{Binding GetDetailsCommand}"
-            HeightRequest="40"
-            IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
-            IsVisible="{Binding ShowImporting}"
-            Text="Link Books"
-            WidthRequest="150" />
-        <Button
-            Grid.Row="2"
-            Grid.Column="1"
-            Command="{Binding CancelImportCommand}"
-            HeightRequest="40"
-            IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
-            IsVisible="{Binding ShowImporting}"
-            Text="Close"
-            WidthRequest="100" />
+        </VerticalStackLayout>
         <dx:RadialProgressBar
+            x:Name="progressBar"
             Grid.Row="0"
-            Grid.RowSpan="1"
+            Grid.RowSpan="3"
             Grid.Column="0"
-            Grid.ColumnSpan="2"
-    
+            Grid.ColumnSpan="3"
+            EndValue="100"
+            Fill="{dx:ThemeColor OnSecondary}"
+            HeightRequest="200"
+            HorizontalOptions="Center"
+            IsVisible="{Binding ShowImportProgress}"
+            StartAngle="-90"
+            StartValue="0"
+            SweepAngle="360"
+            ValueIndicatorFill="{dx:ThemeColor Secondary}"
+            VerticalOptions="Center"
+            WidthRequest="200"
             Value="{Binding ImportProgressValue}">
 
-            <dx:RadialProgressBar.ContentTemplate>
-                <DataTemplate>
-                    <dx:DXStackLayout Orientation="Vertical">
-                     
-                        <Label FontSize="Title" HorizontalOptions="Center">
-                            <Label.FormattedText>
-                                <FormattedString>
-                                    <Span Text="{Binding ImportProgressText}" />
-                                    <Span Text="{x:Static system:Environment.NewLine}" />
-                                    <Span FontAttributes="Bold" Text="{Binding ImportProgressValue}" />
-                                    <Span Text="%" />
-                                </FormattedString>
-                            </Label.FormattedText>
-                        </Label>
-                    </dx:DXStackLayout>
-                </DataTemplate>
-            </dx:RadialProgressBar.ContentTemplate>
+            <dx:RadialProgressBar.Content>
+
+
+                <Label
+                    FontSize="16"
+                    HorizontalOptions="Center"
+                    Text="{Binding ImportProgressText}"
+                    VerticalOptions="Center" />
+
+
+            </dx:RadialProgressBar.Content>
         </dx:RadialProgressBar>
-        <Grid
-            Grid.Row="1"
-            Margin="10,3"
-            IsVisible="{Binding ShowImporting}"
-            RowDefinitions="*,*">
-            <Label Grid.Row="0" Text="{Binding iCSVData.BooksFound, StringFormat='Books to import  {0}'}" />
 
 
-            <Label Grid.Row="1" Text="{Binding iCSVData.SeriesFound, StringFormat='Series to import {0}'}" />
-
-
-        </Grid>
 
 
     </Grid>

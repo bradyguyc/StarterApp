@@ -241,6 +241,7 @@ namespace MyNextBook.ViewModels
         {
             try
             {
+                IsRefreshing = true; // start spinner
                 await ShowSyncingToast();
                 if (OLService == null)
                     OLService = MauiProgram.Services.GetService<IOpenLibraryService>();
@@ -255,6 +256,10 @@ namespace MyNextBook.ViewModels
                 PopupDetails.IsOpen = true;
                 PopupDetails.ErrorMessage = ex.Message;
                 PopupDetails.ErrorCode = "ERR-000 ";
+            }
+            finally
+            {
+                IsRefreshing = false; // stop spinner
             }
 
         }
