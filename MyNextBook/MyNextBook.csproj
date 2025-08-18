@@ -51,14 +51,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\CommonCode\CommonCode\CommonCode.csproj" />
-		<ProjectReference Include="..\..\OpenLibrary.NET\code generation\OpenLibraryNET.Diagnostics\OpenLibraryNET.Diagnostics.csproj" />
-		<ProjectReference Include="..\..\OpenLibrary.NET\code generation\OpenLibraryNET.GeneratorAttributes\OpenLibraryNET.GeneratorAttributes.csproj" />
-		<ProjectReference Include="..\..\OpenLibrary.NET\code generation\OpenLibraryNET.SourceGenerators\OpenLibraryNET.SourceGenerators.csproj" />
-		<ProjectReference Include="..\..\OpenLibrary.NET\src\OpenLibraryNET.csproj" />
+		<ProjectReference Include="C:\r3\CommonCode\CommonCode.csproj" />
 		<ProjectReference Include="..\ImportSeries\ImportSeries.csproj" />
-
-
 	</ItemGroup>
 	<PropertyGroup Condition="'$(TargetFramework)'=='net10.0-ios'">
 		<ProvisioningType>manual</ProvisioningType>
@@ -143,12 +137,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Remove="appsettings.json" />
+		<!-- Ensure appsettings.json is embedded with the expected resource name -->
+		<EmbeddedResource Include="appsettings.json">
+			<LogicalName>MyNextBook.appsettings.json</LogicalName>
+		</EmbeddedResource>
 		<None Remove="Resources\Fonts\MauiMaterialAssets.ttf" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<EmbeddedResource Include="appsettings.json" />
 	</ItemGroup>
 
 	<ItemGroup>

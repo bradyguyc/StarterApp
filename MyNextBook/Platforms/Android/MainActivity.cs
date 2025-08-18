@@ -9,14 +9,16 @@ using CommonCode.MSALClient;
 
 namespace MyNextBook
 {
+    // Use splash at launch and switch to Maui main theme in OnCreate (recommended MAUI pattern)
     [Activity(Theme = "@style/Maui.SplashTheme", MainLauncher = true, LaunchMode = LaunchMode.SingleTop, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize | ConfigChanges.Density)]
     public class MainActivity : MauiAppCompatActivity
     {
         protected override void OnCreate(Bundle savedInstanceState)
         {
             // Switch from splash theme to the MAUI main theme before calling base.OnCreate
-            //base.SetTheme(Resource.Style.MainTheme);
+            base.SetTheme(Resource.Style.MainTheme);
             base.OnCreate(savedInstanceState);
+
             // configure platform specific params
             PlatformConfig.Instance.RedirectUri = $"msal{PublicClientSingleton.Instance.MSALClientHelper.AzureAdConfig.ClientId}://auth";
             PlatformConfig.Instance.ParentWindow = this;

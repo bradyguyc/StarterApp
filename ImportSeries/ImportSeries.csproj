@@ -38,11 +38,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\CommonCode\CommonCode\CommonCode.csproj" />
-    <ProjectReference Include="..\..\OpenLibrary.NET\code generation\OpenLibraryNET.Diagnostics\OpenLibraryNET.Diagnostics.csproj" />
-    <ProjectReference Include="..\..\OpenLibrary.NET\code generation\OpenLibraryNET.GeneratorAttributes\OpenLibraryNET.GeneratorAttributes.csproj" />
-    <ProjectReference Include="..\..\OpenLibrary.NET\code generation\OpenLibraryNET.SourceGenerators\OpenLibraryNET.SourceGenerators.csproj" />
-    <ProjectReference Include="..\..\OpenLibrary.NET\src\OpenLibraryNET.csproj" />
+    <ProjectReference Include="C:\r\OpenLibrary.NET\src\OpenLibraryNET.csproj" />
+    <ProjectReference Include="C:\r3\CommonCode\CommonCode.csproj" />
   </ItemGroup>
 
 </Project>

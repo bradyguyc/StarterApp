@@ -25,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="C:\r\OpenLibrary.NET\src\OpenLibraryNET.csproj" />
     <ProjectReference Include="..\ImportSeries\ImportSeries.csproj" />
   </ItemGroup>
 
