@@ -434,7 +434,7 @@ namespace MyNextBook.ViewModels
                 await Shell.Current.GoToAsync("///MainPage", true);
             }
         }
-        [RelayCommand] Task ImportReady()
+        [RelayCommand] Task ImportReadyItems()
         {
             try
             {
@@ -456,6 +456,27 @@ namespace MyNextBook.ViewModels
                 return Task.CompletedTask;
             }
         }
+
+        [RelayCommand]
+        private async Task SaveAndReturnLater()
+        {
+            try
+            {
+                // Save current state and return to main page
+                await Shell.Current.GoToAsync("///MainPage", true);
+            }
+            catch (Exception ex)
+            {
+                PopupDetails = new ShowPopUpDetails
+                {
+                    IsOpen = true,
+                    ErrorMessage = ex.Message,
+                    ErrorCode = "ERR-001"
+                };
+                ErrorHandler.AddError(ex);
+            }
+        }
+      
         // 3. Usage in row
         //
         //

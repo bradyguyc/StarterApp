@@ -146,8 +146,8 @@
 
 	<ItemGroup>
 		<PackageReference Include="Azure.Data.AppConfiguration" Version="1.6.1" />
-		<PackageReference Include="Azure.Identity" Version="1.14.2" />
-		<PackageReference Include="CommunityToolkit.Maui" Version="12.1.0" />
+		<PackageReference Include="Azure.Identity" Version="1.15.0" />
+		<PackageReference Include="CommunityToolkit.Maui" Version="12.2.0" />
 		<PackageReference Include="CommunityToolkit.Maui.Markup" Version="6.0.1" />
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
 		<PackageReference Include="CsvHelper" Version="33.1.0" />
@@ -173,8 +173,8 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.0-preview.5.25277.114" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0-preview.5.25277.114" />
 
-		<PackageReference Include="Microsoft.Identity.Client" Version="4.74.1" />
-		<PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.74.1" />
+		<PackageReference Include="Microsoft.Identity.Client" Version="4.76.0" />
+		<PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.76.0" />
 
 
 
@@ -183,9 +183,9 @@
 		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.0-preview.4.25263.4" />
 
 		<PackageReference Include="SkiaSharp.Extended.UI.Maui" Version="2.0.0" />
-		<PackageReference Include="Syncfusion.Maui.Core" Version="30.1.42" />
-		<PackageReference Include="Syncfusion.Maui.Popup" Version="30.1.42" />
-		<PackageReference Include="Syncfusion.Maui.ProgressBar" Version="30.1.42" />
+		<PackageReference Include="Syncfusion.Maui.Core" Version="30.2.6" />
+		<PackageReference Include="Syncfusion.Maui.Popup" Version="30.2.6" />
+		<PackageReference Include="Syncfusion.Maui.ProgressBar" Version="30.2.6" />
 
 	</ItemGroup>
 
@@ -216,11 +216,11 @@
 	</ItemGroup>
 	<ItemGroup Condition="'$(TargetFramework)' == 'net10.0-android'">
 		<PackageReference Include="Xamarin.AndroidX.Lifecycle.Common.Java8">
-			<Version>2.8.7.2</Version>
+			<Version>2.9.2.1</Version>
 
 		</PackageReference>
 		<PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData">
-			<Version>2.8.7.2</Version>
+			<Version>2.9.2.1</Version>
 
 		</PackageReference>
 	</ItemGroup>

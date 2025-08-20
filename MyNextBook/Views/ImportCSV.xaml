@@ -89,9 +89,9 @@
                         VerticalOptions="Center" />
                     <dx:DXButton
                         BackgroundColor="{dx:ThemeColor Secondary}"
-                        BorderColor="#0078D7"
+                        BorderColor="{dx:ThemeColor Outline}"
                         BorderThickness="1"
-                        Command="{Binding CancelMenuCommand}"
+                        Command="{Binding CancelImportCommand}"
                         Content="Cancel"
                         CornerRadius="4"
                         FontSize="14"

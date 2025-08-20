@@ -55,7 +55,7 @@ public partial class ImportCSV : ContentPage
         }
         catch (Exception ex)
         {
-            await DisplayAlert("Error", $"Search failed: {ex.Message}", "OK");
+            await DisplayAlertAsync("Error", $"Search failed: {ex.Message}", "OK");
         }
     }
     
@@ -199,14 +199,14 @@ public partial class ImportCSV : ContentPage
     // Simple converter to invert boolean values
     public class InvertedBoolConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is bool boolValue)
                 return !boolValue;
             return false;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is bool boolValue)
                 return !boolValue;
@@ -285,7 +285,7 @@ public partial class ImportCSV : ContentPage
                 string author = row["Book.Author"]?.ToString() ?? "";
                 
                 // Show some feedback to the user
-                await DisplayAlert("Searching", $"Searching for: {bookTitle} by {author}", "OK");
+                await DisplayAlertAsync("Searching", $"Searching for: {bookTitle} by {author}", "OK");
                 
                 // You can add your actual search logic here
                 // For example, call your OpenLibrary search service
@@ -294,7 +294,7 @@ public partial class ImportCSV : ContentPage
         }
         catch (Exception ex)
         {
-            await DisplayAlert("Error", $"Search failed: {ex.Message}", "OK");
+            await DisplayAlertAsync("Error", $"Search failed: {ex.Message}", "OK");
         }
     }
 

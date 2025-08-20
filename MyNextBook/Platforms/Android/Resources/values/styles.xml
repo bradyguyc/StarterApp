@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<!-- App theme used by the main activity. Inherit from MaterialComponents to satisfy Material widgets requirements. -->
-	<style name="MainTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+	<!-- Override MAUI's main theme to inherit from MaterialComponents to satisfy Material widgets requirements -->
+	<style name="Maui.MainTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
 		<!-- Core brand colors -->
 		<item name="colorPrimary">#3b92c4</item>
 		<item name="colorPrimaryVariant">#323943</item>
@@ -13,4 +13,7 @@
 		<item name="textAppearanceBody2">@style/TextAppearance.MaterialComponents.Body2</item>
 		<item name="textAppearanceHeadline6">@style/TextAppearance.MaterialComponents.Headline6</item>
 	</style>
+
+	<!-- Optional: keep a custom theme alias if referenced elsewhere -->
+	<style name="MainTheme" parent="Maui.MainTheme" />
 </resources>
