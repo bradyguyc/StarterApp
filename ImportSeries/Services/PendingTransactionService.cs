@@ -11,7 +11,11 @@ namespace ImportSeries.Services
 {
     public class PendingTransactionService : IPendingTransactionService
     {
-        private readonly string _filePath = Path.Combine(FileSystem.AppDataDirectory, "pending_transactions.json");
+        // Removed MAUI FileSystem dependency; use LocalApplicationData instead
+        private static readonly string s_baseFolder =
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MyNextBook");
+        private readonly string _filePath = Path.Combine(s_baseFolder, "pending_transactions.json");
+
         private static readonly SemaphoreSlim _semaphore = new(1, 1);
         private List<PendingTransaction> _transactions;
 
@@ -22,6 +26,7 @@ namespace ImportSeries.Services
             await _semaphore.WaitAsync();
             try
             {
+                Directory.CreateDirectory(s_baseFolder);
                 if (File.Exists(_filePath))
                 {
                     var json = await File.ReadAllTextAsync(_filePath);
@@ -43,6 +48,7 @@ namespace ImportSeries.Services
             await _semaphore.WaitAsync();
             try
             {
+                Directory.CreateDirectory(s_baseFolder);
                 var json = JsonConvert.SerializeObject(_transactions, Formatting.Indented);
                 await File.WriteAllTextAsync(_filePath, json);
             }
@@ -83,7 +89,6 @@ namespace ImportSeries.Services
             if (existing != null)
             {
                 existing.RetryCount = transaction.RetryCount;
-                // Update other properties as needed
                 await SaveTransactionsAsync();
             }
         }

@@ -190,7 +190,7 @@
                     HorizontalOptions="End"
                     Grid.Row="2"
                     Grid.Column="1"
-                    Margin="0,0,15,0">
+                    Margin="0,0,2,0">
                     <Label HorizontalOptions="End" Style="{StaticResource SecondaryText}">
                         <Label.FormattedText>
                             <FormattedString>

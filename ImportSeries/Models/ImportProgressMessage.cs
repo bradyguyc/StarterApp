@@ -1,23 +1,5 @@
-namespace ImportSeries.Models;
-
-/// <summary>
-/// A message to report progress of the import process.
-/// </summary>
-public class ImportProgressMessage
+namespace ImportSeries.Models
 {
-    /// <summary>
-    /// The text to display for the current progress status.
-    /// </summary>
-    public string Text { get; }
-
-    /// <summary>
-    /// The progress value, typically between 0.0 and 1.0.
-    /// </summary>
-    public double Value { get; }
-
-    public ImportProgressMessage(string text, double value)
-    {
-        Text = text;
-        Value = value;
-    }
+    // Simple progress message used with WeakReferenceMessenger
+    public sealed record class ImportProgressMessage(string Text, double Progress);
 }

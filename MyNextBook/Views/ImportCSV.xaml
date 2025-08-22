@@ -152,6 +152,7 @@
                 FontSize="Small"
                 HeightRequest="40"
                 IsEnabled="True"
+             
                 IsVisible="{Binding ShowInitial}"
                 Text="Select File"
                 WidthRequest="150" />
@@ -159,6 +160,7 @@
                 Margin="5,0"
                 Command="{Binding CancelImportCommand}"
                 HeightRequest="40"
+              
                 IsVisible="{Binding ShowInitial}"
                 Text="Cancel"
                 WidthRequest="150" />
@@ -171,6 +173,7 @@
                 Command="{Binding ShowHelpCommand}"
                 HeightRequest="45"
                 VerticalOptions="Center"
+                HorizontalOptions="End"
                 WidthRequest="45">
                 <ImageButton.Source>
                     <FontImageSource
@@ -187,6 +190,7 @@
                 Command="{Binding ShowMenuCommand}"
                 HeightRequest="45"
                 IsVisible="{Binding ShowImporting}"
+                HorizontalOptions="End"
                 VerticalOptions="Center"
                 WidthRequest="45">
                 <ImageButton.Source>

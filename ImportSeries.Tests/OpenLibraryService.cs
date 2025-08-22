@@ -3,6 +3,7 @@ using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using System.Threading.RateLimiting;
 
@@ -12,7 +13,6 @@ using Microsoft.Extensions.Logging;
 
 using ImportSeries.Models;
 using ImportSeries.Services;
-
 using OpenLibraryNET;
 using OpenLibraryNET.Data;
 using OpenLibraryNET.Loader;

@@ -19,6 +19,7 @@ using CsvHelper;
 using CsvHelper.Configuration;
 
 using ImportSeries.Services;
+using ImportSeries.Models;
 
 using Microsoft.Extensions.Logging;
 
@@ -27,11 +28,7 @@ using Newtonsoft.Json;
 using OpenLibraryNET;
 using OpenLibraryNET.Data;
 using OpenLibraryNET.Loader;
-
-using SharpYaml;
-
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using static CommunityToolkit.Maui.Markup.GridRowsColumns;
+using OpenLibraryNET.OLData;
 
 using Exception = System.Exception;
 using MissingFieldException = CsvHelper.MissingFieldException;
@@ -46,12 +43,14 @@ public partial class ImportCSVData : ObservableObject
     public string errorMessage { get; set; }
 
     private readonly IPendingTransactionService _transactionService;
+    private readonly IOpenLibraryService _openLibraryService; // injected service
     private int seriesNameColumnIndex = 0; // This class field seems unused by the method being updated.
     [ObservableProperty] public DataTable csvData;
     public Dictionary<string, string> columnHeaderMap = new Dictionary<string, string>();
 
-    public ImportCSVData(IPendingTransactionService transactionService)
+    public ImportCSVData(IOpenLibraryService transactionAwareOpenLibraryService, IPendingTransactionService transactionService)
     {
+        _openLibraryService = transactionAwareOpenLibraryService;
         _transactionService = transactionService;
         csvData = new DataTable();
         errorMessage = "";
@@ -74,15 +73,12 @@ public partial class ImportCSVData : ObservableObject
             var olClient = new OpenLibraryClient();
 
             // Initialize progress
-         
             int booksProcessed = 0;
 
-            // Update the code to ensure the AddConsole method is available
             using var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
             var logger = loggerFactory.CreateLogger<OpenLibraryService>();
             OpenLibraryService ols = new OpenLibraryService(logger, _transactionService);
-          
-         
+
             // Loop through each row in the DataTable
             Stopwatch stopwatch = new Stopwatch();
             foreach (DataRow row in dataTable.Rows)
@@ -91,7 +87,6 @@ public partial class ImportCSVData : ObservableObject
                 booksProcessed++;
                 int progress = (int)((booksProcessed / (double)(SeriesFound + BooksFound)) * 100);
                 WeakReferenceMessenger.Default.Send(new ImportProgressMessage($"{booksProcessed} of {BooksFound + SeriesFound}", progress));
-
 
                 // Extract book information from the row
                 string bookTitle = GetColumnValue(row, "Book.Title", "Title");
@@ -132,7 +127,6 @@ public partial class ImportCSVData : ObservableObject
                         {
                             workData = results[0];
                             row["OLWork"] = string.IsNullOrEmpty(workData.Key) ? (object)DBNull.Value : workData.Key;
-                            //todo: figure out how to get edition
                             row["OLLookupMethod"] = "OLID";
                         }
                     }
@@ -163,7 +157,6 @@ public partial class ImportCSVData : ObservableObject
                         if (ole != null && ole.WorkKeys != null && ole.WorkKeys.Count > 0)
                         {
                             row["OLWork"] = ole.WorkKeys[0] ?? (object)DBNull.Value;
-                            //workData = await OLWorkLoader.GetDataAsync(olClient.BackingClient, ole.WorkKeys[0]).ConfigureAwait(false);  ;
                             row["OLLookupMethod"] = "ISBN10";
                         }
                     }
@@ -574,10 +567,10 @@ public partial class ImportCSVData : ObservableObject
 
         bool importedSuccessfully = await PrepFileForCSVImport(stream).ConfigureAwait(false);
         // Debug output: Show current counts
-        Debug.WriteLine($"[Info] Import Statistics:");
-        Debug.WriteLine($"[Info]   Total Books: {this.BooksFound}");
-        Debug.WriteLine($"[Info]   Total Series: {this.SeriesFound}");
-        Debug.WriteLine($"[Info]   Total Rows in DataTable: {this.CsvData.Rows.Count}");
+        Debug.WriteLine("[Info] Import Statistics:");
+        Debug.WriteLine("[Info]   Total Books: {this.BooksFound}");
+        Debug.WriteLine("[Info]   Total Series: {this.SeriesFound}");
+        Debug.WriteLine("[Info]   Total Rows in DataTable: {this.CsvData.Rows.Count}");
         WeakReferenceMessenger.Default.Send(new ImportProgressMessage($"Books {BooksFound}", 1));
 
         if (importedSuccessfully)
@@ -662,11 +655,11 @@ public partial class ImportCSVData : ObservableObject
         if (!seriesGroups.Any()) return true;
 
         //var isbnLookup = BuildIsbnLookup(dataTable);
-     
+
         int seriesProcessed = 0;
 
 
-    
+
 
         Stopwatch stopwatch = new Stopwatch();
 
@@ -725,7 +718,7 @@ public partial class ImportCSVData : ObservableObject
             }
 
             stopwatch.Stop();
-          
+
             //Debug.WriteLine($"[Info] Processed series: {seriesName} : {stopwatch.ElapsedMilliseconds} ms : Wikidata books found: {booksInSeries?.Count ?? 0}");
         }
 
@@ -733,7 +726,8 @@ public partial class ImportCSVData : ObservableObject
         return true;
     }
 
-    private string CleanIsbn(string isbn)
+    // --- Modified nullability-safe CleanIsbn signature ---
+    private string CleanIsbn(string? isbn)
     {
         if (string.IsNullOrWhiteSpace(isbn))
             return string.Empty;
@@ -741,32 +735,23 @@ public partial class ImportCSVData : ObservableObject
         // Attempt to parse scientific notation
         if (decimal.TryParse(isbn, NumberStyles.Float, CultureInfo.InvariantCulture, out decimal decValue))
         {
-            // Format as a plain string with no decimals
             string formattedIsbn = decValue.ToString("F0", CultureInfo.InvariantCulture);
-            if (formattedIsbn.Length == 10 || formattedIsbn.Length == 13)
-            {
+            if (formattedIsbn.Length is 10 or 13)
                 return formattedIsbn;
-            }
         }
 
+        string digitsOnly = new(isbn.Where(char.IsDigit).ToArray());
 
-        // Remove all non-digit characters
-        string digitsOnly = new string(isbn.Where(char.IsDigit).ToArray());
-
-        // Handle ISBN-10: should be exactly 10 digits
-        if (digitsOnly.Length >= 10 && digitsOnly.Length < 13)
-        {
-            // It might be a 10-digit ISBN, or a partial 13-digit one.
-            // Let's assume 10 if it's 10.
-            if (digitsOnly.Length == 10) return digitsOnly;
-        }
-        // Handle ISBN-13: should be exactly 13 digits
-        else if (digitsOnly.Length == 13)
-        {
+        if (digitsOnly.Length == 10)
             return digitsOnly;
-        }
-        if (digitsOnly == "9780000000000") digitsOnly = "";
-        return digitsOnly; // Return what we have if it doesn't fit standard lengths
+
+        if (digitsOnly.Length == 13)
+            return digitsOnly;
+
+        if (digitsOnly == "9780000000000")
+            return string.Empty;
+
+        return digitsOnly;
     }
 
 
@@ -1046,64 +1031,57 @@ public partial class ImportCSVData : ObservableObject
 
 
 
+    // --- Modified DEBUG helper to avoid potential UI blocking / runaway perception ---
 #if DEBUG
-    /// <summary>
-    /// Writes the DataTable contents to a CSV file on the mobile device and then cleans up columns
-    /// </summary>
-    /// <param name="dataTable">The DataTable to write and clean up</param>
     private async Task WriteDataTableToFileAndCleanup(DataTable dataTable)
     {
         try
         {
-            // Get the app's documents directory for mobile device storage
             string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-
-            // For mobile devices, use a more appropriate path
 #if ANDROID || IOS
             documentsPath = FileSystem.AppDataDirectory;
 #endif
-
             string fileName = $"ImportData_Debug_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
             string filePath = Path.Combine(documentsPath, fileName);
 
             Debug.WriteLine($"[Debug] Writing DataTable to file: {filePath}");
 
-            // Write the full DataTable to CSV file using CsvHelper
-            using (var writer = new StreamWriter(filePath))
+            // Offload heavy synchronous IO + cleanup to background thread
+            await Task.Run(() =>
             {
-                var csvConfig = new CsvConfiguration(CultureInfo.InvariantCulture)
+                try
                 {
-                    HasHeaderRecord = true,
-                    Encoding = Encoding.UTF8
-                };
-
-                using (var csvWriter = new CsvWriter(writer, csvConfig))
-                {
-                    // Write header
-                    foreach (DataColumn column in dataTable.Columns)
+                    var csvConfig = new CsvConfiguration(CultureInfo.InvariantCulture)
                     {
-                        csvWriter.WriteField(column.ColumnName);
-                    }
-                    csvWriter.NextRecord();
+                        HasHeaderRecord = true,
+                        Encoding = Encoding.UTF8
+                    };
 
-                    // Write data rows
-                    foreach (DataRow row in dataTable.Rows)
+                    using (var writer = new StreamWriter(filePath))
+                    using (var csvWriter = new CsvWriter(writer, csvConfig))
                     {
-                        for (int i = 0; i < dataTable.Columns.Count; i++)
-                        {
-                            csvWriter.WriteField(row[i]?.ToString() ?? "");
-                        }
+                        foreach (DataColumn column in dataTable.Columns)
+                            csvWriter.WriteField(column.ColumnName);
                         csvWriter.NextRecord();
+
+                        foreach (DataRow row in dataTable.Rows)
+                        {
+                            for (int i = 0; i < dataTable.Columns.Count; i++)
+                                csvWriter.WriteField(row[i]?.ToString() ?? "");
+                            csvWriter.NextRecord();
+                        }
                     }
+
+                    Debug.WriteLine($"[Debug] DataTable written. Size: {new FileInfo(filePath).Length} bytes");
+
+                    // Perform in-place cleanup
+                    CleanupDataTableColumns(dataTable);
                 }
-            }
-
-            Debug.WriteLine($"[Debug] DataTable written to file successfully: {filePath}");
-            Debug.WriteLine($"[Debug] File size: {new FileInfo(filePath).Length} bytes");
-
-            // Now clean up the DataTable - remove all columns except the specified ones
-            await CleanupDataTableColumns(dataTable);
-
+                catch (Exception exInner)
+                {
+                    Debug.WriteLine($"[Debug] Background write/cleanup error: {exInner.Message}");
+                }
+            }).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -1111,17 +1089,20 @@ public partial class ImportCSVData : ObservableObject
         }
     }
 
+#endif
+
+    // --- Rewritten (now synchronous) CleanupDataTableColumns with nullability fixes & minor efficiency tweaks ---
+#if DEBUG
     /// <summary>
-    /// Removes all columns except the specified ones and reorders them
+    /// Removes all columns except the specified ones and reorders them.
+    /// Made synchronous (no real async work) to avoid confusion / potential deadlocks.
     /// </summary>
-    /// <param name="dataTable">The DataTable to clean up</param>
-    private async Task CleanupDataTableColumns(DataTable dataTable)
+    private void CleanupDataTableColumns(DataTable dataTable)
     {
         try
         {
             Debug.WriteLine($"[Debug] Starting column cleanup. Original column count: {dataTable.Columns.Count}");
 
-            // Define the columns to keep in the desired order
             var columnsToKeep = new[]
             {
                 "OLReady",
@@ -1139,93 +1120,260 @@ public partial class ImportCSVData : ObservableObject
                 "Book.PublishedDate"
             };
 
-            // Create a new DataTable with only the desired columns in the correct order
+            // Fast path: if table empty, just rebuild schema
+            bool hasRows = dataTable.Rows.Count > 0;
+
             var cleanedTable = new DataTable(dataTable.TableName);
 
-            // Add columns in the specified order
             foreach (var columnName in columnsToKeep)
             {
                 if (dataTable.Columns.Contains(columnName))
                 {
-                    // Copy the column with its data type
                     var originalColumn = dataTable.Columns[columnName];
-                    cleanedTable.Columns.Add(columnName, originalColumn.DataType);
+#pragma warning disable CS8602
+                    cleanedTable.Columns.Add(columnName, originalColumn?.DataType ?? typeof(string)); // Null-safe
+#pragma warning restore CS8602
                 }
                 else
                 {
-                    // Add missing column as string type
                     cleanedTable.Columns.Add(columnName, typeof(string));
-                    Debug.WriteLine($"[Debug] Column '{columnName}' not found in original table, added as empty string column");
+                    Debug.WriteLine($"[Debug] Column '{columnName}' not found; added as string.");
                 }
             }
 
-            // Copy data rows with only the specified columns
-            foreach (DataRow originalRow in dataTable.Rows)
+            if (hasRows)
             {
-                var newRow = cleanedTable.NewRow();
-
-                foreach (var columnName in columnsToKeep)
+                foreach (DataRow originalRow in dataTable.Rows)
                 {
-                    if (dataTable.Columns.Contains(columnName))
+                    var newRow = cleanedTable.NewRow();
+                    foreach (var columnName in columnsToKeep)
                     {
-                        newRow[columnName] = originalRow[columnName];
+                        newRow[columnName] = dataTable.Columns.Contains(columnName)
+                            ? originalRow[columnName] ?? DBNull.Value
+                            : DBNull.Value;
                     }
-                    else
-                    {
-                        newRow[columnName] = DBNull.Value;
-                    }
+                    cleanedTable.Rows.Add(newRow);
                 }
-
-                cleanedTable.Rows.Add(newRow);
             }
 
-            // Replace the original table's structure with the cleaned one
+            // Normalize ISBN-13 values in the cleaned table before swapping
+            if (cleanedTable.Columns.Contains("Book.ISBN_13"))
+            {
+                foreach (DataRow row in cleanedTable.Rows)
+                {
+                    if (row["Book.ISBN_13"] != DBNull.Value)
+                    {
+                        string raw = row["Book.ISBN_13"]?.ToString() ?? string.Empty;
+                        if (!string.IsNullOrWhiteSpace(raw))
+                        {
+                            string isbn13 = CleanIsbn(raw);
+                            row["Book.ISBN_13"] = isbn13.Length == 13 ? isbn13 : DBNull.Value;
+                        }
+                    }
+                }
+            }
+
+            // Replace original table schema/data atomically
             dataTable.Clear();
             dataTable.Columns.Clear();
 
-            // Copy cleaned structure back to original table
-            foreach (DataColumn column in cleanedTable.Columns)
-            {
-                dataTable.Columns.Add(column.ColumnName, column.DataType);
-            }
-            foreach (DataRow row in cleanedTable.Rows)
-            {
+            foreach (DataColumn c in cleanedTable.Columns)
+                dataTable.Columns.Add(c.ColumnName, c.DataType);
 
-                if (row["Book.ISBN_13"] != DBNull.Value && !string.IsNullOrWhiteSpace(row["Book.ISBN_13"]?.ToString()))
-                {
-                    string isbn13 = CleanIsbn(row["Book.ISBN_13"].ToString());
-                    if (isbn13.Length != 13)
-                    {
-                        row["Book.ISBN_13"] = DBNull.Value;
-                    }
-                    else
-                    {
-                        row["Book.ISBN_13"] = isbn13;
-                    }
-
-
-                }
-            }
-            // Copy cleaned data back to original table
-            foreach (DataRow row2 in cleanedTable.Rows)
+            foreach (DataRow r in cleanedTable.Rows)
             {
                 var newRow = dataTable.NewRow();
-                foreach (DataColumn column in dataTable.Columns)
-                {
-                    newRow[column.ColumnName] = row2[column.ColumnName];
-                }
+                foreach (DataColumn c in dataTable.Columns)
+                    newRow[c.ColumnName] = r[c.ColumnName];
                 dataTable.Rows.Add(newRow);
             }
 
             Debug.WriteLine($"[Debug] Column cleanup completed. Final column count: {dataTable.Columns.Count}");
             Debug.WriteLine($"[Debug] Final columns: {string.Join(", ", dataTable.Columns.Cast<DataColumn>().Select(c => c.ColumnName))}");
-
-            await Task.CompletedTask; // Make method async as requested
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"[Debug] Error during column cleanup: {ex.Message}");
         }
+    }
+    // Adds method to create OpenLibrary lists for fully-ready series
+    public async Task CreateOpenLibraryListsForReadySeries()
+    {
+        if (csvData == null) throw new ArgumentNullException(nameof(csvData));
+
+        // Required columns check
+        string seriesCol = "Series.Name";
+        string readyCol = "OLReady";
+        string workCol = "OLWork";
+        if (!csvData.Columns.Contains(seriesCol) || !csvData.Columns.Contains(readyCol) || !csvData.Columns.Contains(workCol))
+        {
+            Debug.WriteLine("[Info] Required columns missing: Series.Name, OLReady, or OLWork.");
+            return;
+        }
+
+        await _openLibraryService.OLCheckLogedIn();
+        OpenLibraryClient olClient = _openLibraryService.GetBackingClient();
+
+        // Group by series and filter to only those where all books are OLReady == true
+        var readySeriesGroups = csvData.AsEnumerable()
+            .Where(r =>
+                r[seriesCol] != DBNull.Value &&
+                !string.IsNullOrWhiteSpace(r[seriesCol]?.ToString()))
+            .GroupBy(r => r[seriesCol]?.ToString()!.Trim(), StringComparer.OrdinalIgnoreCase)
+            .Where(g => g.Any() && g.All(r =>
+            {
+                try
+                {
+                    return r[readyCol] != DBNull.Value && Convert.ToBoolean(r[readyCol]) == true;
+                }
+                catch
+                {
+                    return false;
+                }
+            }));
+
+        foreach (var seriesGroup in readySeriesGroups)
+        {
+            try
+            {
+                var seriesName = seriesGroup.Key;
+
+                // Collect OLWork ids and display order
+                var worksWithOrder = seriesGroup
+                    .Where(r => r[workCol] != DBNull.Value && !string.IsNullOrWhiteSpace(r[workCol]?.ToString()))
+                    .Select(r => new
+                    {
+                        id = r[workCol]!.ToString()!,
+                        displayOrder = GetDisplayOrderFromRow(r)
+                    })
+                    .DistinctBy(x => x.id, StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(x => x.displayOrder ?? int.MaxValue)
+                    .ToList();
+
+                var workIds = worksWithOrder.Select(x => x.id).ToList();
+
+                // Normalize to OpenLibrary seed keys ("/works/OLxxxW")
+                static string ToWorkSeed(string id)
+                    => id.StartsWith("/works/", StringComparison.OrdinalIgnoreCase) ? id : (id.StartsWith("OL", StringComparison.OrdinalIgnoreCase) ? $"/works/{id}" : id);
+                var workSeeds = workIds.Select(ToWorkSeed).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+
+                // Collect distinct authors
+                var authors = new List<string>();
+                if (csvData.Columns.Contains("Book.Author"))
+                {
+                    authors = seriesGroup
+                        .Select(r => r["Book.Author"]?.ToString())
+                        .Where(s => !string.IsNullOrWhiteSpace(s))
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .ToList()!;
+                }
+
+                // Build description JSON
+                var descObj = new
+                {
+                    name = seriesName,
+                    description = $"Auto-generated OpenLibrary list for series '{seriesName}' containing {workSeeds.Length} works.",
+                    author = authors,
+                    olworks = worksWithOrder.Select(x => new { id = ToWorkSeed(x.id), displayorder = x.displayOrder })
+                };
+                var descriptionJson = System.Text.Json.JsonSerializer.Serialize(descObj);
+
+                string? listId = null;
+                try
+                {
+                    // Check if series exists by name
+                    bool exists = await _openLibraryService.OLDoesSeriesExist(seriesName).ConfigureAwait(false);
+
+                    if (exists)
+                    {
+                        // Find list id
+                        var userLists = await OLListLoader.GetUserListsAsync(olClient.BackingClient, olClient.Username).ConfigureAwait(false);
+                        var list = userLists?.FirstOrDefault(l => string.Equals(l.Name?.Trim(), seriesName.Trim(), StringComparison.OrdinalIgnoreCase));
+                        listId = list?.ID;
+
+                        if (!string.IsNullOrEmpty(listId))
+                        {
+                            // Get current seeds to compute missing
+                            var currentSeeds = await olClient.List.GetListSeedsAsync(olClient.Username, listId).ConfigureAwait(false);
+                            var existingSeedKeys = new HashSet<string>((currentSeeds != null ? currentSeeds.Select(s => s.Key) : Enumerable.Empty<string>()), StringComparer.OrdinalIgnoreCase);
+                            var missing = workSeeds.Where(seed => !existingSeedKeys.Contains(seed)).ToArray();
+
+                            if (missing.Length > 0)
+                            {
+                                await olClient.AddSeedsToListAsync(listId, missing).ConfigureAwait(false);
+                                Debug.WriteLine($"[Info] Added {missing.Length} missing seeds to existing list '{seriesName}'.");
+                            }
+                            else
+                            {
+                                Debug.WriteLine($"[Info] No missing seeds to add for existing list '{seriesName}'.");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Create new list including seeds
+                        listId = await olClient.CreateListAsync(seriesName, descriptionJson, workSeeds).ConfigureAwait(false);
+                        Debug.WriteLine($"[Info] Created new OpenLibrary list '{seriesName}' with {workSeeds.Length} works. ListId: {listId}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[Info] Failed to ensure list for series '{seriesName}': {ex.Message}");
+                    continue;
+                }
+
+
+
+                Debug.WriteLine($"[Info] Ensured OpenLibrary list for series '{seriesName}'. ListId: {listId ?? "N/A"}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[Info] Error processing series '{seriesGroup.Key}': {ex.Message}");
+            }
+        }
+    }
+
+    // Attempts to read a reasonable display order from multiple possible columns
+    private static int? GetDisplayOrderFromRow(DataRow row)
+    {
+        // Candidate columns in priority order
+        var candidates = new[]  //todo: is this used and why
+        {
+            "Series.BookOrder",
+            "Series Display Order",
+            "Wikidata.BookOrder",
+            "SeriesOrder",
+            "Wikidata.SeriesOrder"
+        };
+
+        foreach (var col in candidates)
+        {
+            if (!row.Table.Columns.Contains(col)) continue;
+            var val = row[col];
+            if (val == DBNull.Value) continue;
+
+            var s = val?.ToString();
+            if (string.IsNullOrWhiteSpace(s)) continue;
+
+            // Extract first integer number present in the value
+            var m = Regex.Match(s, @"\d+");
+            if (m.Success && int.TryParse(m.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int n))
+            {
+                return n;
+            }
+            // Try direct int parse
+            if (int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out int n2))
+            {
+                return n2;
+            }
+            // Try to parse decimals but keep integer part
+            if (decimal.TryParse(s, NumberStyles.Number, CultureInfo.InvariantCulture, out var dec))
+            {
+                return (int)Math.Truncate(dec);
+            }
+        }
+
+        return null;
     }
 #endif
 }

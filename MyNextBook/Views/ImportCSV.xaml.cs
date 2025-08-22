@@ -2,10 +2,8 @@ using System.Collections;
 using System.Data;
 using System.Globalization;
 using Microsoft.Maui.Controls;
-
 using DevExpress.Maui.Core;
 using DevExpress.Maui.DataGrid;
-
 using MyNextBook.Models;
 using MyNextBook.ViewModels;
 
@@ -43,22 +41,6 @@ public partial class ImportCSV : ContentPage
         
     }
     
-    // Event handler for search icon tap
-    private async void OnSearchIconTapped(object sender, EventArgs e)
-    {
-        try
-        {
-            if (sender is Label label && label.BindingContext != null)
-            {
-                await SearchForBookData(label.BindingContext);
-            }
-        }
-        catch (Exception ex)
-        {
-            await DisplayAlertAsync("Error", $"Search failed: {ex.Message}", "OK");
-        }
-    }
-    
     private void DataGridView_OnAutoGeneratingColumn(object? sender, AutoGeneratingColumnEventArgs e)
     {
         DataGridView dgv = sender as DataGridView;
@@ -71,20 +53,22 @@ public partial class ImportCSV : ContentPage
             // Add custom TemplateColumn for OLReady if not already added
             if (!_olReadyColumnAdded && dgv != null)
             {
+                var page = this;
                 var templateColumn = new DevExpress.Maui.DataGrid.TemplateColumn
                 {
                     FieldName = "OLReady",
                     Caption = "Ready/Search",
-                    Width = 120,
+                    Width = 140,
                     DisplayTemplate = new DataTemplate(() =>
                     {
-                        var grid = new Grid
+                        var root = new Grid
                         {
-                            ColumnDefinitions = 
+                            ColumnDefinitions =
                             {
                                 new ColumnDefinition { Width = GridLength.Auto },
                                 new ColumnDefinition { Width = GridLength.Auto }
                             },
+                            Padding = new Thickness(0),
                             HorizontalOptions = LayoutOptions.Center,
                             VerticalOptions = LayoutOptions.Center
                         };
@@ -94,45 +78,52 @@ public partial class ImportCSV : ContentPage
                             VerticalOptions = LayoutOptions.Center,
                             HorizontalOptions = LayoutOptions.Start,
                             Color = ThemeManager.Theme.Scheme.Primary,
-                            BackgroundColor  = ThemeManager.Theme.Scheme.PrimaryContainer
-
-                        };
-                        // Fix: Use the correct binding path for DevExpress DataGrid
-                        checkBox.SetBinding(CheckBox.IsCheckedProperty, new Binding("Value", BindingMode.TwoWay));
-
-                        // Create search icon using Label with Material Design icon
-                        var searchLabel = new Label
-                        {
-                            FontFamily = "MD",
-                            Text = "\ue8b6", // Material Design search icon
-                            FontSize = 16,
-                            VerticalOptions = LayoutOptions.Center,
-                            HorizontalOptions = LayoutOptions.Start,
-                            Margin = new Thickness(5, 0, 0, 0),
-                            TextColor =  ThemeManager.Theme.Scheme.Primary,
                             BackgroundColor = ThemeManager.Theme.Scheme.PrimaryContainer
                         };
+                        checkBox.SetBinding(CheckBox.IsCheckedProperty, new Binding("Value", BindingMode.TwoWay));
 
-                        // Create converter to invert boolean values for visibility
-                        var converter = new InvertedBoolConverter();
-                        searchLabel.SetBinding(Label.IsVisibleProperty, new Binding("Value", converter: converter));
+                        // ImageButton using a FontImageSource for the Material search glyph
+                        var searchButton = new ImageButton
+                        {
+                            BackgroundColor = ThemeManager.Theme.Scheme.PrimaryContainer,
+                            Padding = new Thickness(4),
+                            WidthRequest = 32,
+                            HeightRequest = 32,
+                            HorizontalOptions = LayoutOptions.Start,
+                            VerticalOptions = LayoutOptions.Center,
+                            CornerRadius = 4
+                        };
 
-                        // Make the search icon clickable using TapGestureRecognizer
-                        var tapGesture = new TapGestureRecognizer();
-                        tapGesture.Tapped += OnSearchIconTapped;
-                        searchLabel.GestureRecognizers.Add(tapGesture);
+                        searchButton.Source = new FontImageSource
+                        {
+                            FontFamily = "MD",
+                            Glyph = "\ue8b6", // search icon
+                            Size = 20,
+                            Color = ThemeManager.Theme.Scheme.Primary
+                        };
+
+                        // Hide button when OLReady == true (same logic as old label visibility)
+                        var inverted = new InvertedBoolConverter();
+                        searchButton.SetBinding(IsVisibleProperty, new Binding("Value", converter: inverted));
+
+                        // Bind Command to the VM's SearchForBookCommand on the page's BindingContext
+                        searchButton.SetBinding(ImageButton.CommandProperty,
+                            new Binding("BindingContext.SearchForBookCommand", source: page));
+
+                        // Pass the CellData itself as CommandParameter; VM will extract DataRowView via reflection
+                        searchButton.SetBinding(ImageButton.CommandParameterProperty, new Binding("."));
 
                         Grid.SetColumn(checkBox, 0);
-                        Grid.SetColumn(searchLabel, 1);
-                        
-                        grid.Children.Add(checkBox);
-                        grid.Children.Add(searchLabel);
+                        Grid.SetColumn(searchButton, 1);
 
-                        return grid;
+                        root.Children.Add(checkBox);
+                        root.Children.Add(searchButton);
+
+                        return root;
                     })
                 };
-                
-                dgv.Columns.Insert(0, templateColumn); // Insert at the beginning
+
+                dgv.Columns.Insert(0, templateColumn);
                 _olReadyColumnAdded = true;
             }
             return;
@@ -141,8 +132,6 @@ public partial class ImportCSV : ContentPage
         {
             e.Column.IsReadOnly = true;
             e.Column.Width = 200;
-
-            int columnIndex = e.Column.Column;
             string fieldName = e.Column.FieldName;
 
             if (e.Column.HeaderContentTemplate == null)
@@ -159,35 +148,12 @@ public partial class ImportCSV : ContentPage
                         FontAttributes = FontAttributes.Bold
                     };
 
-                    var picker = new Picker
+                    var layout = new VerticalStackLayout
                     {
-                        ItemsSource = validHeaderNames,
-                        VerticalTextAlignment = TextAlignment.Center,
-                        HorizontalTextAlignment = TextAlignment.Center,
-
-                        SelectedIndex = validHeaderNames.IndexOf(fieldName),
-                        WidthRequest = 200,
-                        HeightRequest = 30,
-                        BackgroundColor = ThemeManager.Theme.Scheme.TertiaryContainer
+                        BackgroundColor = ThemeManager.Theme.Scheme.PrimaryContainer,
+                        Margin = new Thickness(0)
                     };
-
-                    /*
-                    // Event handler for Picker selection change
-                    picker.SelectedIndexChanged += (object s, EventArgs args) =>
-                    {
-
-                        var p = (Picker)s;
-                        _vm.iCSVData.columnHeaderMap[p.SelectedItem.ToString()] = label.Text;
-
-
-                    };
-                    */
-                    var layout = new VerticalStackLayout();
-                    layout.BackgroundColor = ThemeManager.Theme.Scheme.PrimaryContainer;
-                    layout.Margin = new Thickness(0, 0, 0, 0);
                     layout.Children.Add(label);
-                    //layout.Children.Add(picker);
-
                     return layout;
                 });
                 _vm.iCSVData.columnHeaderMap[fieldName] = fieldName;
@@ -230,8 +196,6 @@ public partial class ImportCSV : ContentPage
                 {
                     readyCount++;
                 }
-
-
             }
 
             e.DisplayText = $"{e.Value}\n{totalRows} Books, {readyCount} ready to import";
@@ -270,36 +234,20 @@ public partial class ImportCSV : ContentPage
         gridControl.RefreshData();
     }
 
-    // Add this method to handle search functionality
-    private async Task SearchForBookData(object bookRowData)
-    {
-        try
-        {
-            // Cast to DataRowView to access the underlying DataRow
-            if (bookRowData is DataRowView rowView)
-            {
-                var row = rowView.Row;
-                
-                // Extract book information
-                string bookTitle = row["Book.Title"]?.ToString() ?? "";
-                string author = row["Book.Author"]?.ToString() ?? "";
-                
-                // Show some feedback to the user
-                await DisplayAlertAsync("Searching", $"Searching for: {bookTitle} by {author}", "OK");
-                
-                // You can add your actual search logic here
-                // For example, call your OpenLibrary search service
-                // await _vm.SearchForSpecificBook(row);
-            }
-        }
-        catch (Exception ex)
-        {
-            await DisplayAlertAsync("Error", $"Search failed: {ex.Message}", "OK");
-        }
-    }
-
  
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

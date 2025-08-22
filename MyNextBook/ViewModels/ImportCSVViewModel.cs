@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using System.Data;
 
 using CommonCode.Models;
 
@@ -17,6 +18,7 @@ using ImportSeries;
 using ImportSeries.Models;
 using ImportSeries.Services;
 using DevExpress.Maui.DataGrid;
+using System.Reflection;
 
 using MyNextBook.Helpers;
 using MyNextBook.Models;
@@ -41,15 +43,14 @@ namespace MyNextBook.ViewModels
                 ShowInitial = true;
                 ShowImporting = false;
                 ShowImport = false;
-                ShowImportText = false;
                 ImportProgressText = "Importing CSV";
                 WeakReferenceMessenger.Default.Register<ImportProgressMessage>(this, (r, m) =>
                 {
                     // Ensure the message is for progress updates and handle it on the UI thread
                     MainThread.BeginInvokeOnMainThread(() =>
                     {
-                        Debug.WriteLine($"Progress: {m.Value} - {m.Text}");
-                        ImportProgressValue = m.Value;
+                        Debug.WriteLine($"Progress: {m.Progress} - {m.Text}");
+                        ImportProgressValue = m.Progress;
                         ImportProgressText = m.Text;
                         Task.Delay(300).Wait();
                     });
@@ -57,7 +58,7 @@ namespace MyNextBook.ViewModels
                 });
 
                 _transactionService = transactionService;
-                iCSVData = new ImportCSVData(_transactionService);
+                iCSVData = new ImportCSVData(_openLibraryService, _transactionService); // changed
                 _openLibraryService = openLibraryService;
                 PopupDetails = new ShowPopUpDetails
                 {
@@ -88,7 +89,7 @@ namespace MyNextBook.ViewModels
         [ObservableProperty] private string importInstructions = Constants.ImportInstructions;
         [ObservableProperty] private string importProgressText;
         [ObservableProperty] private double importProgressValue = 0;
-        [ObservableProperty] private bool showImportText;
+        //[ObservableProperty] private bool showImportText;
         [ObservableProperty] private string? fileToImport;
         [ObservableProperty] private bool showInitial;
         [ObservableProperty] private bool showImporting = false;
@@ -109,11 +110,11 @@ namespace MyNextBook.ViewModels
                 OnPropertyChanged(nameof(ShowInitial));
                 ShowImporting = false;
                 ShowImport = false;
-                ShowImportText = false;
+                //ShowImportText = false;
                 ImportProgressText = "Importing CSV";
                 ShowImportProgress = false;
                 ImportProgressValue = 0;
-                iCSVData = new ImportCSVData(_transactionService);
+                iCSVData = new ImportCSVData(_openLibraryService, _transactionService); // changed
                 PopupDetails = new ShowPopUpDetails
                 {
                     IsOpen = false,
@@ -144,7 +145,7 @@ namespace MyNextBook.ViewModels
         {
             try
             {
-                ShowImportText = !ShowImportText;
+                //ShowImportText = !ShowImportText;
                 return Task.CompletedTask;
             }
             catch (Exception ex)
@@ -409,6 +410,7 @@ namespace MyNextBook.ViewModels
         #endregion
         #endregion
 
+        /*
 
         [RelayCommand]
         private async Task Back()
@@ -434,18 +436,21 @@ namespace MyNextBook.ViewModels
                 await Shell.Current.GoToAsync("///MainPage", true);
             }
         }
-        [RelayCommand] Task ImportReadyItems()
+        */
+        [RelayCommand] async Task ImportReadyItems()
         {
             try
             {
                 ShowImport = true;
-                ShowImporting = false;
+           
                 ShowInitial = false;
-                ShowImportText = false;
+             //   ShowImportText = false;
                 ImportProgressText = "Importing CSV";
                 ShowImportProgress = false;
                 ImportProgressValue = 0;
-                return Task.CompletedTask;
+                IsMenuPopupOpen = false;
+                await iCSVData.CreateOpenLibraryListsForReadySeries();
+                return;
             }
             catch (Exception ex)
             {
@@ -453,7 +458,7 @@ namespace MyNextBook.ViewModels
                 PopupDetails.ErrorMessage = ex.Message;
                 PopupDetails.ErrorCode = "ERR-000";
                 ErrorHandler.AddLog(ex.Message);
-                return Task.CompletedTask;
+                return;
             }
         }
 
@@ -521,5 +526,70 @@ namespace MyNextBook.ViewModels
             return result;
         }
         */
+
+        [RelayCommand]
+        private async Task SearchForBook(object param)
+        {
+            try
+            {
+                DataRowView rowView = null;
+
+                switch (param)
+                {
+                    case DataRowView drv:
+                        rowView = drv; break;
+                    case DataRow dataRow:
+                        rowView = dataRow.RowState != DataRowState.Deleted ? dataRow.Table.DefaultView[dataRow.Table.Rows.IndexOf(dataRow)] : null; break;
+                    case CellData cellData:
+                        // DevExpress CellData exposes the underlying value in cellData.Value; need row item via grid
+                        // Attempt to get private fields via reflection (implementation detail) if necessary
+                        var rowHandleProp = cellData.GetType().GetProperty("RowHandle", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                        if (rowHandleProp != null && rowHandleProp.GetValue(cellData) is int rh && rh >= 0)
+                        {
+                            // Try to locate an associated DataGridView from open pages (simplest: not available here) -> fallback unsupported
+                        }
+                        // If Value already is DataRowView just use it
+                        if (cellData.Value is DataRowView maybeDrv)
+                            rowView = maybeDrv;
+                        break;
+                }
+
+                if (rowView == null)
+                {
+                    PopupDetails = new ShowPopUpDetails
+                    {
+                        IsOpen = true,
+                        ErrorMessage = "Row data unavailable for search.",
+                        ErrorCode = "ERR-ROW"
+                    };
+                    return;
+                }
+
+                var row = rowView.Row;
+                string title = row.Table.Columns.Contains("Book.Title") ? row["Book.Title"]?.ToString() ?? string.Empty : string.Empty;
+                string author = row.Table.Columns.Contains("Book.Author") ? row["Book.Author"]?.ToString() ?? string.Empty : string.Empty;
+                string isbn10 = row.Table.Columns.Contains("Book.ISBN_10") ? row["Book.ISBN_10"]?.ToString() ?? string.Empty : string.Empty;
+                string isbn13 = row.Table.Columns.Contains("Book.ISBN_13") ? row["Book.ISBN_13"]?.ToString() ?? string.Empty : string.Empty;
+
+                Debug.WriteLine($"SearchForBook invoked: Title='{title}', Author='{author}', ISBN10='{isbn10}', ISBN13='{isbn13}'");
+
+                PopupDetails = new ShowPopUpDetails
+                {
+                    IsOpen = true,
+                    ErrorMessage = $"Searching for: {title}{(string.IsNullOrWhiteSpace(author) ? string.Empty : " by " + author)}",
+                    ErrorCode = string.Empty
+                };
+            }
+            catch (Exception ex)
+            {
+                PopupDetails = new ShowPopUpDetails
+                {
+                    IsOpen = true,
+                    ErrorMessage = $"Search failed: {ex.Message}",
+                    ErrorCode = "ERR-SEARCH"
+                };
+                ErrorHandler.AddError(ex);
+            }
+        }
     }
 }

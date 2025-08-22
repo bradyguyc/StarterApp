@@ -163,26 +163,26 @@
 
 		<PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="8.3.0" />
 
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0-preview.5.25277.114" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0-preview.7.25380.108" />
 
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.4-beta1" />
 
 		<PackageReference Include="OnScreenSizeMarkup.Maui" Version="3.0.18" />
 
-		<PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.0-preview.5.25277.114" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.0-preview.5.25277.114" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0-preview.5.25277.114" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.0-preview.7.25380.108" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.0-preview.7.25380.108" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0-preview.7.25380.108" />
 
 		<PackageReference Include="Microsoft.Identity.Client" Version="4.76.0" />
 		<PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.76.0" />
 
 
 
-		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0-preview.5.25277.114" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0-preview.7.25380.108" />
 
-		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.0-preview.4.25263.4" />
+		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.0-preview.7.25406.3" />
 
-		<PackageReference Include="SkiaSharp.Extended.UI.Maui" Version="2.0.0" />
+		<PackageReference Include="SkiaSharp.Extended.UI.Maui" Version="3.0.0-preview.13" />
 		<PackageReference Include="Syncfusion.Maui.Core" Version="30.2.6" />
 		<PackageReference Include="Syncfusion.Maui.Popup" Version="30.2.6" />
 		<PackageReference Include="Syncfusion.Maui.ProgressBar" Version="30.2.6" />

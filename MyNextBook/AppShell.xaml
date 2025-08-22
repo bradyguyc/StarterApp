@@ -19,7 +19,7 @@
             Padding="0,0,0,0"
             BackgroundColor="{dx:ThemeColor PrimaryContainer}"
             ColumnDefinitions="50,*,40">
-            <toolkit:AvatarView
+            <toolkit:AvatarView x:Name="avatarView"
                 Grid.Column="0"
                 HeightRequest="40"
                 HorizontalOptions="Start"
