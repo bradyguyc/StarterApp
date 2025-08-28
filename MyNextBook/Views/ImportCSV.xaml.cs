@@ -1,11 +1,13 @@
 using System.Collections;
 using System.Data;
 using System.Globalization;
+using System.Linq; // added for LINQ queries
 using Microsoft.Maui.Controls;
 using DevExpress.Maui.Core;
 using DevExpress.Maui.DataGrid;
 using MyNextBook.Models;
 using MyNextBook.ViewModels;
+using MyNextBook.Converters; // added for InvertedBoolConverter
 
 namespace MyNextBook.Views;
 
@@ -18,10 +20,10 @@ public partial class ImportCSV : ContentPage
 
     ImportCSVViewModel _vm;
     private bool _olReadyColumnAdded = false;
+    private bool _seriesGrouped = false; // track grouping
 
     public ImportCSV(ImportCSVViewModel vm)
     {
-
         InitializeComponent();
         BindingContext = vm;
         _vm = vm;
@@ -29,22 +31,41 @@ public partial class ImportCSV : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        // Remove all columns from the data grid
+        // Reset grid so grouping can be reapplied after data load
         gridControl.Columns.Clear();
         _olReadyColumnAdded = false;
+        _seriesGrouped = false; // reset grouping state
         if (BindingContext is ImportCSVViewModel vm && vm.AppearingCommand.CanExecute(null))
         {
-
             vm.AppearingCommand.Execute(null);
         }
-        
-        
+        // Attempt deferred grouping after data loads (if LoadSavedState populated already)
+        Device.StartTimer(TimeSpan.FromMilliseconds(150), () =>
+        {
+            TryGroupSeries();
+            return false; // run once
+        });
     }
-    
+
+    private void TryGroupSeries()
+    {
+        if (_seriesGrouped) return; // already grouped
+        if (gridControl.ItemsSource == null) return; // nothing to group yet
+        if (!gridControl.Columns.Any()) return; // columns not generated
+        if (!gridControl.Columns.Any(c => c.FieldName == "Series.Name")) return; // no series column yet
+        try
+        {
+            gridControl.GroupBy("Series.Name");
+            gridControl.RefreshData();
+            _seriesGrouped = true;
+        }
+        catch { /* swallow – grouping not critical */ }
+    }
+
     private void DataGridView_OnAutoGeneratingColumn(object? sender, AutoGeneratingColumnEventArgs e)
     {
         DataGridView dgv = sender as DataGridView;
-
+    
         if (e.Column.FieldName == "OLReady")
         {
             // Cancel auto-generation for OLReady column since we'll add a custom TemplateColumn
@@ -103,8 +124,7 @@ public partial class ImportCSV : ContentPage
                         };
 
                         // Hide button when OLReady == true (same logic as old label visibility)
-                        var inverted = new InvertedBoolConverter();
-                        searchButton.SetBinding(IsVisibleProperty, new Binding("Value", converter: inverted));
+                        searchButton.SetBinding(IsVisibleProperty, new Binding("Value", converter: new InvertedBoolConverter()));
 
                         // Bind Command to the VM's SearchForBookCommand on the page's BindingContext
                         searchButton.SetBinding(ImageButton.CommandProperty,
@@ -159,33 +179,20 @@ public partial class ImportCSV : ContentPage
                 _vm.iCSVData.columnHeaderMap[fieldName] = fieldName;
                 e.Column.HeaderContentTemplate = dt;
             }
-        }
-    }
-
-    // Simple converter to invert boolean values
-    public class InvertedBoolConverter : IValueConverter
-    {
-        public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
-        {
-            if (value is bool boolValue)
-                return !boolValue;
-            return false;
-        }
-
-        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
-        {
-            if (value is bool boolValue)
-                return !boolValue;
-            return false;
+            if (e.Column.FieldName == "Series.Name")
+            {
+                MainThread.BeginInvokeOnMainThread(TryGroupSeries);
+            }
         }
     }
 
     private void gridControl_CustomGroupDisplayText(object sender, CustomGroupDisplayTextEventArgs e)
     {
         DataGridView gridControl = sender as DataGridView;
-        if (e.Column.FieldName == "Series.Name") // Replace with your grouped column
+        int totalRows = 0;
+        if (e.Column.FieldName == "Series.Name")
         {
-            int totalRows = gridControl.GetChildRowCount(e.RowHandle);
+            totalRows = gridControl.GetChildRowCount(e.RowHandle);
             int readyCount = 0;
             ArrayList groupsRows = new ArrayList();
             GetChildRows(gridControl, e.RowHandle, groupsRows);
@@ -200,26 +207,19 @@ public partial class ImportCSV : ContentPage
 
             e.DisplayText = $"{e.Value}\n{totalRows} Books, {readyCount} ready to import";
         }
-
     }
-
 
     public void GetChildRows(DataGridView view, int groupRowHandle, ArrayList childRows)
     {
         if (!view.IsGroupRow(groupRowHandle)) return;
-        // Get the number of immediate children 
         int childCount = view.GetChildRowCount(groupRowHandle);
         for (int i = 0; i < childCount; i++)
         {
-            // Get the handle of a child row 
             int childHandle = view.GetChildRowHandle(groupRowHandle, i);
-            // If the child is a group row, add its children to the list 
             if (view.IsGroupRow(childHandle))
                 GetChildRows(view, childHandle, childRows);
             else
             {
-                // The child is a data row
-                // Add the row to childRows if it wasn't added before 
                 object row = view.GetRowItem(childHandle);
                 if (!childRows.Contains(row))
                     childRows.Add(row);
@@ -230,12 +230,34 @@ public partial class ImportCSV : ContentPage
     private void gridControl_ValidateAndSave(object sender, ValidateItemEventArgs e)
     {
         e.ForceUpdateItemsSource();
-
         gridControl.RefreshData();
     }
-
- 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

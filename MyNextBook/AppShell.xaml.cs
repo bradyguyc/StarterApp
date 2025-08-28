@@ -16,13 +16,12 @@ namespace MyNextBook
             Routing.RegisterRoute("MainPage/WelcomeScreen", typeof(WelcomeScreen));
             Routing.RegisterRoute("SettingsPage/ImportCSV", typeof(ImportCSV));
         }
-        
+
         protected override void OnNavigated(ShellNavigatedEventArgs args)
         {
             base.OnNavigated(args);
 
             pageTitle.Text = Current.CurrentPage.Title;
         }
-        
     }
 }

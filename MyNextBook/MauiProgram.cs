@@ -127,9 +127,9 @@ namespace MyNextBook
             services.AddScoped<SettingsViewModel>();
             services.AddSingleton<WelcomeScreen>();
             services.AddSingleton<WelcomeScreenViewModel>();
-            Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddSingleton<IOpenLibraryService, OpenLibraryService>(services);
+            services.AddSingleton<IOpenLibraryService, OpenLibraryService>();
             services.AddSingleton<IGetSecrets, GetSecrets>();
-            Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddSingleton<IPendingTransactionService, PendingTransactionService>(services);
+            services.AddSingleton<IPendingTransactionService, PendingTransactionService>();
 
             // Initialize the static AppConfig
             AppConfig.Initialize(builder.Configuration);

@@ -3,28 +3,43 @@
     x:Class="MyNextBook.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:conv="clr-namespace:MyNextBook.Converters"
     xmlns:dx="http://schemas.devexpress.com/maui"
     xmlns:fonts="clr-namespace:CommonCode.Helpers;assembly=CommonCode"
     xmlns:local="clr-namespace:MyNextBook"
+    xmlns:popup="clr-namespace:Syncfusion.Maui.Popup;assembly=Syncfusion.Maui.Popup"
     xmlns:shared="clr-namespace:CommonCode.Helpers;assembly=CommonCode"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:viewmodels="clr-namespace:MyNextBook.ViewModels"
     xmlns:views="clr-namespace:MyNextBook.Views"
-
     Title="MyNextBook Test"
-  
+    x:DataType="viewmodels:AppShellViewModel"
     BackgroundColor="{dx:ThemeColor PrimaryContainer}">
+
+    <Shell.Resources>
+        <conv:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+    </Shell.Resources>
 
     <Shell.TitleView>
         <Grid
-            Padding="0,0,0,0"
+            x:Name="RootShell"
+            Padding="0"
             BackgroundColor="{dx:ThemeColor PrimaryContainer}"
-            ColumnDefinitions="50,*,40">
-            <toolkit:AvatarView x:Name="avatarView"
+            ColumnDefinitions="50,*,40"
+            RowDefinitions="Auto">
+            <toolkit:AvatarView
+                x:Name="avatarView"
                 Grid.Column="0"
                 HeightRequest="40"
                 HorizontalOptions="Start"
+                ImageSource="{Binding AvatarImage}"
                 Text="BC"
-                WidthRequest="40" />
+                WidthRequest="40">
+                <toolkit:AvatarView.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding ChangeAvatarCommand}" />
+                </toolkit:AvatarView.GestureRecognizers>
+            </toolkit:AvatarView>
+
             <Label
                 x:Name="pageTitle"
                 Grid.Column="1"
@@ -33,25 +48,64 @@
                 VerticalOptions="Center" />
 
             <ImageButton
+                x:Name="menuButton"
                 Grid.Row="0"
                 Grid.Column="2"
-                Margin="0,0,0,0"
-                Command="{Binding GoToSettingsPageCommand}"
+                BackgroundColor="Transparent"
+                Command="{Binding ShowMenuCommand}"
                 HeightRequest="30"
-                HorizontalOptions="EndAndExpand"
                 VerticalOptions="Center"
                 WidthRequest="30"
-                ZIndex="2">
+                ZIndex="30">
                 <ImageButton.Source>
                     <FontImageSource
                         FontFamily="MD"
-                        Glyph="{x:Static shared:IconCodesMIR.Add_box}"
-                        Size="20"
-                        Color="{dx:ThemeColor OnSecondaryContainer}" />
+                        Glyph="{x:Static shared:IconCodesMIR.Menu}"
+                        Color="{dx:ThemeColor OnPrimaryContainer}"
+                        Size="24" />
                 </ImageButton.Source>
             </ImageButton>
+
+            <!--  Syncfusion SfPopup  -->
+            <popup:SfPopup
+                x:Name="AvatarPopup"
+                Grid.Row="0"
+                Grid.ColumnSpan="3"
+                IsOpen="{Binding IsMenuOpen}"
+                RelativePosition="AlignBottomLeft"
+                RelativeView="{x:Reference menuButton}"
+                ShowFooter="False"
+                ShowHeader="False"
+                WidthRequest="180"
+                ZIndex="20">
+                <popup:SfPopup.ContentTemplate>
+                    <DataTemplate>
+                        <VerticalStackLayout
+                            Padding="12"
+                            Spacing="8"
+                            WidthRequest="180">
+                            <Label Text="Edit Avatar">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding ChangeAvatarCommand}" />
+                                </Label.GestureRecognizers>
+                            </Label>
+                            <Label IsVisible="{Binding IsSignedIn, Converter={StaticResource InvertedBoolConverter}}" Text="Sign In">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SignInCommand}" />
+                                </Label.GestureRecognizers>
+                            </Label>
+                            <Label IsVisible="{Binding IsSignedIn}" Text="Sign Out">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SignOutCommand}" />
+                                </Label.GestureRecognizers>
+                            </Label>
+                        </VerticalStackLayout>
+                    </DataTemplate>
+                </popup:SfPopup.ContentTemplate>
+            </popup:SfPopup>
         </Grid>
     </Shell.TitleView>
+
     <TabBar>
         <Tab Title="Home">
             <Tab.Icon>
@@ -72,7 +126,4 @@
             <ShellContent ContentTemplate="{DataTemplate views:SettingsPage}" />
         </Tab>
     </TabBar>
-
-
-
 </Shell>

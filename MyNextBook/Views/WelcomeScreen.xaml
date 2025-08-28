@@ -11,15 +11,39 @@
     xmlns:sharedcontrols="clr-namespace:CommonCode.CustomControls;assembly=CommonCode"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:viewmodels="clr-namespace:MyNextBook.ViewModels"
-     x:DataType="viewmodels:WelcomeScreenViewModel"
-  
-    Title="Welcome to MyNextBook">
-    <Grid RowDefinitions="*,65">
+    Title="Welcome to MyNextBook"
+    x:DataType="viewmodels:WelcomeScreenViewModel">
+    <Grid BackgroundColor="{dx:ThemeColor PrimaryContainer}" RowDefinitions="*,80,65">
+        <Grid ColumnDefinitions="*,*" RowDefinitions="40,40" Grid.Row="1">
+            <Label
+                Grid.Column="0"
+                BackgroundColor="{dx:ThemeColor SecondaryContainer}"
+                Text="MyNextBook Account:"
+                TextColor="{dx:ThemeColor OnSecondaryContainer}" />
+            <Label
+                Grid.Column="1"
+                BackgroundColor="{dx:ThemeColor SecondaryContainer}"
+                Text="{Binding UserName}"
+                TextColor="{dx:ThemeColor OnSecondaryContainer}" />
+            <Label
+                Grid.Column="0"
+                Grid.Row="1"
+                BackgroundColor="{dx:ThemeColor SecondaryContainer}"
+                Text="OpenLibrary email:"
+                TextColor="{dx:ThemeColor OnSecondaryContainer}" />
+            <Label
+                Grid.Column="1"
+                Grid.Row="1"
+                
+                BackgroundColor="{dx:ThemeColor SecondaryContainer}"
+                Text="{Binding OlUserName}"
+                TextColor="{dx:ThemeColor OnSecondaryContainer}" />
+
+        </Grid>
         <Button
-            Grid.Row="1"
+            Grid.Row="2"
             Margin="45,10,45,15"
             Command="{Binding SignInCommand}"
-          
             Text="Sign In" />
 
 
@@ -27,20 +51,15 @@
             Grid.Row="0"
             Margin="5,0,5,5"
             BackgroundColor="{dx:ThemeColor SecondaryContainer}"
-           
-          
-        
             Stroke="{dx:ThemeColor Outline}"
             StrokeShape="RoundRectangle 30"
             StrokeThickness="3">
-            <ScrollView>
-                <Editor
-                    Grid.Row="1"
-                    Margin="10,0,10,0"
-                    AutoSize="TextChanges"
-                    FontSize="Medium"
-                    IsReadOnly="True"
-                    Text="{Binding IntroText}" />
+            <ScrollView BackgroundColor="{dx:ThemeColor SecondaryContainer}">
+                <WebView Margin="4,8,4,8" BackgroundColor="{dx:ThemeColor SecondaryContainer}">
+                    <WebView.Source>
+                        <HtmlWebViewSource Html="{Binding IntroText}" />
+                    </WebView.Source>
+                </WebView>
             </ScrollView>
         </Border>
         <sharedcontrols:ErrorPopupView

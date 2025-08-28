@@ -1,19 +1,25 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<!-- Override MAUI's main theme to inherit from MaterialComponents to satisfy Material widgets requirements -->
-	<style name="Maui.MainTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+	<!-- Base MAUI theme now explicitly inherits from a MaterialComponents theme so every Activity Context has required attributes -->
+	<style name="Maui.MainTheme.Base" parent="Theme.MaterialComponents.DayNight.NoActionBar">
 		<!-- Core brand colors -->
 		<item name="colorPrimary">#3b92c4</item>
 		<item name="colorPrimaryVariant">#323943</item>
 		<item name="colorOnPrimary">#FFFFFF</item>
 		<item name="android:textColorPrimary">#000000</item>
 
-		<!-- Ensure TextAppearance is present for Material widgets -->
+		<!-- Provide default Material text appearances (older MaterialComponents names) -->
 		<item name="textAppearanceBody1">@style/TextAppearance.MaterialComponents.Body1</item>
 		<item name="textAppearanceBody2">@style/TextAppearance.MaterialComponents.Body2</item>
 		<item name="textAppearanceHeadline6">@style/TextAppearance.MaterialComponents.Headline6</item>
+
+		<!-- (Optional) If Material3 styles are desired you can add them alongside -->
+		<!-- <item name="textAppearanceBodyLarge">@style/TextAppearance.Material3.BodyLarge</item> -->
 	</style>
 
-	<!-- Optional: keep a custom theme alias if referenced elsewhere -->
+	<!-- MainTheme should continue to extend the base theme (MAUI expects Maui.MainTheme name) -->
+	<style name="Maui.MainTheme" parent="Maui.MainTheme.Base" />
+
+	<!-- Optional alias if referenced elsewhere -->
 	<style name="MainTheme" parent="Maui.MainTheme" />
 </resources>

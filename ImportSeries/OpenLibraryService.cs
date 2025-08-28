@@ -7,6 +7,8 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.RateLimiting;
 using System.Linq;
+using OpenLibraryNET.Data; // switch to Data namespace for unified OLWorkData
+using OpenLibraryNET.OLData; // ensure OLWorkData from OLData namespace
 
 using ImportSeries.Helpers;
 using ImportSeries.Models;
@@ -17,9 +19,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 using OpenLibraryNET;
-using OpenLibraryNET.Data;
 using OpenLibraryNET.Loader;
-using OpenLibraryNET.OLData;
 using OpenLibraryNET.Utility;
 
 namespace ImportSeries
@@ -36,6 +36,7 @@ namespace ImportSeries
         Task OLCheckLogedIn();
         OpenLibraryClient GetBackingClient();
         Task<bool> OLDoesSeriesExist(string seriesName);
+        Task<ObservableCollection<OLWorkData>> OLSearchForBook(string title, string author = "", string publisher = "", string publishedYear = "");
     }
 
     public class OpenLibraryService : IOpenLibraryService
@@ -508,6 +509,30 @@ namespace ImportSeries
                 _logger.LogError(ex, "Failed to check if series exists: {SeriesName}", seriesName);
                 return false;
             }
+        }
+
+        public async Task<ObservableCollection<OLWorkData>> OLSearchForBook(string title, string author = "", string publisher = "", string publishedYear = "")
+        {
+            var results = new ObservableCollection<OLWorkData>();
+            try
+            {
+                await OLCheckLogedIn();
+                var paramList = new List<KeyValuePair<string, string>>();
+                if (!string.IsNullOrWhiteSpace(title)) paramList.Add(new("title", title));
+                if (!string.IsNullOrWhiteSpace(author)) paramList.Add(new("author", author));
+                if (!string.IsNullOrWhiteSpace(publisher)) paramList.Add(new("publisher", publisher));
+                if (!string.IsNullOrWhiteSpace(publishedYear)) paramList.Add(new("publish_year", publishedYear));
+                if (paramList.Count == 0) return results;
+                var arr = await OLSearchLoader.GetSearchResultsAsync(OLClient.BackingClient, "", paramList.ToArray()).ConfigureAwait(false);
+                if (arr != null)
+                    foreach (var w in arr)
+                        if (w != null) results.Add(w);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "OLSearchForBook failed for Title='{Title}', Author='{Author}', Publisher='{Publisher}', Year='{Year}'", title, author, publisher, publishedYear);
+            }
+            return results;
         }
     }
 }

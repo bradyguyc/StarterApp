@@ -76,7 +76,7 @@ namespace MyNextBook.ViewModels
             //SignInToAppAndOLAsync(); 
 
         }
-     
+
         private void HandleStatusUpdate(object recipient, StatusUpdateMessage message)
         {
             Debug.WriteLine($"Received status update for '{message.WorkData.Title}' '{message.WorkData.ID}' to '{message.NewStatus}'");
@@ -118,19 +118,27 @@ namespace MyNextBook.ViewModels
                                                         //todo double check that this needs to run on main thread.  I think it does.
                                                         // await MainThread.InvokeOnMainThreadAsync(async () =>
                                                         //{
+
             IsSignedIn = await SignIn();
 
 
-            //});
-            if (IsSignedIn == false)
+
+            if ((IsSignedIn == false) && (PopupDetails.IsOpen == false))
             {
-                await Shell.Current.GoToAsync("WelcomeScreen");
+                await Shell.Current.GoToAsync("/MainPage/WelcomeScreen");
 
             }
-            if (await SignInOL())
+            else
             {
-                await Refresh();
+                if (await SignInOL())
+                {
+                    await Refresh();
+                } else
+                {
+                    await Shell.Current.GoToAsync("/MainPage/WelcomeScreen");
+                }
             }
+
 
 
 
@@ -198,22 +206,57 @@ namespace MyNextBook.ViewModels
             SignInEnabled = false;
             try
             {
-                string token = null;
                 try
                 {
-                    // This method handles both silent and interactive flows.
-                    token = await PublicClientSingleton.Instance.AcquireTokenSilentAsync();
-                    IsSignedIn = true;
-
-                    if (OLService == null)
+                    // Ensure PCA built (defensive)
+                    if (PublicClientSingleton.Instance.MSALClientHelper.PublicClientApplication == null)
                     {
-                        OLService = MauiProgram.Services.GetService<IOpenLibraryService>();
+                        await PublicClientSingleton.Instance.MSALClientHelper.InitializePublicClientAppAsync();
                     }
-                    return true;
+
+                    var pca = PublicClientSingleton.Instance.MSALClientHelper.PublicClientApplication;
+                    var scopes = PublicClientSingleton.Instance.DownstreamApiHelper.DownstreamApiConfig.ScopesArray;
+                    var accounts = await pca.GetAccountsAsync();
+
+                    AuthenticationResult result = null;
+                    if (accounts.Any())
+                    {
+                        try
+                        {
+                            result = await pca.AcquireTokenSilent(scopes, accounts.First()).ExecuteAsync();
+                        }
+                        catch (MsalUiRequiredException)
+                        {
+                            result = await AcquireInteractiveAsync(pca, scopes);
+                        }
+                    }
+                    else
+                    {
+                        result = await AcquireInteractiveAsync(pca, scopes);
+                    }
+
+                    if (result != null)
+                    {
+                        IsSignedIn = true;
+                        if (OLService == null)
+                        {
+                            OLService = MauiProgram.Services.GetService<IOpenLibraryService>();
+                        }
+                        return true;
+                    }
+
+                    IsSignedIn = false;
+                    return false;
+                }
+                catch (MsalException msalEx) when (msalEx.ErrorCode == "authentication_canceled")
+                {
+                    // User canceled – do not show error popup
+                    Debug.WriteLine($"Sign-in canceled by user: {msalEx.Message}");
+                    IsSignedIn = false;
+                    return false;
                 }
                 catch (Exception ex) when (ex.Message.Contains("Username and/or Password not set"))
                 {
-
                     PopupDetails.IsOpen = true;
                     PopupDetails.ErrorMessage = ex.Message;
                     PopupDetails.ErrorCode = "ERR-001";
@@ -228,12 +271,26 @@ namespace MyNextBook.ViewModels
                     IsSignedIn = false;
                     return false;
                 }
-
-
             }
             finally
             {
                 SignInEnabled = true;
+            }
+        }
+
+        private async Task<AuthenticationResult> AcquireInteractiveAsync(IPublicClientApplication pca, string[] scopes)
+        {
+            try
+            {
+                Debug.WriteLine($"Starting interactive auth. ParentWindow null? {PlatformConfig.Instance.ParentWindow == null}");
+                return await pca.AcquireTokenInteractive(scopes)
+                                 .WithParentActivityOrWindow(PlatformConfig.Instance.ParentWindow)
+                                 .ExecuteAsync();
+            }
+            catch (MsalException ex)
+            {
+                Debug.WriteLine($"Interactive auth failed: {ex.ErrorCode} {ex.Message}");
+                throw;
             }
         }
         [RelayCommand]

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:dxcv="clr-namespace:DevExpress.Maui.CollectionView;assembly=DevExpress.Maui.CollectionView"
+             x:Class="MyNextBook.Views.BookSearchPage"
+             x:Name="RootPage"
+             Title="Book Search">
+  <VerticalStackLayout Padding="12" Spacing="8">
+    <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+      <Entry Placeholder="Title" Text="{Binding Title}" />
+      <Entry Placeholder="Author" Text="{Binding Author}" Grid.Column="1" />
+    </Grid>
+    <Entry Placeholder="Keyword" Text="{Binding Keyword}" />
+    <Button Text="Search" Command="{Binding SearchAsyncCommand}" />
+    <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+    <dxcv:DXCollectionView ItemsSource="{Binding Results}" SelectionMode="None">
+      <dxcv:DXCollectionView.ItemTemplate>
+        <DataTemplate>
+          <Border StrokeThickness="1" Stroke="LightGray" Margin="0,2" Padding="6">
+            <Grid ColumnDefinitions="60,*" ColumnSpacing="8">
+              <Image Grid.Column="0" Aspect="AspectFill" WidthRequest="60" HeightRequest="90">
+                <Image.Source>
+                  <UriImageSource Uri="{Binding Covers[0], StringFormat='https://covers.openlibrary.org/b/id/{0}-M.jpg'}" />
+                </Image.Source>
+              </Image>
+              <VerticalStackLayout Grid.Column="1" Spacing="2">
+                <Label Text="{Binding Title}" FontAttributes="Bold" LineBreakMode="TailTruncation" />
+                <Label Text="{Binding Authors[0].Name}" FontSize="12" />
+                <Label Text="{Binding FirstPublishYear}" FontSize="12" />
+              </VerticalStackLayout>
+              <Grid.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding BindingContext.SelectWorkCommand, Source={x:Reference RootPage}}" CommandParameter="{Binding .}" />
+              </Grid.GestureRecognizers>
+            </Grid>
+          </Border>
+        </DataTemplate>
+      </dxcv:DXCollectionView.ItemTemplate>
+    </dxcv:DXCollectionView>
+  </VerticalStackLayout>
+</ContentPage>
