@@ -3,7 +3,7 @@
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 	<uses-permission android:name="android.permission.INTERNET" />
 	<!-- Use the MAUI splash theme at the application level; the activity uses Maui.MainTheme after splash -->
-	<application android:allowBackup="true" android:icon="@mipmap/appicon" android:supportsRtl="true" android:theme="@style/Maui.SplashTheme">
+	<application android:allowBackup="true" android:icon="@mipmap/appicon" android:supportsRtl="true" android:theme="@style/Maui.MainTheme">
 		<activity android:name="microsoft.identity.client.BrowserTabActivity" android:exported="false">
 			<intent-filter>
 				<action android:name="android.intent.action.VIEW" />
