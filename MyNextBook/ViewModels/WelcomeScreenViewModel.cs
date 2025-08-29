@@ -8,6 +8,8 @@ using CommonCode.MSALClient;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
+using ImportSeries;
+
 using Microsoft.Extensions.Logging;
 
 using MyNextBook.Helpers;
@@ -24,38 +26,16 @@ namespace MyNextBook.ViewModels
         [ObservableProperty] private bool olCredentialsSet = false;
         [ObservableProperty] private string userName = "Not logged in";
         [ObservableProperty] private string olUserName = "Not logged in";
-
+        private readonly IOpenLibraryService _OLService;
         private readonly ILogger<WelcomeScreenViewModel> _logger;
 
-        public WelcomeScreenViewModel(ILogger<WelcomeScreenViewModel> logger)
+        public WelcomeScreenViewModel(ILogger<WelcomeScreenViewModel> logger, IOpenLibraryService olService)
         {
             _logger = logger;
             InitializeAsync();
         }
 
-        // PSEUDOCODE (implementation notes):
-        // InitializeAsync:
-        //   - Prepare popup details object
-        //   - Load intro text (fallback if empty)
-        //   - Update login state (fetch account from MSAL cache) => sets LoggedIn + UserName
-        //   - Check OL credentials presence in secure storage => set OlCredentialsSet
-        //
-        // UpdateLoginStateAsync:
-        //   - Try fetch signed in user from cache (MSAL)
-        //   - If user/account exists set LoggedIn = true and UserName = displayable id / username
-        //   - Else set LoggedIn = false and default UserName
-        //
-        // AreOLCredentialsSetAsync:
-        //   - Read expected secure storage keys (e.g., "OLUser", "OLKey")
-        //   - Return true only if both non-empty
-        //
-        // SignIn command:
-        //   - Attempt silent acquire token (existing logic)
-        //   - On success (non-empty token) update login state
-        //   - Re-evaluate OL credentials from secure storage
-        //   - Navigate to SettingsPage if not set, else close (..)
-        //   - On exceptions show popup with appropriate error codes
-
+      
         private async Task InitializeAsync()
         {
             PopupDetails = new ShowPopUpDetails
@@ -181,5 +161,46 @@ namespace MyNextBook.ViewModels
                 PopupDetails.ErrorCode = "ERR-003";
             }
         }
+        [RelayCommand]
+        async Task TestOLCredentials()
+        {
+            try
+            {
+                PopupDetails = new ShowPopUpDetails();
+
+                string OLUserName = await SecureStorage.Default.GetAsync(Constants.OpenLibraryUsernameKey);
+                string OLPassword = await SecureStorage.Default.GetAsync(Constants.OpenLibraryPasswordKey);
+
+                _OLService.SetUsernamePassword(OLUserName, OLPassword);
+                bool r = await _OLService.Login();
+                if (r == true)
+                {
+
+                    PopupDetails.IsOpen = true;
+
+                    PopupDetails.ErrorCode = "INFO-001";
+                    OnPropertyChanged(nameof(PopupDetails));
+
+                }
+                else
+                {
+                    PopupDetails.IsOpen = true;
+
+                    PopupDetails.ErrorCode = "ERR-003";
+                    OnPropertyChanged(nameof(PopupDetails));
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                PopupDetails.IsOpen = true;
+
+                PopupDetails.ErrorCode = "OL-003";
+                PopupDetails.ErrorMessage = $"Could not sign in to OpenLibrary. Please check your credentials and/or network.\n{ex.Message}";
+                OnPropertyChanged(nameof(PopupDetails));
+            }
+        }
+
     }
 }

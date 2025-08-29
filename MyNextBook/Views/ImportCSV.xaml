@@ -26,10 +26,7 @@
     x:DataType="viewmodels:ImportCSVViewModel"
     BackgroundColor="{dx:ThemeColor SecondaryContainer}">
 
-    <Shell.BackButtonBehavior>
-        <!--  Handle back via Shell back button  -->
-        <BackButtonBehavior Command="{Binding BackCommand}" IsEnabled="True" />
-    </Shell.BackButtonBehavior>
+   
 
 
     <ContentPage.Resources>
@@ -56,52 +53,7 @@
         BackgroundColor="{dx:ThemeColor SecondaryContainer}"
         ColumnDefinitions="*,100"
         RowDefinitions="*,75">
-        <dx:DXPopup
-            x:Name="menuPopup"
-            CornerRadius="0"
-            IsOpen="{Binding IsMenuPopupOpen, Mode=TwoWay}"
-            Placement="Left"
-            PlacementTarget="{x:Reference menuButton}">
-            <dx:DXPopup.Content>
-                <StackLayout Padding="0" BackgroundColor="{dx:ThemeColor Surface}">
-
-                    <dx:DXButton
-                        BackgroundColor="{dx:ThemeColor Secondary}"
-                        BorderColor="{dx:ThemeColor Outline}"
-                        BorderThickness="1"
-                        Command="{Binding ImportReadyItemsCommand}"
-                        Content="Import Ready Items"
-                        CornerRadius="4"
-                        FontSize="14"
-                        HorizontalOptions="Fill"
-                        TextColor="{dx:ThemeColor OnSecondary}"
-                        VerticalOptions="Center" />
-                    <dx:DXButton
-                        BackgroundColor="{dx:ThemeColor Secondary}"
-                        BorderColor="#0078D7"
-                        BorderThickness="1"
-                        Command="{Binding SaveAndReturnLaterCommand}"
-                        Content="Save &amp; Return Later"
-                        CornerRadius="4"
-                        FontSize="14"
-                        HorizontalOptions="Fill"
-                        TextColor="{dx:ThemeColor OnSecondary}"
-                        VerticalOptions="Center" />
-                    <dx:DXButton
-                        BackgroundColor="{dx:ThemeColor Secondary}"
-                        BorderColor="{dx:ThemeColor Outline}"
-                        BorderThickness="1"
-                        Command="{Binding CancelImportCommand}"
-                        Content="Cancel"
-                        CornerRadius="4"
-                        FontSize="14"
-                        HorizontalOptions="Fill"
-                        TextColor="{dx:ThemeColor OnSecondary}"
-                        VerticalOptions="Center" />
-                </StackLayout>
-            </dx:DXPopup.Content>
-        </dx:DXPopup>
-
+       
         <!--#region ErrorPopUp-->
         <sharedcontrols:ErrorPopupView
             Grid.Row="1"
@@ -144,6 +96,7 @@
         </dxs:DataGridView>
         <HorizontalStackLayout
             Grid.Row="1"
+             IsVisible="{Binding ShowInitial}"
             Grid.Column="0"
             Margin="5,2">
             <Button
@@ -152,64 +105,31 @@
                 FontSize="Small"
                 HeightRequest="40"
                 IsEnabled="True"
-             
                 IsVisible="{Binding ShowInitial}"
                 Text="Select File"
-                WidthRequest="150" />
+                WidthRequest="125" />
             <Button
                 Margin="5,0"
                 Command="{Binding CancelImportCommand}"
                 HeightRequest="40"
-              
                 IsVisible="{Binding ShowInitial}"
                 Text="Cancel"
-                WidthRequest="150" />
+                WidthRequest="125" />
         </HorizontalStackLayout>
-        <HorizontalStackLayout Grid.Row="1" Grid.Column="1">
-            <ImageButton
-                x:Name="helpButton"
-                Aspect="Center"
-                BackgroundColor="{dx:ThemeColor SecondaryContainer}"
-                Command="{Binding ShowHelpCommand}"
-                HeightRequest="45"
-                VerticalOptions="Center"
-                HorizontalOptions="End"
-                WidthRequest="45">
-                <ImageButton.Source>
-                    <FontImageSource
-                        FontFamily="MD"
-                        Glyph="{x:Static fonts:IconCodesMIR.Help}"
-                        Size="30"
-                        Color="{dx:ThemeColor OnSecondaryContainer}" />
-                </ImageButton.Source>
-            </ImageButton>
-            <ImageButton
-                x:Name="menuButton"
-                Aspect="Center"
-                BackgroundColor="{dx:ThemeColor SecondaryContainer}"
-                Command="{Binding ShowMenuCommand}"
-                HeightRequest="45"
-                IsVisible="{Binding ShowImporting}"
-                HorizontalOptions="End"
-                VerticalOptions="Center"
-                WidthRequest="45">
-                <ImageButton.Source>
-                    <FontImageSource
-                        FontFamily="MD"
-                        Glyph="{x:Static fonts:IconCodesMIR.Menu}"
-                        Size="30"
-                        Color="{dx:ThemeColor OnSecondaryContainer}" />
-                </ImageButton.Source>
-            </ImageButton>
+        <HorizontalStackLayout Grid.Row="1" IsVisible="{Binding ShowImporting}" Margin="5,0" ZIndex="5">
+            <Label HorizontalOptions="Start" VerticalOptions="Center"
+                   Text="{Binding iCSVData.SeriesThatAreReadyToImport, StringFormat='{0} series ready to import'}">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding ImportReadyItemsCommand}" />
+                </Label.GestureRecognizers>
+                <Label.Style>
+                    <Style TargetType="Label">
+                        <Setter Property="TextColor" Value="{dx:ThemeColor Primary}" />
+                        <Setter Property="TextDecorations" Value="Underline" />
+                    </Style>
+                </Label.Style>
+            </Label>
         </HorizontalStackLayout>
-        <VerticalStackLayout
-            Grid.Row="1"
-            Grid.Column="0"
-            IsVisible="{Binding ShowImport}">
-            <Label Text="{Binding iCSVData.SeriesFound, StringFormat='{0} series to import ,'}" />
-            <Label Text="{Binding iCSVData.SeriesThatAreReadyToImport, StringFormat=' {0} ready.'}" />
-
-        </VerticalStackLayout>
         <dx:RadialProgressBar
             x:Name="progressBar"
             Grid.Row="0"
@@ -241,6 +161,7 @@
 
             </dx:RadialProgressBar.Content>
         </dx:RadialProgressBar>
+
 
 
 

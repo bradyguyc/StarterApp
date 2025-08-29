@@ -186,7 +186,7 @@ namespace MyNextBook.ViewModels
                 }
                 else
                 {
-                    await Shell.Current.GoToAsync("SettingsPage");
+                    await Shell.Current.GoToAsync("WelcomePage");
                 }
                 return false;
             }

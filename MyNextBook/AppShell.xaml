@@ -61,19 +61,20 @@
                     <FontImageSource
                         FontFamily="MD"
                         Glyph="{x:Static shared:IconCodesMIR.Menu}"
-                        Color="{dx:ThemeColor OnPrimaryContainer}"
-                        Size="24" />
+                        Size="24"
+                        Color="{dx:ThemeColor OnPrimaryContainer}" />
                 </ImageButton.Source>
             </ImageButton>
 
             <!--  Syncfusion SfPopup  -->
             <popup:SfPopup
-                x:Name="AvatarPopup"
+                x:Name="menuPopup"
                 Grid.Row="0"
                 Grid.ColumnSpan="3"
+                Margin="0,2,2,0"
                 IsOpen="{Binding IsMenuOpen}"
-                RelativePosition="AlignBottomLeft"
-                RelativeView="{x:Reference menuButton}"
+                RelativePosition="AlignTopRight"
+                RelativeView="{x:Reference RootShell}"
                 ShowFooter="False"
                 ShowHeader="False"
                 WidthRequest="180"

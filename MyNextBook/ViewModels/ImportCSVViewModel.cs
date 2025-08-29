@@ -86,7 +86,6 @@ namespace MyNextBook.ViewModels
 
         #region Properties
         [ObservableProperty] private bool isBusy;
-        // Removed duplicate (was popUpDetails & popupDetails). Keep a single, always non-null instance.
         [ObservableProperty] private ShowPopUpDetails popupDetails = new();
         [ObservableProperty] private bool isMenuPopupOpen;
         [ObservableProperty] private string importInstructions = Constants.ImportInstructions;
@@ -138,26 +137,7 @@ namespace MyNextBook.ViewModels
         // Enhanced diagnostics + safer read (line ~115 area)
         private async Task<bool> LoadSavedStateAsync()
         {
-            /*
-             PSEUDOCODE (implementation details documented for clarity)
-             1. Log path; if file missing -> return false.
-             2. Read file text with retry helper (already present).
-             3. If empty/whitespace -> return false.
-             4. Deserialize JSON into List<Dictionary<string, object?>>.
-             5. If null/empty -> return false.
-             6. Ensure iCSVData instance exists.
-             7. Recreate a DataTable:
-                a. Collect ordered distinct column names from the first row (then from subsequent rows for any new columns).
-                b. Create DataTable and add columns (string type for simplicity / broad compatibility).
-             8. For each row dict:
-                a. Ensure any new columns (in later rows) are added.
-                b. Map each value (convert JsonElement to a CLR primitive/string) else set DBNull.
-                c. Add DataRow to table.
-             9. Assign rebuilt table to iCSVData.csvData (backing field of ObservableProperty).
-             10. Recompute BooksFound, SeriesFound, SeriesThatAreReadyToImport using populated table.
-             11. Set UI state flags (ShowImporting etc.) and raise property changed.
-             12. Return true on success; catch outer exceptions and return false.
-            */
+            
             try
             {
                 Debug.WriteLine($"[LoadSavedState] Path: {ImportStateFilePath}");
@@ -505,6 +485,13 @@ namespace MyNextBook.ViewModels
             }
         }
 
-        // Remaining methods unchanged...
+        [RelayCommand] void ShowMenu()
+        {
+            IsMenuPopupOpen = true;
+        }
+        [RelayCommand] async Task ImportReadyItems()
+        {
+            IsMenuPopupOpen = false;
+        }
     }
 }

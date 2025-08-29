@@ -6,6 +6,7 @@
     xmlns:customControls="clr-namespace:CommonCode.CustomControls;assembly=CommonCode"
     xmlns:dx="http://schemas.devexpress.com/maui"
     xmlns:dx1="clr-namespace:DevExpress.Maui.Core;assembly=DevExpress.Maui.Core"
+    xmlns:dxs="http://schemas.devexpress.com/maui"
     xmlns:fonts="clr-namespace:CommonCode.Helpers;assembly=CommonCode"
     xmlns:popup="clr-namespace:Syncfusion.Maui.Popup;assembly=Syncfusion.Maui.Popup"
     xmlns:sharedcontrols="clr-namespace:CommonCode.CustomControls;assembly=CommonCode"
@@ -13,42 +14,52 @@
     xmlns:viewmodels="clr-namespace:MyNextBook.ViewModels"
     Title="Welcome to MyNextBook"
     x:DataType="viewmodels:WelcomeScreenViewModel">
-    <Grid BackgroundColor="{dx:ThemeColor PrimaryContainer}" RowDefinitions="*,80,65">
-        <Grid ColumnDefinitions="*,*" RowDefinitions="40,40" Grid.Row="1">
+    <Grid BackgroundColor="{dx:ThemeColor PrimaryContainer}" RowDefinitions="65,180,*">
+     
             <Label
                 Grid.Column="0"
+                Grid.Row="0"
                 BackgroundColor="{dx:ThemeColor SecondaryContainer}"
                 Text="MyNextBook Account:"
                 TextColor="{dx:ThemeColor OnSecondaryContainer}" />
-            <Label
-                Grid.Column="1"
-                BackgroundColor="{dx:ThemeColor SecondaryContainer}"
-                Text="{Binding UserName}"
-                TextColor="{dx:ThemeColor OnSecondaryContainer}" />
-            <Label
-                Grid.Column="0"
-                Grid.Row="1"
-                BackgroundColor="{dx:ThemeColor SecondaryContainer}"
-                Text="OpenLibrary email:"
-                TextColor="{dx:ThemeColor OnSecondaryContainer}" />
-            <Label
-                Grid.Column="1"
-                Grid.Row="1"
-                
-                BackgroundColor="{dx:ThemeColor SecondaryContainer}"
-                Text="{Binding OlUserName}"
-                TextColor="{dx:ThemeColor OnSecondaryContainer}" />
 
-        </Grid>
-        <Button
-            Grid.Row="2"
-            Margin="45,10,45,15"
-            Command="{Binding SignInCommand}"
-            Text="Sign In" />
+            <!--  OpenLibrary Credentials Section  -->
+            <Border
+                Grid.Row="1"
+                Padding="12"
+                BackgroundColor="{dx:ThemeColor SecondaryContainer}"
+                Stroke="{dx:ThemeColor Primary}"
+                StrokeShape="RoundRectangle 8"
+                StrokeThickness="1">
+                <VerticalStackLayout Spacing="16">
+                    <Label
+                        FontAttributes="Bold"
+                        Text="openlibrary.org credentials"
+                        TextColor="{dx:ThemeColor OnSecondaryContainer}" />
+
+                    <dxs:TextEdit
+                        HeightRequest="50"
+                        PlaceholderText="Username"
+                        Text="{Binding OpenLibraryUsername, Mode=TwoWay}"
+                        TextColor="{dx:ThemeColor OnSecondaryContainer}" />
+                    <dxs:PasswordEdit
+                        BoxMode="Outlined"
+                        HelpText="*Required"
+                        LabelText="Password"
+                        PasswordIconVisibility="Always"
+                        PlaceholderText="Enter password"
+                        Text="{Binding OpenLibraryPassword, Mode=TwoWay}"
+                        TextColor="{dx:ThemeColor OnSecondaryContainer}" />
+
+                    <Button Command="{Binding TestOLCredentialsCommand}" Text="Test Sign In" />
+                </VerticalStackLayout>
+            </Border>
+
+
 
 
         <Border
-            Grid.Row="0"
+            Grid.Row="2"
             Margin="5,0,5,5"
             BackgroundColor="{dx:ThemeColor SecondaryContainer}"
             Stroke="{dx:ThemeColor Outline}"

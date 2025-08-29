@@ -1,6 +1,9 @@
 ﻿using Microsoft.Maui.Controls;
-using MyNextBook.Views;
+
 using MyNextBook.ViewModels;
+using MyNextBook.Views;
+
+using Syncfusion.Maui.Popup;
 
 namespace MyNextBook
 {
@@ -23,5 +26,7 @@ namespace MyNextBook
 
             pageTitle.Text = Current.CurrentPage.Title;
         }
+
+       
     }
 }
